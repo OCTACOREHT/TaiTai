@@ -15,9 +15,15 @@ import {
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import Badge from "@/components/ui/badge/Badge";
-import { ClubEvent, EventType, Player } from "@/types/club";
+import { ClubEvent, EventCalendarColor, Player } from "@/types/club";
 import { eventTypeLabel, colorFromEventType } from "@/lib/club/status";
-import { formatClubDate, getPlayerFullName } from "@/lib/club/metrics";
+import { formatClubDate } from "@/lib/club/metrics";
+import {
+  calendarColorClass,
+  calendarColors,
+  calendarColorToType,
+  eventTypeToCalendarColor,
+} from "@/lib/club/event-calendar";
 
 interface EventCalendarManagerProps {
   events: ClubEvent[];
@@ -28,27 +34,24 @@ interface EventCalendarManagerProps {
 interface EventFormState {
   id?: string;
   titre: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   lieu: string;
-  type: EventType;
-  participants: string[];
+  calendarColor: EventCalendarColor;
 }
 
 const defaultFormState: EventFormState = {
   titre: "",
-  date: "",
+  startDate: "",
+  endDate: "",
   lieu: "",
-  type: "entrainement",
-  participants: [],
+  calendarColor: "Primary",
 };
 
 const inputClassName =
   "h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90";
 
-const selectClassName =
-  "h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90";
-
-const toInputDateTime = (value: string) => {
+const toInputDate = (value: string) => {
   if (!value) {
     return "";
   }
@@ -56,9 +59,7 @@ const toInputDateTime = (value: string) => {
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
-  const hh = String(date.getHours()).padStart(2, "0");
-  const min = String(date.getMinutes()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  return `${yyyy}-${mm}-${dd}`;
 };
 
 export default function EventCalendarManager({
@@ -79,6 +80,7 @@ export default function EventCalendarManager({
         extendedProps: {
           type: event.type,
           lieu: event.lieu,
+          calendarColor: event.calendarColor ?? eventTypeToCalendarColor(event.type),
         },
       })),
     [events],
@@ -92,14 +94,16 @@ export default function EventCalendarManager({
     [events],
   );
 
-  const resetForm = () => {
+const resetForm = () => {
     setFormState(defaultFormState);
   };
 
   const openCreateModal = (dateValue?: string) => {
     setFormState({
       ...defaultFormState,
-      date: dateValue ?? toInputDateTime(new Date().toISOString()),
+      startDate: dateValue ?? toInputDate(new Date().toISOString()),
+      endDate: dateValue ?? toInputDate(new Date().toISOString()),
+      lieu: "Stade FC Toro",
     });
     openModal();
   };
@@ -108,17 +112,16 @@ export default function EventCalendarManager({
     setFormState({
       id: event.id,
       titre: event.titre,
-      date: toInputDateTime(event.date),
+      startDate: toInputDate(event.date),
+      endDate: toInputDate(event.date),
       lieu: event.lieu,
-      type: event.type,
-      participants: event.participants,
+      calendarColor: event.calendarColor ?? eventTypeToCalendarColor(event.type),
     });
     openModal();
   };
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
-    const defaultDate = `${selectInfo.startStr}T18:00`;
-    openCreateModal(defaultDate);
+    openCreateModal(selectInfo.startStr);
   };
 
   const handleEventClick = (eventClick: EventClickArg) => {
@@ -129,9 +132,12 @@ export default function EventCalendarManager({
   };
 
   const handleSaveEvent = () => {
-    if (!formState.titre || !formState.date || !formState.lieu) {
+    if (!formState.titre || !formState.startDate) {
       return;
     }
+
+    const eventDate = `${formState.startDate}T18:00:00`;
+    const eventType = calendarColorToType[formState.calendarColor];
 
     if (formState.id) {
       setEvents((prevEvents) =>
@@ -140,10 +146,10 @@ export default function EventCalendarManager({
             ? {
                 ...event,
                 titre: formState.titre,
-                date: formState.date,
-                lieu: formState.lieu,
-                type: formState.type,
-                participants: formState.participants,
+                date: eventDate,
+                lieu: formState.lieu || "Stade FC Toro",
+                type: eventType,
+                calendarColor: formState.calendarColor,
               }
             : event,
         ),
@@ -154,10 +160,11 @@ export default function EventCalendarManager({
         {
           id: `event-${Date.now()}`,
           titre: formState.titre,
-          date: formState.date,
-          lieu: formState.lieu,
-          type: formState.type,
-          participants: formState.participants,
+          date: eventDate,
+          lieu: formState.lieu || "Stade FC Toro",
+          type: eventType,
+          calendarColor: formState.calendarColor,
+          participants: [],
         },
       ]);
     }
@@ -175,13 +182,21 @@ export default function EventCalendarManager({
     resetForm();
   };
 
-  const renderEventContent = (eventInfo: EventContentArg) => (
-    <div className="flex items-center gap-1 rounded-sm p-1">
-      <span className="text-[11px] font-medium text-gray-700 dark:text-gray-200">
-        {eventInfo.event.title}
-      </span>
-    </div>
-  );
+  const renderEventContent = (eventInfo: EventContentArg) => {
+    const color = eventInfo.event.extendedProps
+      .calendarColor as EventCalendarColor;
+    const colorClass = calendarColorClass(color);
+
+    return (
+      <div
+        className={`event-fc-color flex fc-event-main items-center ${colorClass}`}
+      >
+        <div className="fc-daygrid-event-dot"></div>
+        <div className="fc-event-time">{eventInfo.timeText}</div>
+        <div className="fc-event-title">{eventInfo.event.title}</div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -274,21 +289,25 @@ export default function EventCalendarManager({
         </div>
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeAndReset} className="max-w-[820px] p-6 lg:p-8">
+      <Modal
+        isOpen={isOpen}
+        onClose={closeAndReset}
+        className="max-w-[900px] p-6 lg:p-10"
+      >
         <div className="space-y-6">
           <div>
-            <h4 className="text-xl font-semibold text-gray-800 dark:text-white/90">
-              {formState.id ? "Modifier evenement" : "Creer evenement"}
+            <h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+              {formState.id ? "Edit Event" : "Add Event"}
             </h4>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Mettez a jour la planification du club.
+              Plan your next big moment: schedule or edit an event to stay on track
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 gap-6">
+            <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Titre
+                Event Title
               </label>
               <input
                 value={formState.titre}
@@ -300,14 +319,56 @@ export default function EventCalendarManager({
             </div>
 
             <div>
+              <label className="mb-4 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Event Color
+              </label>
+              <div className="flex flex-wrap items-center gap-5">
+                {calendarColors.map((calendarColor) => (
+                  <label
+                    key={calendarColor}
+                    className="inline-flex items-center gap-2 text-lg text-gray-800 dark:text-white/90"
+                  >
+                    <span className="relative">
+                      <input
+                        type="radio"
+                        className="sr-only"
+                        name="event-color"
+                        checked={formState.calendarColor === calendarColor}
+                        onChange={() =>
+                          setFormState((prev) => ({
+                            ...prev,
+                            calendarColor,
+                          }))
+                        }
+                      />
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 dark:border-gray-700">
+                        <span
+                          className={`h-3 w-3 rounded-full bg-brand-500 ${
+                            formState.calendarColor === calendarColor
+                              ? "block"
+                              : "hidden"
+                          }`}
+                        ></span>
+                      </span>
+                    </span>
+                    {calendarColor}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Date et heure
+                Enter Start Date
               </label>
               <input
-                type="datetime-local"
-                value={formState.date}
+                type="date"
+                value={formState.startDate}
                 onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, date: event.target.value }))
+                  setFormState((prev) => ({
+                    ...prev,
+                    startDate: event.target.value,
+                  }))
                 }
                 className={inputClassName}
               />
@@ -315,7 +376,21 @@ export default function EventCalendarManager({
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Lieu
+                Enter End Date
+              </label>
+              <input
+                type="date"
+                value={formState.endDate}
+                onChange={(event) =>
+                  setFormState((prev) => ({ ...prev, endDate: event.target.value }))
+                }
+                className={inputClassName}
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Location
               </label>
               <input
                 value={formState.lieu}
@@ -323,70 +398,25 @@ export default function EventCalendarManager({
                   setFormState((prev) => ({ ...prev, lieu: event.target.value }))
                 }
                 className={inputClassName}
+                placeholder="Stade FC Toro"
               />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Type
-              </label>
-              <select
-                value={formState.type}
-                onChange={(event) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    type: event.target.value as EventType,
-                  }))
-                }
-                className={selectClassName}
-              >
-                <option value="match">Match</option>
-                <option value="entrainement">Entrainement</option>
-                <option value="reunion">Reunion</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Participants
-              </label>
-              <select
-                multiple
-                value={formState.participants}
-                onChange={(event) => {
-                  const selected = Array.from(event.target.selectedOptions).map(
-                    (option) => option.value,
-                  );
-                  setFormState((prev) => ({ ...prev, participants: selected }));
-                }}
-                className="min-h-32 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-              >
-                {players.map((player) => (
-                  <option key={player.id} value={player.id}>
-                    {getPlayerFullName(player)}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Maintenez Ctrl/Cmd pour selection multiple.
-              </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
             <button
               type="button"
               className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
               onClick={closeAndReset}
             >
-              Annuler
+              Close
             </button>
             <button
               type="button"
               className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600"
               onClick={handleSaveEvent}
             >
-              {formState.id ? "Sauvegarder" : "Creer"}
+              {formState.id ? "Update Event" : "Add Event"}
             </button>
           </div>
         </div>

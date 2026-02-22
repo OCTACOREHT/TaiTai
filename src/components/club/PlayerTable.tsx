@@ -31,6 +31,7 @@ const defaultColumns: PlayerColumnKey[] = [
   "categorie",
   "statut",
   "cotisation",
+  "montant",
   "dernierPaiement",
   "actions",
 ];
@@ -211,6 +212,14 @@ export default function PlayerTable({
                   Cotisation
                 </TableCell>
               ) : null}
+              {visibleColumnSet.has("montant") ? (
+                <TableCell
+                  isHeader
+                  className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Montant
+                </TableCell>
+              ) : null}
               {visibleColumnSet.has("dernierPaiement") ? (
                 <TableCell
                   isHeader
@@ -288,22 +297,22 @@ export default function PlayerTable({
                   ) : null}
                   {visibleColumnSet.has("cotisation") ? (
                     <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                      <div className="w-[120px]">
-                        <span
-                          className={`inline-flex w-full items-center justify-center rounded-full px-3 py-1 text-sm font-medium ${
-                            player.cotisationStatut === "paid"
-                              ? "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500"
-                              : player.cotisationStatut === "pending"
-                              ? "bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-orange-400"
-                              : "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-500"
-                          }`}
-                        >
-                          {paymentStatusLabel[player.cotisationStatut]}
-                        </span>
-                        <span className="mt-1 block text-theme-sm text-gray-500 dark:text-gray-400">
-                          {formatClubCurrency(player.cotisationMontant)}
-                        </span>
-                      </div>
+                      <span
+                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${
+                          player.cotisationStatut === "paid"
+                            ? "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500"
+                            : player.cotisationStatut === "pending"
+                            ? "bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-orange-400"
+                            : "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-500"
+                        }`}
+                      >
+                        {paymentStatusLabel[player.cotisationStatut]}
+                      </span>
+                    </TableCell>
+                  ) : null}
+                  {visibleColumnSet.has("montant") ? (
+                    <TableCell className="py-3 text-theme-sm font-medium text-gray-700 dark:text-gray-300">
+                      {formatClubCurrency(player.cotisationMontant)}
                     </TableCell>
                   ) : null}
                   {visibleColumnSet.has("dernierPaiement") ? (

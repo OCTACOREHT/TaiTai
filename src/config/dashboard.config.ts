@@ -13,6 +13,7 @@ export type PlayerColumnKey =
   | "categorie"
   | "statut"
   | "cotisation"
+  | "montant"
   | "dernierPaiement"
   | "actions";
 
@@ -55,6 +56,7 @@ const defaultPlayerColumns: PlayerColumnConfig[] = [
   { key: "categorie", label: "Categorie", enabled: true },
   { key: "statut", label: "Statut", enabled: true },
   { key: "cotisation", label: "Cotisation", enabled: true },
+  { key: "montant", label: "Montant", enabled: true },
   { key: "dernierPaiement", label: "Dernier paiement", enabled: true },
   { key: "actions", label: "Actions", enabled: true },
 ];

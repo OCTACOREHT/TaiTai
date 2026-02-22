@@ -4,6 +4,8 @@ export type PaymentStatus = "paid" | "pending" | "late";
 
 export type EventType = "match" | "entrainement" | "reunion";
 
+export type EventCalendarColor = "Danger" | "Success" | "Primary" | "Warning";
+
 export type PaymentMethod = "virement" | "carte" | "especes" | "mobile";
 
 export type StaffRole = "Coach" | "Assistant" | "Admin" | "Medical";
@@ -32,6 +34,7 @@ export interface ClubEvent {
   date: string;
   lieu: string;
   type: EventType;
+  calendarColor?: EventCalendarColor;
   participants: string[];
 }
 

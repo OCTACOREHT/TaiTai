@@ -67,6 +67,7 @@ export default function ClubDashboardPage() {
       "categorie",
       "statut",
       "cotisation",
+      "montant",
       "dernierPaiement",
       "actions",
     ] as const;
