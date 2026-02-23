@@ -445,6 +445,36 @@ export default function CoachTacticsPage() {
     setPendingSwap(null);
   };
 
+  const swapStarterPositions = (firstSlotId: string, secondSlotId: string) => {
+    if (firstSlotId === secondSlotId) {
+      return;
+    }
+
+    setAssignments((previous) => {
+      const nextAssignments = { ...previous };
+      const firstPlayerId = nextAssignments[firstSlotId];
+      const secondPlayerId = nextAssignments[secondSlotId];
+
+      if (secondPlayerId) {
+        nextAssignments[firstSlotId] = secondPlayerId;
+      } else {
+        delete nextAssignments[firstSlotId];
+      }
+
+      if (firstPlayerId) {
+        nextAssignments[secondSlotId] = firstPlayerId;
+      } else {
+        delete nextAssignments[secondSlotId];
+      }
+
+      return nextAssignments;
+    });
+
+    setSavedAt(null);
+    setSelectedStarterSlotId(null);
+    setPendingSwap(null);
+  };
+
   const openSwapModal = (slotId: string, benchPlayerId: string) => {
     setPendingSwap({ slotId, benchPlayerId });
   };
@@ -454,11 +484,22 @@ export default function CoachTacticsPage() {
   };
 
   const requestSwapWithStarter = (slot: FormationSlot) => {
-    setSelectedStarterSlotId(slot.id);
-
     if (!selectedBenchPlayerId) {
+      if (!selectedStarterSlotId) {
+        setSelectedStarterSlotId(slot.id);
+        return;
+      }
+
+      if (selectedStarterSlotId === slot.id) {
+        setSelectedStarterSlotId(null);
+        return;
+      }
+
+      swapStarterPositions(selectedStarterSlotId, slot.id);
       return;
     }
+
+    setSelectedStarterSlotId(slot.id);
 
     const benchPlayer = playerById.get(selectedBenchPlayerId);
     if (!benchPlayer) {
@@ -536,7 +577,7 @@ export default function CoachTacticsPage() {
               Banc des remplacants
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Clique un joueur du banc puis un titulaire sur le terrain.
+              Banc vers terrain, ou permutation terrain-terrain en 2 clics.
             </p>
 
             <div className="mt-4 space-y-2">
@@ -545,7 +586,12 @@ export default function CoachTacticsPage() {
                   <button
                     key={`bench-left-${player.id}`}
                     type="button"
-                    onClick={() => setSelectedBenchPlayerId(player.id)}
+                    onClick={() => {
+                      setSelectedBenchPlayerId((previous) =>
+                        previous === player.id ? null : player.id,
+                      );
+                      setPendingSwap(null);
+                    }}
                     className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition ${
                       selectedBenchPlayerId === player.id
                         ? "border-brand-300 bg-brand-50 dark:border-brand-500/40 dark:bg-brand-500/10"
@@ -656,7 +702,9 @@ export default function CoachTacticsPage() {
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 {selectedBenchPlayer
                   ? "Clique sur un titulaire sur le terrain pour lancer l'echange."
-                  : "Clique sur un joueur du banc pour afficher le bouton Echanger."}
+                  : selectedStarterSlotId
+                  ? "Titulaire source selectionne: clique un 2eme titulaire pour permuter."
+                  : "Clique un joueur du banc pour echanger, ou deux titulaires pour permuter."}
               </p>
             </div>
           </div>
