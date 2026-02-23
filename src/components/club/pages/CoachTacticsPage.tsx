@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import { Modal } from "@/components/ui/modal";
 import { useClubData } from "@/context/ClubDataContext";
 import {
   defaultFifaFormationId,
@@ -58,6 +59,30 @@ const roleLabel: Record<SlotRole, string> = {
   MID: "Milieu",
   ATT: "Attaque",
 };
+
+const SwapArrowsIcon = ({ className = "h-4 w-4" }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M5 7h11.5m0 0-3-3m3 3-3 3"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M19 17H7.5m0 0 3 3m-3-3 3-3"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const byPlayerName = (a: Player, b: Player) =>
   getPlayerFullName(a).localeCompare(getPlayerFullName(b), "fr");
@@ -243,6 +268,16 @@ export default function CoachTacticsPage() {
   const [planName, setPlanName] = useState("Plan de match principal");
   const [assignments, setAssignments] = useState<Record<string, string>>({});
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [selectedStarterSlotId, setSelectedStarterSlotId] = useState<string | null>(
+    null,
+  );
+  const [selectedBenchPlayerId, setSelectedBenchPlayerId] = useState<string | null>(
+    null,
+  );
+  const [pendingSwap, setPendingSwap] = useState<{
+    slotId: string;
+    benchPlayerId: string;
+  } | null>(null);
 
   const availablePlayers = useMemo(
     () =>
@@ -299,6 +334,59 @@ export default function CoachTacticsPage() {
     [availablePlayers, selectedPlayerIds],
   );
 
+  const selectedStarterEntry = useMemo(
+    () =>
+      starters.find((entry) => entry.slot.id === selectedStarterSlotId) ?? null,
+    [starters, selectedStarterSlotId],
+  );
+
+  const selectedBenchPlayer = useMemo(
+    () =>
+      selectedBenchPlayerId ? playerById.get(selectedBenchPlayerId) ?? null : null,
+    [selectedBenchPlayerId, playerById],
+  );
+
+  const pendingSwapStarter = useMemo(
+    () =>
+      pendingSwap
+        ? playerById.get(assignments[pendingSwap.slotId]) ?? null
+        : null,
+    [pendingSwap, playerById, assignments],
+  );
+
+  const pendingSwapBench = useMemo(
+    () =>
+      pendingSwap ? playerById.get(pendingSwap.benchPlayerId) ?? null : null,
+    [pendingSwap, playerById],
+  );
+
+  const pendingSwapSlot = useMemo(
+    () =>
+      pendingSwap ? slots.find((slot) => slot.id === pendingSwap.slotId) ?? null : null,
+    [pendingSwap, slots],
+  );
+
+  useEffect(() => {
+    if (!selectedStarterSlotId) {
+      return;
+    }
+
+    const slotStillExists = slots.some((slot) => slot.id === selectedStarterSlotId);
+    if (!slotStillExists) {
+      setSelectedStarterSlotId(null);
+    }
+  }, [selectedStarterSlotId, slots]);
+
+  useEffect(() => {
+    if (!selectedBenchPlayerId) {
+      return;
+    }
+
+    if (selectedPlayerIds.has(selectedBenchPlayerId)) {
+      setSelectedBenchPlayerId(null);
+    }
+  }, [selectedBenchPlayerId, selectedPlayerIds]);
+
   const filledSlots = starters.filter((entry) => entry.player !== null).length;
   const roleFitCount = starters.filter((entry) => {
     if (!entry.player) {
@@ -321,32 +409,78 @@ export default function CoachTacticsPage() {
       }).format(new Date(savedAt))
     : null;
 
-  const handleAssignmentChange = (slotId: string, playerId: string) => {
-    setAssignments((previous) => {
-      const nextAssignments = { ...previous };
-
-      if (!playerId) {
-        delete nextAssignments[slotId];
-        return nextAssignments;
-      }
-
-      Object.keys(nextAssignments).forEach((key) => {
-        if (key !== slotId && nextAssignments[key] === playerId) {
-          delete nextAssignments[key];
-        }
-      });
-
-      nextAssignments[slotId] = playerId;
-      return nextAssignments;
-    });
-  };
-
   const resetAutoAssignments = () => {
     setAssignments(buildAutoAssignments(slots, players));
+    setSavedAt(null);
+    setSelectedStarterSlotId(null);
+    setSelectedBenchPlayerId(null);
   };
 
   const saveCurrentPlan = () => {
     setSavedAt(new Date().toISOString());
+  };
+
+  const applySwap = (slotId: string, benchPlayerId: string) => {
+    setAssignments((previous) => {
+      const nextAssignments = { ...previous };
+      const currentStarterId = nextAssignments[slotId];
+
+      if (currentStarterId === benchPlayerId) {
+        return nextAssignments;
+      }
+
+      Object.keys(nextAssignments).forEach((key) => {
+        if (key !== slotId && nextAssignments[key] === benchPlayerId) {
+          delete nextAssignments[key];
+        }
+      });
+
+      nextAssignments[slotId] = benchPlayerId;
+      return nextAssignments;
+    });
+
+    setSavedAt(null);
+    setSelectedStarterSlotId(null);
+    setSelectedBenchPlayerId(null);
+    setPendingSwap(null);
+  };
+
+  const openSwapModal = (slotId: string, benchPlayerId: string) => {
+    setPendingSwap({ slotId, benchPlayerId });
+  };
+
+  const closeSwapModal = () => {
+    setPendingSwap(null);
+  };
+
+  const requestSwapWithStarter = (slot: FormationSlot) => {
+    setSelectedStarterSlotId(slot.id);
+
+    if (!selectedBenchPlayerId) {
+      return;
+    }
+
+    const benchPlayer = playerById.get(selectedBenchPlayerId);
+    if (!benchPlayer) {
+      return;
+    }
+
+    openSwapModal(slot.id, benchPlayer.id);
+  };
+
+  const handleSwapButtonClick = () => {
+    if (!selectedBenchPlayer || !selectedStarterEntry) {
+      return;
+    }
+
+    openSwapModal(selectedStarterEntry.slot.id, selectedBenchPlayer.id);
+  };
+
+  const confirmPendingSwap = () => {
+    if (!pendingSwap) {
+      return;
+    }
+    applySwap(pendingSwap.slotId, pendingSwap.benchPlayerId);
   };
 
   return (
@@ -396,7 +530,139 @@ export default function CoachTacticsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
-        <div className="2xl:col-span-8">
+        <div className="2xl:col-span-3">
+          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
+              Banc des remplacants
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Clique un joueur du banc puis un titulaire sur le terrain.
+            </p>
+
+            <div className="mt-4 space-y-2">
+              {benchPlayers.length > 0 ? (
+                benchPlayers.map((player) => (
+                  <button
+                    key={`bench-left-${player.id}`}
+                    type="button"
+                    onClick={() => setSelectedBenchPlayerId(player.id)}
+                    className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left transition ${
+                      selectedBenchPlayerId === player.id
+                        ? "border-brand-300 bg-brand-50 dark:border-brand-500/40 dark:bg-brand-500/10"
+                        : "border-gray-200 hover:border-brand-300 dark:border-gray-700 dark:hover:border-brand-500/40"
+                    }`}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Image
+                        src={player.photoUrl}
+                        alt={getPlayerFullName(player)}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-full border border-white/40 object-cover"
+                        unoptimized
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-gray-800 dark:text-white/90">
+                          {getPlayerFullName(player)}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {player.categorie}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`ml-3 shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${roleChipStyles[normalizePlayerRole(player.poste)]}`}
+                    >
+                      {player.poste}
+                    </span>
+                  </button>
+                ))
+              ) : (
+                <p className="rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                  Tout le groupe actif est utilise.
+                </p>
+              )}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-gray-200 p-3 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                Remplacant selectionne
+              </p>
+              {selectedBenchPlayer ? (
+                <div className="mt-2 flex items-center gap-2.5 rounded-lg border border-gray-200 p-2 dark:border-gray-700">
+                  <Image
+                    src={selectedBenchPlayer.photoUrl}
+                    alt={getPlayerFullName(selectedBenchPlayer)}
+                    width={34}
+                    height={34}
+                    className="h-9 w-9 rounded-full object-cover"
+                    unoptimized
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-800 dark:text-white/90">
+                      {getPlayerFullName(selectedBenchPlayer)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {selectedBenchPlayer.poste}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="mt-1 text-sm text-gray-800 dark:text-white/90">Aucun</p>
+              )}
+
+              <p className="mt-3 text-xs font-medium text-gray-700 dark:text-gray-300">
+                Titulaire cible
+              </p>
+              {selectedStarterEntry?.player ? (
+                <div className="mt-2 flex items-center gap-2.5 rounded-lg border border-gray-200 p-2 dark:border-gray-700">
+                  <Image
+                    src={selectedStarterEntry.player.photoUrl}
+                    alt={getPlayerFullName(selectedStarterEntry.player)}
+                    width={34}
+                    height={34}
+                    className="h-9 w-9 rounded-full object-cover"
+                    unoptimized
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-gray-800 dark:text-white/90">
+                      {getPlayerFullName(selectedStarterEntry.player)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {selectedStarterEntry.slot.label} - {selectedStarterEntry.player.poste}
+                    </p>
+                  </div>
+                </div>
+              ) : selectedStarterEntry ? (
+                <p className="mt-1 text-sm text-gray-800 dark:text-white/90">
+                  {selectedStarterEntry.slot.label}
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-gray-800 dark:text-white/90">Aucun</p>
+              )}
+
+              {selectedBenchPlayer ? (
+                <button
+                  type="button"
+                  onClick={handleSwapButtonClick}
+                  disabled={!selectedStarterEntry}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-error-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-error-600 disabled:cursor-not-allowed disabled:bg-error-300"
+                >
+                  <SwapArrowsIcon className="h-4 w-4" />
+                  Echanger
+                </button>
+              ) : null}
+
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {selectedBenchPlayer
+                  ? "Clique sur un titulaire sur le terrain pour lancer l'echange."
+                  : "Clique sur un joueur du banc pour afficher le bouton Echanger."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="2xl:col-span-9">
           <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="grid flex-1 gap-4 sm:grid-cols-2">
@@ -407,7 +673,10 @@ export default function CoachTacticsPage() {
                   <input
                     type="text"
                     value={planName}
-                    onChange={(event) => setPlanName(event.target.value)}
+                    onChange={(event) => {
+                      setPlanName(event.target.value);
+                      setSavedAt(null);
+                    }}
                     className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
                   />
                 </div>
@@ -418,7 +687,10 @@ export default function CoachTacticsPage() {
                   </label>
                   <select
                     value={formationId}
-                    onChange={(event) => setFormationId(event.target.value)}
+                    onChange={(event) => {
+                      setFormationId(event.target.value);
+                      setSavedAt(null);
+                    }}
                     className="h-11 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
                   >
                     {fifaFormations.map((formation) => (
@@ -471,8 +743,14 @@ export default function CoachTacticsPage() {
                     className="absolute -translate-x-1/2 -translate-y-1/2"
                     style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
                   >
-                    <div
-                      className={`mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 text-[10px] font-semibold text-white shadow-lg ${markerStyles[slot.role]}`}
+                    <button
+                      type="button"
+                      onClick={() => requestSwapWithStarter(slot)}
+                      className={`mx-auto flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 text-[10px] font-semibold text-white shadow-lg transition ${markerStyles[slot.role]} ${
+                        selectedStarterSlotId === slot.id
+                          ? "ring-2 ring-white ring-offset-2 ring-offset-emerald-700"
+                          : ""
+                      }`}
                       title={`${slot.label} - ${player ? getPlayerFullName(player) : "Libre"}`}
                     >
                       {player ? (
@@ -487,7 +765,7 @@ export default function CoachTacticsPage() {
                       ) : (
                         <span>{slot.label}</span>
                       )}
-                    </div>
+                    </button>
                     <p className="mt-1 text-center text-[10px] font-semibold uppercase tracking-wide text-white">
                       {slot.label}
                     </p>
@@ -500,125 +778,10 @@ export default function CoachTacticsPage() {
             </div>
           </div>
         </div>
-
-        <div className="2xl:col-span-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
-              Gestion du XI titulaire
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Affecte un joueur a chaque poste. Un joueur ne peut etre assigne
-              qu&apos;a un seul poste.
-            </p>
-
-            <div className="mt-4 max-h-[760px] space-y-3 overflow-y-auto pr-1">
-              {starters.map(({ slot, player }) => {
-                const naturalPlayers = availablePlayers.filter(
-                  (candidate) => normalizePlayerRole(candidate.poste) === slot.role,
-                );
-                const alternativePlayers = availablePlayers.filter(
-                  (candidate) => normalizePlayerRole(candidate.poste) !== slot.role,
-                );
-
-                return (
-                  <div
-                    key={`assign-${slot.id}`}
-                    className="rounded-xl border border-gray-200 p-3 dark:border-gray-700"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                        {slot.label}
-                      </p>
-                      <span
-                        className={`rounded-full px-2 py-1 text-[11px] font-medium ${roleChipStyles[slot.role]}`}
-                      >
-                        {roleLabel[slot.role]}
-                      </span>
-                    </div>
-
-                    <select
-                      value={assignments[slot.id] ?? ""}
-                      onChange={(event) =>
-                        handleAssignmentChange(slot.id, event.target.value)
-                      }
-                      className="mt-2 h-10 w-full rounded-lg border border-gray-300 bg-transparent px-3 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                    >
-                      <option value="">Aucun joueur</option>
-                      {naturalPlayers.length > 0 ? (
-                        <optgroup label="Poste naturel">
-                          {naturalPlayers.map((candidate) => (
-                            <option key={`${slot.id}-nat-${candidate.id}`} value={candidate.id}>
-                              {getPlayerFullName(candidate)} ({candidate.poste})
-                            </option>
-                          ))}
-                        </optgroup>
-                      ) : null}
-                      {alternativePlayers.length > 0 ? (
-                        <optgroup label="Hors poste">
-                          {alternativePlayers.map((candidate) => (
-                            <option key={`${slot.id}-alt-${candidate.id}`} value={candidate.id}>
-                              {getPlayerFullName(candidate)} ({candidate.poste})
-                            </option>
-                          ))}
-                        </optgroup>
-                      ) : null}
-                    </select>
-
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {player
-                        ? `Titulaire: ${getPlayerFullName(player)}`
-                        : "Titulaire: non assigne"}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div className="xl:col-span-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-            <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
-              Banc des remplacants
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Joueurs actifs non utilises dans le onze.
-            </p>
-
-            <div className="mt-4 space-y-2">
-              {benchPlayers.length > 0 ? (
-                benchPlayers.map((player) => (
-                  <div
-                    key={`bench-${player.id}`}
-                    className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-800 dark:text-white/90">
-                        {getPlayerFullName(player)}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {player.categorie}
-                      </p>
-                    </div>
-                    <span
-                      className={`ml-3 shrink-0 rounded-full px-2 py-1 text-[11px] font-medium ${roleChipStyles[normalizePlayerRole(player.poste)]}`}
-                    >
-                      {player.poste}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-                  Tout le groupe actif est utilise.
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="xl:col-span-4">
+        <div className="xl:col-span-6">
           <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
               Joueurs indisponibles
@@ -662,7 +825,7 @@ export default function CoachTacticsPage() {
           </div>
         </div>
 
-        <div className="xl:col-span-4">
+        <div className="xl:col-span-6">
           <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
               Catalogue formations FIFA
@@ -676,7 +839,10 @@ export default function CoachTacticsPage() {
                 <button
                   key={`formation-chip-${formation.id}`}
                   type="button"
-                  onClick={() => setFormationId(formation.id)}
+                  onClick={() => {
+                    setFormationId(formation.id);
+                    setSavedAt(null);
+                  }}
                   className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                     formation.id === formationId
                       ? "border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/40 dark:bg-brand-500/15 dark:text-brand-400"
@@ -691,6 +857,104 @@ export default function CoachTacticsPage() {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={Boolean(pendingSwap)}
+        onClose={closeSwapModal}
+        className="mx-4 max-w-[560px]"
+      >
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-slate-900 to-gray-950 p-6 sm:p-7">
+          <div className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full bg-brand-500/25 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 left-0 h-40 w-40 rounded-full bg-error-500/20 blur-3xl" />
+
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-brand-300">
+            Confirmation d&apos;echange
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold text-white">
+            Valider le changement ?
+          </h3>
+          <p className="mt-1 text-sm text-slate-300">
+            Cette action remplacera le titulaire selectionne sur le terrain.
+          </p>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+            <div className="rounded-2xl border border-white/15 bg-white/8 p-3">
+              {pendingSwapBench ? (
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={pendingSwapBench.photoUrl}
+                    alt={getPlayerFullName(pendingSwapBench)}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 rounded-full border border-white/30 object-cover"
+                    unoptimized
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {getPlayerFullName(pendingSwapBench)}
+                    </p>
+                    <p className="text-xs text-slate-300">
+                      Remplacant - {pendingSwapBench.poste}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-200">Remplacant non disponible</p>
+              )}
+            </div>
+
+            <div className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-error-500 text-white">
+              <SwapArrowsIcon className="h-5 w-5" />
+            </div>
+
+            <div className="rounded-2xl border border-white/15 bg-white/8 p-3">
+              {pendingSwapStarter ? (
+                <div className="flex items-center gap-3">
+                  <Image
+                    src={pendingSwapStarter.photoUrl}
+                    alt={getPlayerFullName(pendingSwapStarter)}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 rounded-full border border-white/30 object-cover"
+                    unoptimized
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-white">
+                      {getPlayerFullName(pendingSwapStarter)}
+                    </p>
+                    <p className="text-xs text-slate-300">
+                      Titulaire - {pendingSwapSlot?.label ?? "Poste"}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-200">
+                  Poste cible: {pendingSwapSlot?.label ?? "non defini"}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-end gap-3">
+            <button
+              type="button"
+              onClick={closeSwapModal}
+              className="rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-medium text-white hover:bg-white/15"
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              onClick={confirmPendingSwap}
+              disabled={!pendingSwap}
+              className="inline-flex items-center gap-2 rounded-lg bg-error-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-error-600 disabled:cursor-not-allowed disabled:bg-error-400"
+            >
+              <SwapArrowsIcon className="h-4 w-4" />
+              Confirmer l&apos;echange
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
