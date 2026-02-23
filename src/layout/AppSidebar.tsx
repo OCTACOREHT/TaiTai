@@ -14,6 +14,7 @@ import {
   GridIcon,
   HorizontaLDots,
   PlugInIcon,
+  TaskIcon,
   TableIcon,
   UserCircleIcon,
 } from "../icons/index";
@@ -75,6 +76,11 @@ const navItems: NavItem[] = [
     icon: <TableIcon />,
     name: "Classement",
     path: "/classement",
+  },
+  {
+    icon: <TaskIcon />,
+    name: "Coach FIFA",
+    path: "/coach",
   },
   {
     icon: <DollarLineIcon />,
