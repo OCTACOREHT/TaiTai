@@ -571,7 +571,7 @@ export default function CoachTacticsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 2xl:grid-cols-12">
-        <div className="2xl:col-span-3">
+        <div className="order-2 2xl:col-span-3">
           <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
               Banc des remplacants
@@ -710,7 +710,7 @@ export default function CoachTacticsPage() {
           </div>
         </div>
 
-        <div className="2xl:col-span-9">
+        <div className="order-1 2xl:col-span-9">
           <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="grid flex-1 gap-4 sm:grid-cols-2">
