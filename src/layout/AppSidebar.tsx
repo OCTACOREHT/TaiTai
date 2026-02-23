@@ -14,6 +14,7 @@ import {
   GridIcon,
   HorizontaLDots,
   PlugInIcon,
+  TableIcon,
   UserCircleIcon,
 } from "../icons/index";
 
@@ -69,6 +70,11 @@ const navItems: NavItem[] = [
       { name: "Calendrier", path: "/evenements" },
       { name: "Ajouter", path: "/evenements/nouveau" },
     ],
+  },
+  {
+    icon: <TableIcon />,
+    name: "Classement",
+    path: "/classement",
   },
   {
     icon: <DollarLineIcon />,

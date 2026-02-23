@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState,useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -8,16 +8,15 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  DocsIcon,
+  DollarLineIcon,
+  GroupIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
 } from "../icons/index";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
@@ -30,66 +29,70 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
+    path: "/dashboard",
   },
   {
     icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    icon: <PageIcon />,
+    name: "Joueurs",
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      { name: "Liste", path: "/joueurs" },
+      { name: "Ajouter", path: "/joueurs/nouveau" },
+    ],
+  },
+  {
+    icon: <GroupIcon />,
+    name: "Parents",
+    subItems: [
+      { name: "Liste", path: "/parents" },
+      { name: "Ajouter", path: "/parents/nouveau" },
+    ],
+  },
+  {
+    name: "Alumni",
+    icon: <DocsIcon />,
+    subItems: [
+      { name: "Liste", path: "/alumni" },
+      { name: "Ajouter", path: "/alumni/nouveau" },
+    ],
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Staff",
+    subItems: [
+      { name: "Liste", path: "/staff" },
+      { name: "Ajouter", path: "/staff/nouveau" },
+    ],
+  },
+  {
+    icon: <CalenderIcon />,
+    name: "Evenements",
+    subItems: [
+      { name: "Calendrier", path: "/evenements" },
+      { name: "Ajouter", path: "/evenements/nouveau" },
+    ],
+  },
+  {
+    icon: <TableIcon />,
+    name: "Classement",
+    path: "/classement",
+  },
+  {
+    icon: <DollarLineIcon />,
+    name: "Paiements",
+    subItems: [
+      { name: "Liste", path: "/paiements" },
+      { name: "Ajouter", path: "/paiements/nouveau" },
     ],
   },
 ];
 
 const othersItems: NavItem[] = [
   {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
-  },
-  {
     icon: <PlugInIcon />,
-    name: "Authentication",
+    name: "Parametres",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
+      { name: "Club", path: "/parametres", pro: false },
+      { name: "Dashboard", path: "/parametres/dashboard", pro: false },
     ],
   },
 ];
@@ -97,6 +100,21 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const isSubItemActive = useCallback(
+    (path: string) => {
+      if (pathname === path) {
+        return true;
+      }
+      if (path.endsWith("/nouveau")) {
+        return false;
+      }
+      return (
+        pathname.startsWith(`${path}/`) &&
+        !pathname.startsWith(`${path}/nouveau`)
+      );
+    },
+    [pathname],
+  );
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -183,7 +201,7 @@ const AppSidebar: React.FC = () => {
                     <Link
                       href={subItem.path}
                       className={`menu-dropdown-item ${
-                        isActive(subItem.path)
+                        isSubItemActive(subItem.path)
                           ? "menu-dropdown-item-active"
                           : "menu-dropdown-item-inactive"
                       }`}
@@ -193,7 +211,7 @@ const AppSidebar: React.FC = () => {
                         {subItem.new && (
                           <span
                             className={`ml-auto ${
-                              isActive(subItem.path)
+                              isSubItemActive(subItem.path)
                                 ? "menu-dropdown-badge-active"
                                 : "menu-dropdown-badge-inactive"
                             } menu-dropdown-badge `}
@@ -204,7 +222,7 @@ const AppSidebar: React.FC = () => {
                         {subItem.pro && (
                           <span
                             className={`ml-auto ${
-                              isActive(subItem.path)
+                              isSubItemActive(subItem.path)
                                 ? "menu-dropdown-badge-active"
                                 : "menu-dropdown-badge-inactive"
                             } menu-dropdown-badge `}
@@ -233,8 +251,15 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => path === pathname;
-   const isActive = useCallback((path: string) => path === pathname, [pathname]);
+  const isActive = useCallback(
+    (path: string) => {
+      if (path === "/") {
+        return pathname === "/";
+      }
+      return pathname === path || pathname.startsWith(`${path}/`);
+    },
+    [pathname],
+  );
 
   useEffect(() => {
     // Check if the current path matches any submenu item
@@ -308,30 +333,32 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link href="/">
+        <Link href="/dashboard">
           {isExpanded || isHovered || isMobileOpen ? (
-            <>
+            <div className="flex items-center gap-3">
               <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
+                src="/images/logo/fc-toro.png"
+                alt="FC Toro"
+                width={40}
                 height={40}
+                className="h-10 w-10 rounded-lg object-contain"
               />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
+              <div>
+                <p className="text-lg font-semibold leading-5 text-gray-900 dark:text-white">
+                  FC Toro
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Club Dashboard
+                </p>
+              </div>
+            </div>
           ) : (
             <Image
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
+              src="/images/logo/fc-toro.png"
+              alt="FC Toro"
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-lg object-contain"
             />
           )}
         </Link>
@@ -365,7 +392,7 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  "Config"
                 ) : (
                   <HorizontaLDots />
                 )}
@@ -374,7 +401,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
       </div>
     </aside>
   );
