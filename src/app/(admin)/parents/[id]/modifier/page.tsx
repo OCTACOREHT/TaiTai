@@ -1,58 +1,35 @@
 "use client";
 
-import Link from "next/link";
+import { CmsPartnerForm } from "@/components/common/CmsForms";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
 import { useParams, useRouter } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import ParentForm from "@/components/club/forms/ParentForm";
-import { useClubData } from "@/context/ClubDataContext";
-import { ParentFormValues } from "@/types/club";
 
-export default function EditParentPage() {
-  const router = useRouter();
+export default function EditPartnerPage() {
   const params = useParams<{ id: string }>();
-  const parentId = params.id;
-  const { parents, setParents, players } = useClubData();
+  const router = useRouter();
+  const { partners, savePartner } = useCms();
+  const partner = partners.find((entry) => entry.id === params.id);
 
-  const targetParent = parents.find((parent) => parent.id === parentId);
-
-  if (!targetParent) {
+  if (!partner) {
     return (
-      <div className="space-y-6">
-        <PageBreadcrumb pageTitle="Modifier parent" />
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300">
-          Parent introuvable.
-        </div>
-        <Link
-          href="/parents"
-          className="text-sm font-medium text-brand-500 hover:text-brand-600"
-        >
-          Retour a la liste
-        </Link>
+      <div className="rounded-2xl border border-error-200 bg-error-50 p-6 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
+        Partenaire introuvable.
       </div>
     );
   }
 
-  const handleSubmit = (values: ParentFormValues) => {
-    setParents((prevParents) =>
-      prevParents.map((parent) =>
-        parent.id === parentId ? { ...parent, ...values } : parent,
-      ),
-    );
-    router.push("/parents");
-  };
-
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Modifier parent" />
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <ParentForm
-          players={players}
-          initialValues={targetParent}
-          onCancel={() => router.push("/parents")}
-          onSubmit={handleSubmit}
-          submitLabel="Mettre a jour"
-        />
-      </div>
+      <PageBreadCrumb pageTitle="Modifier Partenaire" />
+      <CmsPartnerForm
+        initialValue={partner}
+        submitLabel="Enregistrer les changements"
+        onSubmit={(value) => {
+          savePartner(value);
+          router.push("/parents");
+        }}
+      />
     </div>
   );
 }

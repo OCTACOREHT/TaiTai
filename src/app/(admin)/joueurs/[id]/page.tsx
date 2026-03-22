@@ -1,135 +1,67 @@
 "use client";
 
-import Image from "next/image";
+import { StatusBadge, formatDate } from "@/components/common/CmsShared";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
 import Link from "next/link";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import { useClubData } from "@/context/ClubDataContext";
-import {
-  formatClubCurrency,
-  formatClubDate,
-  getPlayerFullName,
-} from "@/lib/club/metrics";
-import { paymentStatusLabel, playerStatusLabel } from "@/lib/club/status";
 
-const getSafeAvatarSrc = (photoUrl: string, fullName: string) => {
-  const trimmed = photoUrl.trim();
-  if (trimmed.length > 0) {
-    return trimmed;
-  }
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    fullName,
-  )}&background=0D8ABC&color=fff`;
-};
-
-export default function PlayerDetailsPage() {
+export default function ArticlePreviewPage() {
   const params = useParams<{ id: string }>();
-  const playerId = params.id;
-  const { players } = useClubData();
+  const { articles, users, trackArticleView } = useCms();
+  const article = articles.find((entry) => entry.id === params.id);
+  const author = users.find((user) => user.id === article?.authorId);
 
-  const player = players.find((item) => item.id === playerId);
+  useEffect(() => {
+    if (article) {
+      trackArticleView(article.id);
+    }
+  }, [article, trackArticleView]);
 
-  if (!player) {
+  if (!article) {
     return (
-      <div className="space-y-6">
-        <PageBreadcrumb pageTitle="Fiche joueur" />
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300">
-          Joueur introuvable.
-        </div>
-        <Link
-          href="/joueurs"
-          className="text-sm font-medium text-brand-500 hover:text-brand-600"
-        >
-          Retour a la liste
-        </Link>
+      <div className="rounded-2xl border border-error-200 bg-error-50 p-6 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
+        Article introuvable.
       </div>
     );
   }
 
-  const fullName = getPlayerFullName(player);
-  const avatarSrc = getSafeAvatarSrc(player.photoUrl, fullName);
-
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Fiche joueur" />
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-4">
-            <Image
-              src={avatarSrc}
-              alt={fullName}
-              width={80}
-              height={80}
-              className="h-20 w-20 rounded-full object-cover"
-              unoptimized
-            />
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white/90">
-                {fullName}
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {player.poste} - {player.categorie}
-              </p>
-            </div>
+      <PageBreadCrumb pageTitle="Apercu Article" />
+
+      <div className="overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+        <img src={article.coverImage} alt={article.title} className="h-72 w-full object-cover" />
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusBadge value={article.status} />
+            <span className="text-sm text-gray-500 dark:text-gray-400">{article.category}</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {formatDate(article.publishedAt || article.updatedAt)}
+            </span>
           </div>
-          <div className="flex items-center gap-3">
+          <h1 className="mt-5 text-3xl font-semibold text-gray-900 dark:text-white/90">
+            {article.title}
+          </h1>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{author?.name}</p>
+          <div
+            className="cms-prose mt-8 max-w-none text-gray-700 dark:text-gray-300"
+            dangerouslySetInnerHTML={{ __html: article.body }}
+          />
+          <div className="mt-8 flex flex-wrap gap-3">
             <Link
-              href={`/joueurs/${player.id}/modifier`}
-              className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
+              href={`/joueurs/${article.id}/modifier`}
+              className="rounded-lg bg-brand-500 px-4 py-3 text-sm font-medium text-white transition hover:bg-brand-600"
             >
               Modifier
             </Link>
             <Link
               href="/joueurs"
-              className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600"
+              className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              Retour liste
+              Retour a la liste
             </Link>
-          </div>
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Contact
-            </p>
-            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              {player.telephone}
-            </p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-              {player.email}
-            </p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-              {player.adresse}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Profil
-            </p>
-            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Statut: {playerStatusLabel[player.statut]}
-            </p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-              Date naissance: {formatClubDate(player.dateNaissance)}
-            </p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-              Inscription: {formatClubDate(player.dateInscription)}
-            </p>
-          </div>
-          <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Cotisation
-            </p>
-            <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Montant: {formatClubCurrency(player.cotisationMontant)}
-            </p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-              Paiement: {paymentStatusLabel[player.cotisationStatut]}
-            </p>
-            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
-              Dernier paiement: {formatClubDate(player.dernierPaiement)}
-            </p>
           </div>
         </div>
       </div>

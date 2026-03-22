@@ -1,57 +1,55 @@
 "use client";
 
-import Link from "next/link";
+import { CmsUserForm } from "@/components/common/CmsForms";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
 import { useParams, useRouter } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import AlumniForm from "@/components/club/forms/AlumniForm";
-import { useClubData } from "@/context/ClubDataContext";
-import { AlumniFormValues } from "@/types/club";
+import { useState } from "react";
 
-export default function EditAlumniPage() {
-  const router = useRouter();
+export default function EditEditorialAccountPage() {
   const params = useParams<{ id: string }>();
-  const alumniId = params.id;
-  const { alumni, setAlumni } = useClubData();
+  const router = useRouter();
+  const { users, currentUser, canManageUsers, saveUser } = useCms();
+  const [error, setError] = useState("");
+  const user = users.find((entry) => entry.id === params.id);
 
-  const targetAlumni = alumni.find((entry) => entry.id === alumniId);
-
-  if (!targetAlumni) {
+  if (!user) {
     return (
-      <div className="space-y-6">
-        <PageBreadcrumb pageTitle="Modifier alumni" />
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300">
-          Alumni introuvable.
-        </div>
-        <Link
-          href="/alumni"
-          className="text-sm font-medium text-brand-500 hover:text-brand-600"
-        >
-          Retour a la liste
-        </Link>
+      <div className="rounded-2xl border border-error-200 bg-error-50 p-6 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
+        Compte introuvable.
       </div>
     );
   }
 
-  const handleSubmit = (values: AlumniFormValues) => {
-    setAlumni((prevEntries) =>
-      prevEntries.map((entry) =>
-        entry.id === alumniId ? { ...entry, ...values } : entry,
-      ),
+  if (!canManageUsers && currentUser?.id !== user.id) {
+    return (
+      <div className="rounded-2xl border border-warning-200 bg-warning-50 p-6 text-sm text-warning-700 dark:border-warning-900/40 dark:bg-warning-900/10 dark:text-warning-300">
+        Vous pouvez uniquement modifier votre propre compte.
+      </div>
     );
-    router.push("/alumni");
-  };
+  }
 
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Modifier alumni" />
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <AlumniForm
-          initialValues={targetAlumni}
-          onCancel={() => router.push("/alumni")}
-          onSubmit={handleSubmit}
-          submitLabel="Mettre a jour"
-        />
-      </div>
+      <PageBreadCrumb pageTitle="Modifier Compte" />
+      {error ? (
+        <div className="rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
+          {error}
+        </div>
+      ) : null}
+      <CmsUserForm
+        initialValue={user}
+        submitLabel="Enregistrer les changements"
+        allowAdminFields={canManageUsers}
+        onSubmit={(value) => {
+          const result = saveUser(value);
+          if (!result.success) {
+            setError(result.message || "Mise a jour impossible.");
+            return;
+          }
+          router.push("/alumni");
+        }}
+      />
     </div>
   );
 }

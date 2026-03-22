@@ -1,35 +1,24 @@
 "use client";
 
+import { CmsPartnerForm } from "@/components/common/CmsForms";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
 import { useRouter } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import ParentForm from "@/components/club/forms/ParentForm";
-import { useClubData } from "@/context/ClubDataContext";
-import { Parent, ParentFormValues } from "@/types/club";
 
-export default function NewParentPage() {
+export default function NewPartnerPage() {
+  const { savePartner } = useCms();
   const router = useRouter();
-  const { players, setParents } = useClubData();
-
-  const handleSubmit = (values: ParentFormValues) => {
-    const newParent: Parent = {
-      id: `parent-${Date.now()}`,
-      ...values,
-    };
-    setParents((prevParents) => [newParent, ...prevParents]);
-    router.push("/parents");
-  };
 
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Ajouter un parent" />
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <ParentForm
-          players={players}
-          onCancel={() => router.push("/parents")}
-          onSubmit={handleSubmit}
-          submitLabel="Enregistrer"
-        />
-      </div>
+      <PageBreadCrumb pageTitle="Nouveau Partenaire" />
+      <CmsPartnerForm
+        submitLabel="Creer le partenaire"
+        onSubmit={(value) => {
+          savePartner(value);
+          router.push("/parents");
+        }}
+      />
     </div>
   );
 }

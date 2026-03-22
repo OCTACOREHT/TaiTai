@@ -1,154 +1,222 @@
 "use client";
 
-import Link from "next/link";
-import { FormEvent, useState } from "react";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import Button from "@/components/ui/button/Button";
+import {
+  FieldLabel,
+  ImageField,
+  SectionCard,
+  TextAreaInput,
+  TextInput,
+  ToggleInput,
+} from "@/components/common/CmsShared";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
+import { useState } from "react";
 
-interface ClubSettingsForm {
-  clubName: string;
-  logoUrl: string;
-  primaryColor: string;
-  secondaryColor: string;
-  categories: string;
-  roles: string;
-}
+export default function SiteSettingsPage() {
+  const {
+    homePage,
+    siteSettings,
+    publishedArticles,
+    publishedStages,
+    updateHomePage,
+    updateSiteSettings,
+  } = useCms();
+  const [saved, setSaved] = useState("");
 
-const defaultSettings: ClubSettingsForm = {
-  clubName: "FC Toro",
-  logoUrl: "/images/logo/fc-toro.png",
-  primaryColor: "#D11829",
-  secondaryColor: "#0D4EA6",
-  categories: "U13, U15, U17, Senior",
-  roles: "Coach, Assistant, Admin, Medical",
-};
-
-const inputClassName =
-  "h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90";
-
-export default function SettingsPage() {
-  const [formValues, setFormValues] = useState<ClubSettingsForm>(defaultSettings);
-  const [savedAt, setSavedAt] = useState<string | null>(null);
-
-  const updateField = <K extends keyof ClubSettingsForm>(
-    key: K,
-    value: ClubSettingsForm[K],
-  ) => {
-    setFormValues((prev) => ({ ...prev, [key]: value }));
+  const toggleFeaturedArticle = (articleId: string) => {
+    const next = homePage.featuredArticleIds.includes(articleId)
+      ? homePage.featuredArticleIds.filter((id) => id !== articleId)
+      : [...homePage.featuredArticleIds, articleId].slice(-3);
+    updateHomePage({ featuredArticleIds: next });
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSavedAt(new Date().toLocaleTimeString("fr-FR"));
+  const toggleFeaturedStage = (stageId: string) => {
+    const next = homePage.featuredStageIds.includes(stageId)
+      ? homePage.featuredStageIds.filter((id) => id !== stageId)
+      : [...homePage.featuredStageIds, stageId].slice(-3);
+    updateHomePage({ featuredStageIds: next });
+  };
+
+  const handleSaveNotice = () => {
+    setSaved("Les reglages du site ont ete enregistres.");
+    window.setTimeout(() => setSaved(""), 2500);
   };
 
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Parametres" />
+      <PageBreadCrumb pageTitle="Site Public" />
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-              Parametres du club
-            </h3>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Logo, couleurs, categories et roles metier
-            </p>
+      {saved ? (
+        <div className="rounded-xl border border-success-200 bg-success-50 px-4 py-3 text-sm text-success-700 dark:border-success-900/40 dark:bg-success-900/10 dark:text-success-300">
+          {saved}
+        </div>
+      ) : null}
+
+      <SectionCard title="Hero principal" description="Message d'accueil, CTA et image de fond.">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-2">
+            <FieldLabel>Badge</FieldLabel>
+            <TextInput
+              value={homePage.heroBadge}
+              onChange={(event) => updateHomePage({ heroBadge: event.target.value })}
+            />
           </div>
-          <Link
-            href="/parametres/dashboard"
-            className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
-          >
-            Config dashboard
-          </Link>
+          <div className="space-y-2">
+            <FieldLabel>Nom du site</FieldLabel>
+            <TextInput
+              value={siteSettings.siteName}
+              onChange={(event) => updateSiteSettings({ siteName: event.target.value })}
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Nom du club
-              </label>
-              <input
-                value={formValues.clubName}
-                onChange={(event) => updateField("clubName", event.target.value)}
-                className={inputClassName}
-              />
-            </div>
+        <div className="space-y-2">
+          <FieldLabel>Titre principal</FieldLabel>
+          <TextAreaInput
+            rows={3}
+            value={homePage.heroTitle}
+            onChange={(event) => updateHomePage({ heroTitle: event.target.value })}
+          />
+        </div>
 
-            <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Logo (URL)
-              </label>
-              <input
-                value={formValues.logoUrl}
-                onChange={(event) => updateField("logoUrl", event.target.value)}
-                placeholder="https://..."
-                className={inputClassName}
-              />
-            </div>
+        <div className="space-y-2">
+          <FieldLabel>Sous-titre</FieldLabel>
+          <TextAreaInput
+            rows={4}
+            value={homePage.heroSubtitle}
+            onChange={(event) => updateHomePage({ heroSubtitle: event.target.value })}
+          />
+        </div>
 
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Couleur primaire
-              </label>
-              <input
-                type="color"
-                value={formValues.primaryColor}
-                onChange={(event) => updateField("primaryColor", event.target.value)}
-                className="h-11 w-full rounded-lg border border-gray-300 bg-transparent p-1 dark:border-gray-700 dark:bg-gray-900"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Couleur secondaire
-              </label>
-              <input
-                type="color"
-                value={formValues.secondaryColor}
-                onChange={(event) =>
-                  updateField("secondaryColor", event.target.value)
-                }
-                className="h-11 w-full rounded-lg border border-gray-300 bg-transparent p-1 dark:border-gray-700 dark:bg-gray-900"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Categories (separees par virgule)
-              </label>
-              <input
-                value={formValues.categories}
-                onChange={(event) => updateField("categories", event.target.value)}
-                className={inputClassName}
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Roles (separes par virgule)
-              </label>
-              <input
-                value={formValues.roles}
-                onChange={(event) => updateField("roles", event.target.value)}
-                className={inputClassName}
-              />
-            </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-2">
+            <FieldLabel>CTA principal</FieldLabel>
+            <TextInput
+              value={homePage.heroPrimaryCtaLabel}
+              onChange={(event) => updateHomePage({ heroPrimaryCtaLabel: event.target.value })}
+            />
           </div>
-
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {savedAt ? `Derniere sauvegarde: ${savedAt}` : "Modifications locales"}
-            </p>
-            <button
-              type="submit"
-              className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600"
-            >
-              Enregistrer
-            </button>
+          <div className="space-y-2">
+            <FieldLabel>Lien CTA principal</FieldLabel>
+            <TextInput
+              value={homePage.heroPrimaryCtaUrl}
+              onChange={(event) => updateHomePage({ heroPrimaryCtaUrl: event.target.value })}
+            />
           </div>
-        </form>
+          <div className="space-y-2">
+            <FieldLabel>CTA secondaire</FieldLabel>
+            <TextInput
+              value={homePage.heroSecondaryCtaLabel}
+              onChange={(event) => updateHomePage({ heroSecondaryCtaLabel: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>Lien CTA secondaire</FieldLabel>
+            <TextInput
+              value={homePage.heroSecondaryCtaUrl}
+              onChange={(event) => updateHomePage({ heroSecondaryCtaUrl: event.target.value })}
+            />
+          </div>
+        </div>
+
+        <ImageField
+          label="Image de fond"
+          value={homePage.heroBackgroundImage}
+          onChange={(value) => updateHomePage({ heroBackgroundImage: value })}
+        />
+      </SectionCard>
+
+      <SectionCard title="Sections du site" description="Textes de presentation et infos de contact.">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-2">
+            <FieldLabel>Titre bloc presentation</FieldLabel>
+            <TextInput
+              value={homePage.aboutTitle}
+              onChange={(event) => updateHomePage({ aboutTitle: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>Tagline publique</FieldLabel>
+            <TextInput
+              value={siteSettings.publicTagline}
+              onChange={(event) => updateSiteSettings({ publicTagline: event.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <FieldLabel>Texte de presentation</FieldLabel>
+          <TextAreaInput
+            rows={4}
+            value={homePage.aboutBody}
+            onChange={(event) => updateHomePage({ aboutBody: event.target.value })}
+          />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <div className="space-y-2">
+            <FieldLabel>Email principal</FieldLabel>
+            <TextInput
+              value={siteSettings.primaryEmail}
+              onChange={(event) => updateSiteSettings({ primaryEmail: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>Telephone</FieldLabel>
+            <TextInput
+              value={siteSettings.phone}
+              onChange={(event) => updateSiteSettings({ phone: event.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>Adresse</FieldLabel>
+            <TextInput
+              value={siteSettings.address}
+              onChange={(event) => updateSiteSettings({ address: event.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <FieldLabel>Texte de footer</FieldLabel>
+          <TextAreaInput
+            rows={3}
+            value={siteSettings.footerText}
+            onChange={(event) => updateSiteSettings({ footerText: event.target.value })}
+          />
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Contenus mis en avant" description="Choisissez jusqu'a trois articles et trois stages.">
+        <div className="grid gap-6 xl:grid-cols-2">
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Articles en vedette</p>
+            {publishedArticles.map((article) => (
+              <ToggleInput
+                key={article.id}
+                checked={homePage.featuredArticleIds.includes(article.id)}
+                onChange={() => toggleFeaturedArticle(article.id)}
+                label={article.title}
+              />
+            ))}
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Stages en vedette</p>
+            {publishedStages.map((stage) => (
+              <ToggleInput
+                key={stage.id}
+                checked={homePage.featuredStageIds.includes(stage.id)}
+                onChange={() => toggleFeaturedStage(stage.id)}
+                label={stage.title}
+              />
+            ))}
+          </div>
+        </div>
+      </SectionCard>
+
+      <div className="flex justify-end">
+        <Button onClick={handleSaveNotice}>Enregistrer les reglages</Button>
       </div>
     </div>
   );

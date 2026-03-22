@@ -6,15 +6,12 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
   DocsIcon,
-  DollarLineIcon,
   GroupIcon,
   GridIcon,
   HorizontaLDots,
   PlugInIcon,
-  TaskIcon,
   TableIcon,
   UserCircleIcon,
 } from "../icons/index";
@@ -34,71 +31,50 @@ const navItems: NavItem[] = [
   },
   {
     icon: <UserCircleIcon />,
-    name: "Joueurs",
+    name: "Articles",
     subItems: [
-      { name: "Liste", path: "/joueurs" },
-      { name: "Ajouter", path: "/joueurs/nouveau" },
+      { name: "Tous les articles", path: "/joueurs" },
+      { name: "Nouvel article", path: "/joueurs/nouveau" },
+    ],
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Stages",
+    subItems: [
+      { name: "Tous les stages", path: "/staff" },
+      { name: "Nouveau stage", path: "/staff/nouveau" },
     ],
   },
   {
     icon: <GroupIcon />,
-    name: "Parents",
+    name: "Partenaires",
     subItems: [
       { name: "Liste", path: "/parents" },
       { name: "Ajouter", path: "/parents/nouveau" },
     ],
   },
   {
-    name: "Alumni",
+    name: "Equipe",
     icon: <DocsIcon />,
     subItems: [
-      { name: "Liste", path: "/alumni" },
+      { name: "Comptes", path: "/alumni" },
       { name: "Ajouter", path: "/alumni/nouveau" },
     ],
   },
   {
-    icon: <BoxCubeIcon />,
-    name: "Staff",
-    subItems: [
-      { name: "Liste", path: "/staff" },
-      { name: "Ajouter", path: "/staff/nouveau" },
-    ],
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Evenements",
-    subItems: [
-      { name: "Calendrier", path: "/evenements" },
-      { name: "Ajouter", path: "/evenements/nouveau" },
-    ],
-  },
-  {
     icon: <TableIcon />,
-    name: "Classement",
+    name: "Tracking",
     path: "/classement",
-  },
-  {
-    icon: <TaskIcon />,
-    name: "Coach FIFA",
-    path: "/coach",
-  },
-  {
-    icon: <DollarLineIcon />,
-    name: "Paiements",
-    subItems: [
-      { name: "Liste", path: "/paiements" },
-      { name: "Ajouter", path: "/paiements/nouveau" },
-    ],
   },
 ];
 
 const othersItems: NavItem[] = [
   {
     icon: <PlugInIcon />,
-    name: "Parametres",
+    name: "Configuration",
     subItems: [
-      { name: "Club", path: "/parametres", pro: false },
-      { name: "Dashboard", path: "/parametres/dashboard", pro: false },
+      { name: "Site public", path: "/parametres", pro: false },
+      { name: "Mon compte", path: "/profile", pro: false },
     ],
   },
 ];
@@ -354,7 +330,7 @@ const AppSidebar: React.FC = () => {
                   FC Toro
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Club Dashboard
+                  CMS Editorial
                 </p>
               </div>
             </div>

@@ -1,57 +1,35 @@
 "use client";
 
-import Link from "next/link";
+import { CmsStageForm } from "@/components/common/CmsForms";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
 import { useParams, useRouter } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import StaffForm from "@/components/club/forms/StaffForm";
-import { useClubData } from "@/context/ClubDataContext";
-import { StaffFormValues } from "@/types/club";
 
-export default function EditStaffPage() {
-  const router = useRouter();
+export default function EditStagePage() {
   const params = useParams<{ id: string }>();
-  const memberId = params.id;
-  const { staff, setStaff } = useClubData();
+  const router = useRouter();
+  const { stages, saveStage } = useCms();
+  const stage = stages.find((entry) => entry.id === params.id);
 
-  const targetMember = staff.find((member) => member.id === memberId);
-
-  if (!targetMember) {
+  if (!stage) {
     return (
-      <div className="space-y-6">
-        <PageBreadcrumb pageTitle="Modifier staff" />
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300">
-          Membre introuvable.
-        </div>
-        <Link
-          href="/staff"
-          className="text-sm font-medium text-brand-500 hover:text-brand-600"
-        >
-          Retour a la liste
-        </Link>
+      <div className="rounded-2xl border border-error-200 bg-error-50 p-6 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
+        Stage introuvable.
       </div>
     );
   }
 
-  const handleSubmit = (values: StaffFormValues) => {
-    setStaff((prevStaff) =>
-      prevStaff.map((member) =>
-        member.id === memberId ? { ...member, ...values } : member,
-      ),
-    );
-    router.push("/staff");
-  };
-
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Modifier staff" />
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <StaffForm
-          initialValues={targetMember}
-          onCancel={() => router.push("/staff")}
-          onSubmit={handleSubmit}
-          submitLabel="Mettre a jour"
-        />
-      </div>
+      <PageBreadCrumb pageTitle="Modifier Stage" />
+      <CmsStageForm
+        initialValue={stage}
+        submitLabel="Enregistrer les changements"
+        onSubmit={(value) => {
+          saveStage(value);
+          router.push("/staff");
+        }}
+      />
     </div>
   );
 }

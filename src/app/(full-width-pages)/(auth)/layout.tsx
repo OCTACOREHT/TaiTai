@@ -32,12 +32,12 @@ export default function AuthLayout({
                     />
                     <div>
                       <p className="text-2xl font-semibold text-white">FC Toro</p>
-                      <p className="text-sm text-gray-300">Club Dashboard</p>
+                      <p className="text-sm text-gray-300">CMS Editorial</p>
                     </div>
                   </div>
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Espace de gestion officiel du club FC Toro
+                  Espace de gestion officiel du site FC Toro
                 </p>
               </div>
             </div>

@@ -1,34 +1,43 @@
 "use client";
 
+import { CmsUserForm } from "@/components/common/CmsForms";
+import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import { useCms } from "@/context/CmsContext";
 import { useRouter } from "next/navigation";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import AlumniForm from "@/components/club/forms/AlumniForm";
-import { useClubData } from "@/context/ClubDataContext";
-import { Alumni, AlumniFormValues } from "@/types/club";
+import { useState } from "react";
 
-export default function NewAlumniPage() {
+export default function NewEditorialAccountPage() {
+  const { canManageUsers, saveUser } = useCms();
   const router = useRouter();
-  const { setAlumni } = useClubData();
+  const [error, setError] = useState("");
 
-  const handleSubmit = (values: AlumniFormValues) => {
-    const newEntry: Alumni = {
-      id: `alumni-${Date.now()}`,
-      ...values,
-    };
-    setAlumni((prevEntries) => [newEntry, ...prevEntries]);
-    router.push("/alumni");
-  };
+  if (!canManageUsers) {
+    return (
+      <div className="rounded-2xl border border-warning-200 bg-warning-50 p-6 text-sm text-warning-700 dark:border-warning-900/40 dark:bg-warning-900/10 dark:text-warning-300">
+        Seul un administrateur peut creer de nouveaux comptes.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      <PageBreadcrumb pageTitle="Ajouter un alumni" />
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-        <AlumniForm
-          onCancel={() => router.push("/alumni")}
-          onSubmit={handleSubmit}
-          submitLabel="Enregistrer"
-        />
-      </div>
+      <PageBreadCrumb pageTitle="Nouveau Compte" />
+      {error ? (
+        <div className="rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
+          {error}
+        </div>
+      ) : null}
+      <CmsUserForm
+        submitLabel="Creer le compte"
+        onSubmit={(value) => {
+          const result = saveUser(value);
+          if (!result.success) {
+            setError(result.message || "Creation impossible.");
+            return;
+          }
+          router.push("/alumni");
+        }}
+      />
     </div>
   );
 }
