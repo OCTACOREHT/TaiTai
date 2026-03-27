@@ -2,6 +2,7 @@
 
 import { CmsStageForm } from "@/components/common/CmsForms";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -9,12 +10,21 @@ import { useState } from "react";
 export default function NewStagePage() {
   const router = useRouter();
   const [submitError, setSubmitError] = useState("");
+=======
+import { useCms } from "@/context/CmsContext";
+import { useRouter } from "next/navigation";
+
+export default function NewStagePage() {
+  const { saveStage } = useCms();
+  const router = useRouter();
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 
   return (
     <div className="space-y-6">
       <PageBreadCrumb pageTitle="Nouveau Stage" />
       <CmsStageForm
         submitLabel="Creer le stage"
+<<<<<<< HEAD
         onSubmit={async (value) => {
           setSubmitError("");
           const token = getAdminToken();
@@ -62,6 +72,13 @@ export default function NewStagePage() {
           {submitError}
         </div>
       ) : null}
+=======
+        onSubmit={(value) => {
+          saveStage(value);
+          router.push("/staff");
+        }}
+      />
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { SectionCard, StatusBadge, formatNumber } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { fetchAdminJson, mapDbPartner } from "@/lib/cms-admin-client";
 import { CmsPartner } from "@/types/cms";
@@ -25,6 +26,16 @@ export default function PartnersPage() {
     void load();
   }, []);
 
+=======
+import { useCms } from "@/context/CmsContext";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+export default function PartnersPage() {
+  const { partners, deletePartner } = useCms();
+  const [search, setSearch] = useState("");
+
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   const filteredPartners = useMemo(
     () =>
       partners.filter(
@@ -65,6 +76,7 @@ export default function PartnersPage() {
               className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]"
             >
               <div className="flex h-18 items-center justify-center rounded-2xl bg-gray-50 p-4 dark:bg-gray-900/50">
+<<<<<<< HEAD
                 {partner.logo ? (
                   <img src={partner.logo} alt={partner.name} className="max-h-10 object-contain" />
                 ) : (
@@ -72,6 +84,9 @@ export default function PartnersPage() {
                     Aucun logo
                   </div>
                 )}
+=======
+                <img src={partner.logo} alt={partner.name} className="max-h-10 object-contain" />
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
               </div>
               <div className="mt-5 flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white/90">{partner.name}</h3>
@@ -94,6 +109,7 @@ export default function PartnersPage() {
                 </Link>
                 <button
                   type="button"
+<<<<<<< HEAD
                   onClick={async () => {
                     const token = getAdminToken();
                     if (!token) {
@@ -108,6 +124,9 @@ export default function PartnersPage() {
                     }
                     setPartners((prev) => prev.filter((item) => item.id !== partner.id));
                   }}
+=======
+                  onClick={() => deletePartner(partner.id)}
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
                   className="rounded-lg border border-error-300 px-3 py-2 text-xs font-semibold text-error-700 transition hover:bg-error-50 dark:border-error-900/40 dark:text-error-300 dark:hover:bg-error-900/10"
                 >
                   Supprimer

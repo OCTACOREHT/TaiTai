@@ -2,6 +2,7 @@
 
 import { SectionCard, StatusBadge, formatDate, formatNumber } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { fetchAdminJson, mapDbArticle, mapDbUser } from "@/lib/cms-admin-client";
 import { CmsArticle, CmsUser } from "@/types/cms";
@@ -37,6 +38,17 @@ export default function ArticlesPage() {
     void load();
   }, []);
 
+=======
+import { useCms } from "@/context/CmsContext";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+
+export default function ArticlesPage() {
+  const { articles, users, deleteArticle } = useCms();
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   const filteredArticles = useMemo(() => {
     return articles.filter((article) => {
       const matchesSearch =
@@ -144,6 +156,7 @@ export default function ArticlesPage() {
                         </Link>
                         <button
                           type="button"
+<<<<<<< HEAD
                           onClick={async () => {
                             const token = getAdminToken();
                             if (!token) {
@@ -158,6 +171,9 @@ export default function ArticlesPage() {
                             }
                             setArticles((prev) => prev.filter((item) => item.id !== article.id));
                           }}
+=======
+                          onClick={() => deleteArticle(article.id)}
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
                           className="rounded-lg border border-error-300 px-3 py-2 text-xs font-semibold text-error-700 transition hover:bg-error-50 dark:border-error-900/40 dark:text-error-300 dark:hover:bg-error-900/10"
                         >
                           Supprimer

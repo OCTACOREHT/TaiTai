@@ -22,6 +22,7 @@ export default function NewEventPage() {
   const [lieu, setLieu] = useState("");
   const [type, setType] = useState<EventType>("entrainement");
   const [participants, setParticipants] = useState<string[]>([]);
+<<<<<<< HEAD
   const [submitError, setSubmitError] = useState("");
 
   const handleSubmit = async () => {
@@ -54,6 +55,26 @@ export default function NewEventPage() {
     }
 
     setEvents((prevEvents) => [...prevEvents, nextEvent]);
+=======
+
+  const handleSubmit = () => {
+    if (!titre || !date || !lieu) {
+      return;
+    }
+
+    setEvents((prevEvents) => [
+      ...prevEvents,
+      {
+        id: `event-${Date.now()}`,
+        titre,
+        date,
+        lieu,
+        type,
+        calendarColor: eventTypeToCalendarColor(type),
+        participants,
+      },
+    ]);
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
     router.push("/evenements");
   };
 
@@ -131,11 +152,14 @@ export default function NewEventPage() {
             </select>
           </div>
         </div>
+<<<<<<< HEAD
         {submitError ? (
           <div className="mt-6 rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
             {submitError}
           </div>
         ) : null}
+=======
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
         <div className="mt-6 flex justify-end gap-3">
           <button
             type="button"

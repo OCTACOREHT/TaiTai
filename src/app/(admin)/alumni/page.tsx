@@ -2,6 +2,7 @@
 
 import { SectionCard, StatusBadge } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+<<<<<<< HEAD
 import { fetchAdminJson, mapDbUser } from "@/lib/cms-admin-client";
 import { useCms } from "@/context/CmsContext";
 import { CmsUser } from "@/types/cms";
@@ -26,6 +27,16 @@ export default function EditorialTeamPage() {
     void load();
   }, []);
 
+=======
+import { useCms } from "@/context/CmsContext";
+import Link from "next/link";
+import { useState } from "react";
+
+export default function EditorialTeamPage() {
+  const { users, canManageUsers, deleteUser } = useCms();
+  const [message, setMessage] = useState("");
+
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   return (
     <div className="space-y-6">
       <PageBreadCrumb pageTitle="Equipe Editoriale" />
@@ -83,9 +94,12 @@ export default function EditorialTeamPage() {
                     type="button"
                     onClick={() => {
                       const result = deleteUser(user.id);
+<<<<<<< HEAD
                       if (result.success) {
                         setUsers((prev) => prev.filter((item) => item.id !== user.id));
                       }
+=======
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
                       setMessage(result.success ? "" : result.message || "");
                     }}
                     className="rounded-lg border border-error-300 px-3 py-2 text-xs font-semibold text-error-700 transition hover:bg-error-50 dark:border-error-900/40 dark:text-error-300 dark:hover:bg-error-900/10"

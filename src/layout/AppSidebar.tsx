@@ -66,6 +66,7 @@ const navItems: NavItem[] = [
     name: "Tracking",
     path: "/classement",
   },
+<<<<<<< HEAD
   {
     icon: <GroupIcon />,
     name: "Club",
@@ -77,6 +78,8 @@ const navItems: NavItem[] = [
       { name: "Evenements", path: "/club/evenements" },
     ],
   },
+=======
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 ];
 
 const othersItems: NavItem[] = [

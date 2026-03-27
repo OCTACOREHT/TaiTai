@@ -37,7 +37,11 @@ export default function NewPaymentPage() {
 
     setPayments((prevPayments) => [
       {
+<<<<<<< HEAD
         id: crypto.randomUUID(),
+=======
+        id: `pay-${Date.now()}`,
+>>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
         playerId,
         montant,
         statut,
