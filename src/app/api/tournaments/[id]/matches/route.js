@@ -5,9 +5,10 @@ export async function POST(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
-    const { matchId, homeScore, awayScore } = body;
+    const { matchId, homeScore, awayScore, scorers } = body;
 
-    const { data, error } = await supabase
+    // 1. Mettre à jour le score du match
+    const { data: matchData, error: matchError } = await supabase
       .from("flagday_matches")
       .update({
         home_score: homeScore,
@@ -18,9 +19,33 @@ export async function POST(request, { params }) {
       .select()
       .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (matchError) {
+      return NextResponse.json({ error: matchError.message }, { status: 500 });
     }
+
+    // 2. Enregistrer les buteurs (on nettoie les anciens buteurs de ce match d'abord)
+    if (scorers && Array.isArray(scorers)) {
+      await supabase.from("flagday_match_scorers").delete().eq("match_id", matchId);
+
+      if (scorers.length > 0) {
+        const scorersData = scorers.map((s) => ({
+          match_id: matchId,
+          player_name: s.playerName,
+          team_name: s.teamName,
+          goals: s.goals || 1,
+        }));
+
+        const { error: scorerError } = await supabase
+          .from("flagday_match_scorers")
+          .insert(scorersData);
+
+        if (scorerError) {
+          console.error("Erreur enregistrement buteurs:", scorerError.message);
+        }
+      }
+    }
+
+    return NextResponse.json({ data: matchData, success: true });
 
     return NextResponse.json({ data, success: true });
   } catch (error) {
