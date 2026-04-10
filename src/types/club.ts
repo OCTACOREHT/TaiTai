@@ -119,10 +119,6 @@ export interface PlayerFormValues {
   categorie: string;
   telephone: string;
   email: string;
-  adresse: string;
-  statut: PlayerStatus;
-  cotisationMontant: number;
-  cotisationStatut: PaymentStatus;
 }
 
 export interface ParentFormValues {

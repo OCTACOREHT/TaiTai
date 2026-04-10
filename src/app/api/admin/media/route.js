@@ -13,10 +13,10 @@ export async function GET(request) {
 
   try {
     const { rows } = await db.query(
-      `SELECT m.*, u.nom AS uploade_par_nom
+      `SELECT m.*, u.name AS uploaded_by_name
        FROM media m
-       LEFT JOIN admin_users u ON m.uploade_par = u.id
-       ORDER BY m.date_upload DESC`,
+       LEFT JOIN admin_users u ON m.uploaded_by = u.id
+       ORDER BY m.uploaded_at DESC`,
     );
 
     return NextResponse.json({ data: rows });

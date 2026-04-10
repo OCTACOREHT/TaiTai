@@ -2,7 +2,6 @@
 
 import { SectionCard, StatusBadge, formatDate, formatNumber } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
-<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { fetchAdminJson, mapDbStage } from "@/lib/cms-admin-client";
 import { CmsStage } from "@/types/cms";
@@ -27,17 +26,6 @@ export default function StagesPage() {
     void load();
   }, []);
 
-=======
-import { useCms } from "@/context/CmsContext";
-import Link from "next/link";
-import { useMemo, useState } from "react";
-
-export default function StagesPage() {
-  const { stages, deleteStage } = useCms();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   const filteredStages = useMemo(() => {
     return stages.filter((stage) => {
       const matchesSearch =
@@ -135,7 +123,6 @@ export default function StagesPage() {
                       </Link>
                       <button
                         type="button"
-<<<<<<< HEAD
                         onClick={async () => {
                           const token = getAdminToken();
                           if (!token) {
@@ -150,9 +137,6 @@ export default function StagesPage() {
                           }
                           setStages((prev) => prev.filter((item) => item.id !== stage.id));
                         }}
-=======
-                        onClick={() => deleteStage(stage.id)}
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
                         className="rounded-lg border border-error-300 px-3 py-2 text-xs font-semibold text-error-700 transition hover:bg-error-50 dark:border-error-900/40 dark:text-error-300 dark:hover:bg-error-900/10"
                       >
                         Supprimer

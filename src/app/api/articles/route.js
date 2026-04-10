@@ -13,21 +13,21 @@ export async function GET(request) {
 
     const { rows } = await db.query(
       `SELECT
-         id, slug, auteur, date_publication, statut,
-         titre_fr, titre_en, photo_couverture, categorie, tags, seo_title, seo_description,
-         contenu_fr,
-         LEFT(contenu_fr, 300) AS extrait_fr,
-         LEFT(contenu_en, 300) AS extrait_en
+         id, slug, author_name, published_at, status,
+         title_fr, title_en, cover_image, category, tags, seo_title, seo_description,
+         content_fr,
+         LEFT(content_fr, 300) AS excerpt_fr,
+         LEFT(content_en, 300) AS excerpt_en
        FROM articles
-       WHERE statut = 'published'
-         AND date_publication <= NOW()
-       ORDER BY date_publication DESC
+       WHERE status = 'published'
+         AND published_at <= NOW()
+       ORDER BY published_at DESC
        LIMIT $1 OFFSET $2`,
       [limit, offset],
     );
 
     const { rows: countRows } = await db.query(
-      `SELECT COUNT(*) FROM articles WHERE statut = 'published' AND date_publication <= NOW()`,
+      `SELECT COUNT(*) FROM articles WHERE status = 'published' AND published_at <= NOW()`,
     );
 
     const total = parseInt(countRows[0].count, 10);

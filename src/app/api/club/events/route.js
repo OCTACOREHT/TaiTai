@@ -21,7 +21,7 @@ export async function GET() {
      FROM club_events e
      LEFT JOIN club_event_participants p on p.event_id = e.id
      GROUP BY e.id
-     ORDER BY e.date DESC`,
+     ORDER BY e.event_date DESC`,
   );
   return NextResponse.json({ data: rows });
 }
@@ -30,9 +30,9 @@ export async function POST(request) {
   try {
     const body = await request.json();
     const row = body.data || body;
-    const eventDate = normalizeEventDate(row.date);
+    const eventDate = normalizeEventDate(row.date || row.eventDate || row.event_date);
 
-    if (!row.titre || !eventDate || !row.lieu || !row.type) {
+    if (!(row.titre || row.title) || !eventDate || !(row.lieu || row.location) || !row.type) {
       return NextResponse.json(
         { error: "Titre, date, lieu et type sont obligatoires." },
         { status: 400 },
@@ -45,8 +45,8 @@ export async function POST(request) {
 
     await client.query("BEGIN");
     await client.query(
-      "INSERT INTO club_events (id, titre, date, lieu, type, calendar_color) VALUES ($1,$2,$3,$4,$5,$6)",
-      [row.id, row.titre, eventDate, row.lieu, row.type, row.calendarColor || null],
+      "INSERT INTO club_events (id, title, event_date, location, type, calendar_color) VALUES ($1,$2,$3,$4,$5,$6)",
+      [row.id, row.titre || row.title, eventDate, row.lieu || row.location, row.type, row.calendarColor || row.calendar_color || null],
     );
     for (const participantId of participants) {
       await client.query(
@@ -79,14 +79,14 @@ export async function PUT(request) {
     await client.query("DELETE FROM club_events");
     for (const row of rows) {
       await client.query(
-        "INSERT INTO club_events (id, titre, date, lieu, type, calendar_color) VALUES ($1,$2,$3,$4,$5,$6)",
+        "INSERT INTO club_events (id, title, event_date, location, type, calendar_color) VALUES ($1,$2,$3,$4,$5,$6)",
         [
           row.id,
-          row.titre,
-          normalizeEventDate(row.date),
-          row.lieu,
+          row.titre || row.title,
+          normalizeEventDate(row.date || row.eventDate || row.event_date),
+          row.lieu || row.location,
           row.type,
-          row.calendarColor || null,
+          row.calendarColor || row.calendar_color || null,
         ],
       );
       for (const participantId of row.participants || []) {

@@ -68,11 +68,8 @@ export default function EventCalendarManager({
   players,
 }: EventCalendarManagerProps) {
   const [formState, setFormState] = useState<EventFormState>(defaultFormState);
-<<<<<<< HEAD
   const [submitError, setSubmitError] = useState("");
   const [saving, setSaving] = useState(false);
-=======
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -101,10 +98,7 @@ export default function EventCalendarManager({
 
 const resetForm = () => {
     setFormState(defaultFormState);
-<<<<<<< HEAD
     setSubmitError("");
-=======
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   };
 
   const openCreateModal = (dateValue?: string) => {
@@ -140,20 +134,14 @@ const resetForm = () => {
     }
   };
 
-<<<<<<< HEAD
   const handleSaveEvent = async () => {
     if (!formState.titre || !formState.startDate) {
       setSubmitError("Renseignez au minimum le titre et la date.");
-=======
-  const handleSaveEvent = () => {
-    if (!formState.titre || !formState.startDate) {
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
       return;
     }
 
     const eventDate = `${formState.startDate}T18:00:00`;
     const eventType = calendarColorToType[formState.calendarColor];
-<<<<<<< HEAD
     setSaving(true);
     setSubmitError("");
 
@@ -219,44 +207,10 @@ const resetForm = () => {
     }
 
     setSaving(false);
-=======
-
-    if (formState.id) {
-      setEvents((prevEvents) =>
-        prevEvents.map((event) =>
-          event.id === formState.id
-            ? {
-                ...event,
-                titre: formState.titre,
-                date: eventDate,
-                lieu: formState.lieu || "Stade FC Toro",
-                type: eventType,
-                calendarColor: formState.calendarColor,
-              }
-            : event,
-        ),
-      );
-    } else {
-      setEvents((prevEvents) => [
-        ...prevEvents,
-        {
-          id: `event-${Date.now()}`,
-          titre: formState.titre,
-          date: eventDate,
-          lieu: formState.lieu || "Stade FC Toro",
-          type: eventType,
-          calendarColor: formState.calendarColor,
-          participants: [],
-        },
-      ]);
-    }
-
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
     closeModal();
     resetForm();
   };
 
-<<<<<<< HEAD
   const handleDeleteEvent = async (eventId: string) => {
     const nextEvents = events.filter((event) => event.id !== eventId);
     setSaving(true);
@@ -278,10 +232,6 @@ const resetForm = () => {
 
     setEvents(nextEvents);
     setSaving(false);
-=======
-  const handleDeleteEvent = (eventId: string) => {
-    setEvents((prevEvents) => prevEvents.filter((event) => event.id !== eventId));
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   };
 
   const closeAndReset = () => {
@@ -511,14 +461,11 @@ const resetForm = () => {
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
-<<<<<<< HEAD
             {submitError ? (
               <div className="w-full rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">
                 {submitError}
               </div>
             ) : null}
-=======
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
             <button
               type="button"
               className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
@@ -530,14 +477,9 @@ const resetForm = () => {
               type="button"
               className="rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600"
               onClick={handleSaveEvent}
-<<<<<<< HEAD
               disabled={saving}
             >
               {saving ? "Saving..." : formState.id ? "Update Event" : "Add Event"}
-=======
-            >
-              {formState.id ? "Update Event" : "Add Event"}
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
             </button>
           </div>
         </div>

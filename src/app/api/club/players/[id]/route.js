@@ -9,10 +9,25 @@ export async function PUT(request, { params }) {
     const row = body.data || body;
     const { rows } = await db.query(
       `UPDATE club_players
-       SET nom=$2, prenom=$3, photo_url=$4, poste=$5, categorie=$6, statut=$7, telephone=$8, email=$9, date_naissance=$10, adresse=$11, cotisation_montant=$12, cotisation_statut=$13, dernier_paiement=$14
+       SET last_name=$2, first_name=$3, photo_url=$4, position=$5, category=$6, status=$7, phone=$8, email=$9, birth_date=$10, address=$11, membership_amount=$12, membership_status=$13, last_payment_date=$14
        WHERE id=$1
        RETURNING *`,
-      [id, row.nom, row.prenom, row.photoUrl, row.poste, row.categorie, row.statut, row.telephone, row.email, row.dateNaissance, row.adresse, row.cotisationMontant, row.cotisationStatut, row.dernierPaiement || null],
+      [
+        id,
+        row.nom || row.lastName || row.last_name,
+        row.prenom || row.firstName || row.first_name,
+        row.photoUrl || row.photo_url,
+        row.poste || row.position,
+        row.categorie || row.category,
+        row.statut || row.status,
+        row.telephone || row.phone,
+        row.email,
+        row.dateNaissance || row.birth_date,
+        row.adresse || row.address,
+        row.cotisationMontant || row.membership_amount,
+        row.cotisationStatut || row.membership_status,
+        row.dernierPaiement || row.last_payment_date || null
+      ],
     );
     return NextResponse.json({ data: rows[0] });
   } catch (err) {

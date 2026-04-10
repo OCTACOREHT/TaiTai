@@ -11,12 +11,6 @@ export const normalizePlayerFormValues = (
   categorie: values.categorie.trim(),
   telephone: values.telephone.trim(),
   email: values.email.trim(),
-  adresse: values.adresse.trim(),
-  statut: values.statut,
-  cotisationMontant: Number.isFinite(values.cotisationMontant)
-    ? values.cotisationMontant
-    : 0,
-  cotisationStatut: values.cotisationStatut,
 });
 
 export const toPlayerFormValues = (player: Player): PlayerFormValues => ({
@@ -29,10 +23,6 @@ export const toPlayerFormValues = (player: Player): PlayerFormValues => ({
     categorie: player.categorie,
     telephone: player.telephone,
     email: player.email,
-    adresse: player.adresse,
-    statut: player.statut,
-    cotisationMontant: player.cotisationMontant,
-    cotisationStatut: player.cotisationStatut,
   }),
 });
 

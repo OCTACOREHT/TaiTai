@@ -3,7 +3,6 @@
 import { CmsArticleForm } from "@/components/common/CmsForms";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { useCms } from "@/context/CmsContext";
-<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { CmsArticle } from "@/types/cms";
 import { useParams, useRouter } from "next/navigation";
@@ -42,14 +41,10 @@ function mapArticle(row: Record<string, unknown>): CmsArticle {
     },
   };
 }
-=======
-import { useParams, useRouter } from "next/navigation";
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 
 export default function EditArticlePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-<<<<<<< HEAD
   const { users } = useCms();
   const [article, setArticle] = useState<CmsArticle | null>(null);
   const [loading, setLoading] = useState(true);
@@ -101,10 +96,6 @@ export default function EditArticlePage() {
       </div>
     );
   }
-=======
-  const { articles, users, saveArticle } = useCms();
-  const article = articles.find((entry) => entry.id === params.id);
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 
   if (!article) {
     return (
@@ -121,7 +112,6 @@ export default function EditArticlePage() {
         initialValue={article}
         authors={users}
         submitLabel="Enregistrer les changements"
-<<<<<<< HEAD
         onSubmit={async (value) => {
           const token = getAdminToken();
 
@@ -163,10 +153,6 @@ export default function EditArticlePage() {
             return;
           }
 
-=======
-        onSubmit={(value) => {
-          saveArticle(value);
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
           router.push("/joueurs");
         }}
       />

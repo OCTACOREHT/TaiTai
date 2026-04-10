@@ -1,11 +1,11 @@
 const db = require("./db");
 
-async function logConnexion({ userId, emailUtilise, ip, userAgent, succes }) {
+async function logConnexion({ userId, emailUtilise, emailUsed, ip, userAgent, succes, success }) {
   try {
     await db.query(
-      `INSERT INTO connexion_logs (user_id, email_utilise, ip_address, user_agent, succes)
+      `INSERT INTO connexion_logs (user_id, email_used, ip_address, user_agent, success)
        VALUES ($1, $2, $3, $4, $5)`,
-      [userId || null, emailUtilise, ip, userAgent || null, succes],
+      [userId || null, emailUsed || emailUtilise, ip, userAgent || null, success ?? succes],
     );
   } catch (err) {
     console.error("[Logger] Erreur lors de l'enregistrement du log:", err.message);

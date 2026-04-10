@@ -10,7 +10,7 @@ export async function GET(request) {
   const auth = requireAuth(request);
   if (auth.error) return auth.error;
   try {
-    const { rows } = await db.query("SELECT * FROM admin_users ORDER BY date_creation DESC");
+    const { rows } = await db.query("SELECT * FROM admin_users ORDER BY created_at DESC");
     return NextResponse.json({ data: rows });
   } catch (err) {
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
@@ -27,18 +27,18 @@ export async function POST(request) {
     const hash = await bcrypt.hash(body.password, 10);
     const { rows } = await db.query(
       `INSERT INTO admin_users
-       (nom, email, mot_de_passe_hash, role, title, avatar, bio, actif)
+       (name, email, password_hash, role, title, avatar, bio, active)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        RETURNING *`,
       [
-        body.nom,
+        body.nom || body.name,
         body.email,
         hash,
         body.role || "editor",
         body.title || "",
         body.avatar || "/images/user/owner.jpg",
         body.bio || "",
-        body.actif ?? true,
+        body.actif ?? body.active ?? true,
       ],
     );
     return NextResponse.json({ data: rows[0] }, { status: 201 });

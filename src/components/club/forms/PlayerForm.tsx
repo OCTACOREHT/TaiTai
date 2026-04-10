@@ -1,7 +1,7 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { PaymentStatus, PlayerFormValues, PlayerStatus } from "@/types/club";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
+import { PlayerFormValues } from "@/types/club";
 import { normalizePlayerFormValues } from "@/lib/club/player-form";
 
 interface PlayerFormProps {
@@ -27,10 +27,6 @@ const defaultValues: PlayerFormValues = {
   categorie: "U15",
   telephone: "",
   email: "",
-  adresse: "",
-  statut: "actif",
-  cotisationMontant: 180,
-  cotisationStatut: "pending",
 };
 
 export default function PlayerForm({
@@ -57,11 +53,6 @@ export default function PlayerForm({
     setPhotoError(null);
   }, [initialValues]);
 
-  const fullNameSeed = useMemo(
-    () => `${formValues.prenom} ${formValues.nom}`.trim() || "Nouveau Joueur",
-    [formValues.nom, formValues.prenom],
-  );
-
   const updateField = <K extends keyof PlayerFormValues>(
     key: K,
     value: PlayerFormValues[K],
@@ -72,29 +63,6 @@ export default function PlayerForm({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onSubmit(normalizePlayerFormValues(formValues));
-  };
-
-  const assignGeneratedAvatar = (provider: "dicebear" | "ui-avatars") => {
-    if (provider === "dicebear") {
-      updateField(
-        "photoUrl",
-        `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(
-          fullNameSeed,
-        )}`,
-      );
-      setSelectedFileName("");
-      setPhotoError(null);
-      return;
-    }
-
-    updateField(
-      "photoUrl",
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        fullNameSeed,
-      )}&background=0D8ABC&color=fff`,
-    );
-    setSelectedFileName("");
-    setPhotoError(null);
   };
 
   const openFileDialog = () => {
@@ -169,34 +137,7 @@ export default function PlayerForm({
             </button>
 
             <div className="min-w-0 flex-1">
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Photo (URL)
-              </label>
-              <input
-                value={formValues.photoUrl}
-                onChange={(event) => {
-                  updateField("photoUrl", event.target.value);
-                  setSelectedFileName("");
-                  setPhotoError(null);
-                }}
-                placeholder="https://..."
-                className={inputClassName}
-              />
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                  onClick={() => assignGeneratedAvatar("dicebear")}
-                >
-                  Avatar DiceBear
-                </button>
-                <button
-                  type="button"
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                  onClick={() => assignGeneratedAvatar("ui-avatars")}
-                >
-                  Avatar Initiales
-                </button>
                 <button
                   type="button"
                   onClick={openFileDialog}
@@ -314,65 +255,7 @@ export default function PlayerForm({
           />
         </div>
 
-        <div className="md:col-span-2 xl:col-span-3">
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Adresse
-          </label>
-          <input
-            value={formValues.adresse}
-            onChange={(event) => updateField("adresse", event.target.value)}
-            className={inputClassName}
-          />
-        </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Statut
-          </label>
-          <select
-            value={formValues.statut}
-            onChange={(event) =>
-              updateField("statut", event.target.value as PlayerStatus)
-            }
-            className={selectClassName}
-          >
-            <option value="actif">Actif</option>
-            <option value="blesse">Blesse</option>
-            <option value="suspendu">Suspendu</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Montant cotisation (EUR)
-          </label>
-          <input
-            type="number"
-            min={0}
-            value={formValues.cotisationMontant}
-            onChange={(event) =>
-              updateField("cotisationMontant", Number(event.target.value))
-            }
-            className={inputClassName}
-          />
-        </div>
-
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Statut paiement
-          </label>
-          <select
-            value={formValues.cotisationStatut}
-            onChange={(event) =>
-              updateField("cotisationStatut", event.target.value as PaymentStatus)
-            }
-            className={selectClassName}
-          >
-            <option value="paid">Paye</option>
-            <option value="pending">En attente</option>
-            <option value="late">En retard</option>
-          </select>
-        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3">

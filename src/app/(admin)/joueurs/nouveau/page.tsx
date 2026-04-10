@@ -3,7 +3,6 @@
 import { CmsArticleForm } from "@/components/common/CmsForms";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { useCms } from "@/context/CmsContext";
-<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,13 +11,6 @@ export default function NewArticlePage() {
   const { users, currentUser } = useCms();
   const router = useRouter();
   const [submitError, setSubmitError] = useState("");
-=======
-import { useRouter } from "next/navigation";
-
-export default function NewArticlePage() {
-  const { users, currentUser, saveArticle } = useCms();
-  const router = useRouter();
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 
   return (
     <div className="space-y-6">
@@ -49,7 +41,6 @@ export default function NewArticlePage() {
               }
             : undefined
         }
-<<<<<<< HEAD
         onSubmit={async (value) => {
           setSubmitError("");
 
@@ -99,13 +90,6 @@ export default function NewArticlePage() {
           {submitError}
         </div>
       ) : null}
-=======
-        onSubmit={(value) => {
-          saveArticle(value);
-          router.push("/joueurs");
-        }}
-      />
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
     </div>
   );
 }

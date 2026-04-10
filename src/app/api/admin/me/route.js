@@ -11,7 +11,7 @@ export async function GET(request) {
 
   try {
     const { rows } = await db.query(
-      "SELECT * FROM admin_users WHERE id = $1 AND actif = TRUE LIMIT 1",
+      "SELECT * FROM admin_users WHERE id = $1 AND active = TRUE LIMIT 1",
       [auth.user.id],
     );
 

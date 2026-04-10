@@ -13,21 +13,21 @@ export async function PUT(request, { params }) {
   try {
     const { rows } = await db.query(
       `UPDATE partners SET
-       nom = COALESCE($1, nom),
+       name = COALESCE($1, name),
        website = COALESCE($2, website),
        logo = COALESCE($3, logo),
-       categorie = COALESCE($4, categorie),
+       category = COALESCE($4, category),
        tier = COALESCE($5, tier),
        description = COALESCE($6, description),
        featured = COALESCE($7, featured),
-       date_modification = NOW()
+       updated_at = NOW()
        WHERE id = $8
        RETURNING *`,
       [
-        body.nom,
+        body.name || body.nom,
         body.website,
         body.logo,
-        body.categorie,
+        body.category || body.categorie,
         body.tier,
         body.description,
         typeof body.featured === "boolean" ? body.featured : undefined,

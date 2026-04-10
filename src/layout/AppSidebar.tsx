@@ -45,41 +45,22 @@ const navItems: NavItem[] = [
       { name: "Nouveau stage", path: "/staff/nouveau" },
     ],
   },
-  {
-    icon: <GroupIcon />,
-    name: "Partenaires",
-    subItems: [
-      { name: "Liste", path: "/parents" },
-      { name: "Ajouter", path: "/parents/nouveau" },
-    ],
-  },
-  {
-    name: "Equipe",
-    icon: <DocsIcon />,
-    subItems: [
-      { name: "Comptes", path: "/alumni" },
-      { name: "Ajouter", path: "/alumni/nouveau" },
-    ],
-  },
+
   {
     icon: <TableIcon />,
     name: "Tracking",
     path: "/classement",
   },
-<<<<<<< HEAD
   {
     icon: <GroupIcon />,
     name: "Club",
     subItems: [
       { name: "Joueurs", path: "/club/joueurs" },
-      { name: "Parents", path: "/club/parents" },
       { name: "Staff", path: "/club/staff" },
-      { name: "Alumni", path: "/club/alumni" },
       { name: "Evenements", path: "/club/evenements" },
+      { name: "Flag Day", path: "/club/flag-day" },
     ],
   },
-=======
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 ];
 
 const othersItems: NavItem[] = [

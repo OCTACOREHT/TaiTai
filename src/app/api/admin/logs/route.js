@@ -24,11 +24,11 @@ export async function GET(request) {
 
     const { rows } = await db.query(
       `SELECT
-         cl.id, cl.email_utilise, cl.ip_address, cl.user_agent,
-         cl.date_connexion, cl.succes, u.nom AS utilisateur_nom
+         cl.id, cl.email_used, cl.ip_address, cl.user_agent,
+         cl.occurred_at, cl.success, u.name AS user_name
        FROM connexion_logs cl
        LEFT JOIN admin_users u ON cl.user_id = u.id
-       ORDER BY cl.date_connexion DESC
+       ORDER BY cl.occurred_at DESC
        LIMIT $1 OFFSET $2`,
       [limit, offset],
     );

@@ -3,7 +3,6 @@
 import { StatusBadge, formatDate } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { useCms } from "@/context/CmsContext";
-<<<<<<< HEAD
 import { getAdminToken } from "@/lib/admin-auth";
 import { CmsArticle } from "@/types/cms";
 import Link from "next/link";
@@ -78,17 +77,6 @@ export default function ArticlePreviewPage() {
 
     void loadArticle();
   }, [params.id]);
-=======
-import Link from "next/link";
-import { useEffect } from "react";
-import { useParams } from "next/navigation";
-
-export default function ArticlePreviewPage() {
-  const params = useParams<{ id: string }>();
-  const { articles, users, trackArticleView } = useCms();
-  const article = articles.find((entry) => entry.id === params.id);
-  const author = users.find((user) => user.id === article?.authorId);
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
 
   useEffect(() => {
     if (article) {
@@ -96,7 +84,6 @@ export default function ArticlePreviewPage() {
     }
   }, [article, trackArticleView]);
 
-<<<<<<< HEAD
   const author = users.find((user) => user.id === article?.authorId);
 
   if (loading) {
@@ -107,8 +94,6 @@ export default function ArticlePreviewPage() {
     );
   }
 
-=======
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   if (!article) {
     return (
       <div className="rounded-2xl border border-error-200 bg-error-50 p-6 text-sm text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300">

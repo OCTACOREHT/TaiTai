@@ -3,10 +3,11 @@
   "version": "2.2.2",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "seed": "node scripts/seed-tournament.js"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",
@@ -17,20 +18,17 @@
     "@fullcalendar/timegrid": "^6.1.19",
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
+    "@supabase/supabase-js": "^2.103.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.1.17",
     "apexcharts": "^4.7.0",
     "autoprefixer": "^10.4.22",
-<<<<<<< HEAD
     "bcrypt": "^6.0.0",
+    "dotenv": "^16.6.1",
     "flatpickr": "^4.6.13",
     "jsonwebtoken": "^9.0.2",
     "next": "^16.1.6",
     "pg": "^8.16.3",
-=======
-    "flatpickr": "^4.6.13",
-    "next": "^16.1.6",
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
     "react": "^19.2.0",
     "react-apexcharts": "^1.8.0",
     "react-dnd": "^16.0.1",
@@ -38,12 +36,8 @@
     "react-dom": "^19.2.0",
     "react-dropzone": "^14.3.8",
     "swiper": "^12.1.2",
-<<<<<<< HEAD
     "tailwind-merge": "^2.6.0",
     "uuid": "^13.0.0"
-=======
-    "tailwind-merge": "^2.6.0"
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   },
   "devDependencies": {
     "@eslint/eslintrc": "^0.1.0",

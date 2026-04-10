@@ -1,9 +1,7 @@
-"use client";
-
 import { useEffect, useMemo, useState } from "react";
+import { getAdminToken } from "@/lib/admin-auth";
 import {
   createDefaultDashboardConfig,
-  DASHBOARD_CONFIG_STORAGE_KEY,
   DashboardConfig,
   DashboardWidgetKey,
   mergeDashboardConfig,
@@ -17,32 +15,61 @@ export const useDashboardConfig = () => {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    const load = async () => {
+      const token = getAdminToken();
+      if (!token) {
+        setConfig(createDefaultDashboardConfig());
+        setHydrated(true);
+        return;
+      }
 
-    const rawConfig = window.localStorage.getItem(DASHBOARD_CONFIG_STORAGE_KEY);
-    if (rawConfig) {
       try {
-        const parsed = JSON.parse(rawConfig) as Partial<DashboardConfig>;
-        setConfig(mergeDashboardConfig(parsed));
+        const response = await fetch("/api/admin/dashboard-config", {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Chargement impossible");
+        }
+
+        const payload = await response.json();
+        setConfig(
+          mergeDashboardConfig({
+            widgets: payload.data?.widgets,
+            playerColumns: payload.data?.player_columns,
+          }),
+        );
       } catch {
         setConfig(createDefaultDashboardConfig());
+      } finally {
+        setHydrated(true);
       }
-    }
+    };
 
-    setHydrated(true);
+    void load();
   }, []);
 
   useEffect(() => {
-    if (!hydrated || typeof window === "undefined") {
+    if (!hydrated) {
       return;
     }
 
-    window.localStorage.setItem(
-      DASHBOARD_CONFIG_STORAGE_KEY,
-      JSON.stringify(config),
-    );
+    const token = getAdminToken();
+    if (!token) {
+      return;
+    }
+
+    void fetch("/api/admin/dashboard-config", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(config),
+    }).catch(() => {
+      console.error("[useDashboardConfig] sauvegarde impossible");
+    });
   }, [config, hydrated]);
 
   const setWidgetEnabled = (key: DashboardWidgetKey, enabled: boolean) => {

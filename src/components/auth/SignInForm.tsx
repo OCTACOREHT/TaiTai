@@ -1,6 +1,5 @@
 "use client";
 
-<<<<<<< HEAD
 import { setAdminSession } from "@/lib/admin-auth";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
@@ -9,28 +8,11 @@ import React, { useEffect, useState } from "react";
 export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-=======
-import { useCms } from "@/context/CmsContext";
-import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-
-export default function SignInForm() {
-  const [email, setEmail] = useState("admin@fctoro.cms");
-  const [password, setPassword] = useState("Admin123!");
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [nextPath, setNextPath] = useState("/dashboard");
-<<<<<<< HEAD
-=======
-  const { signIn } = useCms();
-  const router = useRouter();
-
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
@@ -40,16 +22,11 @@ export default function SignInForm() {
     setNextPath(next || "/dashboard");
   }, []);
 
-<<<<<<< HEAD
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-=======
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
     event.preventDefault();
     setSubmitting(true);
     setError("");
 
-<<<<<<< HEAD
     try {
       const response = await fetch("/api/admin/login", {
         method: "POST",
@@ -95,17 +72,6 @@ export default function SignInForm() {
     }
 
     window.location.href = nextPath;
-=======
-    const result = signIn({ email, password, remember });
-
-    if (!result.success) {
-      setSubmitting(false);
-      setError(result.message || "Connexion impossible.");
-      return;
-    }
-
-    router.push(nextPath);
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
   };
 
   return (
@@ -131,17 +97,10 @@ export default function SignInForm() {
         </div>
 
         <div className="mb-6 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-4 text-sm text-brand-900 dark:border-brand-900/30 dark:bg-brand-900/10 dark:text-brand-100">
-<<<<<<< HEAD
           <p className="font-semibold">Connexion base de donnees</p>
           <p className="mt-2">
             Utilisez ici un compte present dans votre table <code>admin_users</code>.
           </p>
-=======
-          <p className="font-semibold">Comptes demo</p>
-          <p className="mt-2">admin@fctoro.cms / Admin123!</p>
-          <p>editor@fctoro.cms / Editor123!</p>
-          <p>author@fctoro.cms / Author123!</p>
->>>>>>> 8dace4bc0a45c5486fb56dd83a4a0b5a447a7b3a
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -9,7 +9,7 @@ export async function GET(request) {
   const auth = requireAuth(request);
   if (auth.error) return auth.error;
   try {
-    const { rows } = await db.query("SELECT * FROM partners ORDER BY date_creation DESC");
+    const { rows } = await db.query("SELECT * FROM partners ORDER BY created_at DESC");
     return NextResponse.json({ data: rows });
   } catch (err) {
     return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
@@ -23,14 +23,14 @@ export async function POST(request) {
   try {
     const { rows } = await db.query(
       `INSERT INTO partners
-       (nom, website, logo, categorie, tier, description, featured)
+       (name, website, logo, category, tier, description, featured)
        VALUES ($1,$2,$3,$4,$5,$6,$7)
        RETURNING *`,
       [
-        body.nom,
+        body.nom || body.name,
         body.website,
         body.logo || "",
-        body.categorie || "Media",
+        body.categorie || body.category || "Media",
         body.tier || "silver",
         body.description || "",
         Boolean(body.featured),
