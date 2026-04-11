@@ -3,12 +3,17 @@ import { ClubEvent, Payment, Player } from "@/types/club";
 export const getPlayerFullName = (player: Player) =>
   `${player.prenom} ${player.nom}`;
 
-export const formatClubDate = (date: string) =>
-  new Intl.DateTimeFormat("fr-FR", {
+export const formatClubDate = (date: string) => {
+  if (!date) return "Date non définie";
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return "Date invalide";
+  
+  return new Intl.DateTimeFormat("fr-FR", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(parsedDate);
+};
 
 export const formatClubCurrency = (amount: number) =>
   new Intl.NumberFormat("fr-FR", {

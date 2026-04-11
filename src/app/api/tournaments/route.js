@@ -41,6 +41,12 @@ export async function POST(request) {
       .single();
 
     if (error) {
+      if (error.code === "23505") {
+        return NextResponse.json(
+          { error: "Un championnat avec ce nom existe déjà. Veuillez en choisir un autre." },
+          { status: 400 }
+        );
+      }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

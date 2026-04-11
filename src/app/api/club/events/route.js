@@ -17,10 +17,16 @@ function normalizeEventDate(value) {
 
 export async function GET() {
   const { rows } = await db.query(
-    `SELECT e.*, coalesce(array_agg(p.player_id) filter (where p.player_id is not null), '{}') as participants
+    `SELECT 
+      e.*, 
+      coalesce(array_agg(distinct p.player_id) filter (where p.player_id is not null), '{}') as participants,
+      CASE WHEN ht.id IS NOT NULL THEN json_build_object('name', ht.name, 'logo_url', ht.logo_url) ELSE NULL END as home_team,
+      CASE WHEN at.id IS NOT NULL THEN json_build_object('name', at.name, 'logo_url', at.logo_url) ELSE NULL END as away_team
      FROM club_events e
      LEFT JOIN club_event_participants p on p.event_id = e.id
-     GROUP BY e.id
+     LEFT JOIN flagday_teams ht on ht.id = e.home_team_id
+     LEFT JOIN flagday_teams at on at.id = e.away_team_id
+     GROUP BY e.id, ht.id, at.id
      ORDER BY e.event_date DESC`,
   );
   return NextResponse.json({ data: rows });
@@ -45,8 +51,18 @@ export async function POST(request) {
 
     await client.query("BEGIN");
     await client.query(
-      "INSERT INTO club_events (id, title, event_date, location, type, calendar_color) VALUES ($1,$2,$3,$4,$5,$6)",
-      [row.id, row.titre || row.title, eventDate, row.lieu || row.location, row.type, row.calendarColor || row.calendar_color || null],
+      "INSERT INTO club_events (id, title, event_date, location, type, calendar_color, youtube_url, home_team_id, away_team_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+      [
+        row.id,
+        row.titre || row.title,
+        eventDate,
+        row.lieu || row.location,
+        row.type,
+        row.calendarColor || row.calendar_color || null,
+        row.youtubeUrl || row.youtube_url || null,
+        row.home_team_id || row.homeTeamId || null,
+        row.away_team_id || row.awayTeamId || null,
+      ],
     );
     for (const participantId of participants) {
       await client.query(
@@ -79,7 +95,7 @@ export async function PUT(request) {
     await client.query("DELETE FROM club_events");
     for (const row of rows) {
       await client.query(
-        "INSERT INTO club_events (id, title, event_date, location, type, calendar_color) VALUES ($1,$2,$3,$4,$5,$6)",
+        "INSERT INTO club_events (id, title, event_date, location, type, calendar_color, youtube_url, home_team_id, away_team_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
         [
           row.id,
           row.titre || row.title,
@@ -87,6 +103,9 @@ export async function PUT(request) {
           row.lieu || row.location,
           row.type,
           row.calendarColor || row.calendar_color || null,
+          row.youtubeUrl || row.youtube_url || null,
+          row.home_team_id || row.homeTeamId || null,
+          row.away_team_id || row.awayTeamId || null,
         ],
       );
       for (const participantId of row.participants || []) {

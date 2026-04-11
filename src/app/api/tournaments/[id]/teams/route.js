@@ -22,6 +22,23 @@ export async function POST(request, { params }) {
 
     if (existingTeam) {
       team = existingTeam;
+      
+      // OPTIMISATION: Si un nouveau logo est fourni ET que le logo actuel de l'équipe 
+      // est celui par défaut (ou vide), on met à jour l'équipe GLOBALEMENT.
+      const defaultLogo = "/images/logo/fc-toro.png";
+      const { data: teamData } = await supabase
+        .from("flagday_teams")
+        .select("logo_url")
+        .eq("id", existingTeam.id)
+        .single();
+        
+      if (logo && logo !== defaultLogo && (!teamData?.logo_url || teamData.logo_url === defaultLogo)) {
+        await supabase
+          .from("flagday_teams")
+          .update({ logo_url: logo })
+          .eq("id", existingTeam.id);
+        console.log(`Logo mis à jour globalement pour l'équipe: ${teamName}`);
+      }
     } else {
       const { data: newTeam, error: insertError } = await supabase
         .from("flagday_teams")

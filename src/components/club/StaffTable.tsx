@@ -141,7 +141,22 @@ export default function StaffTable({
               pagedStaff.map((member) => (
                 <TableRow key={member.id}>
                   <TableCell className="py-3 text-theme-sm text-gray-800 dark:text-white/90">
-                    {member.nom}
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 overflow-hidden rounded-full border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
+                        {member.photoUrl ? (
+                          <img
+                            src={member.photoUrl}
+                            alt={member.nom}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-gray-400">
+                            <span className="text-xs uppercase">{member.nom.substring(0, 2)}</span>
+                          </div>
+                        )}
+                      </div>
+                      <span className="font-medium">{member.nom}</span>
+                    </div>
                   </TableCell>
                   <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
                     <Badge size="sm" color={roleBadgeColor(member.role)}>

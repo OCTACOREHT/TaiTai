@@ -16,6 +16,11 @@ export const eventTypeLabel: Record<EventType, string> = {
   match: "Match",
   entrainement: "Entrainement",
   reunion: "Reunion",
+  live_diffusion: "Live Diffusion",
+  vertieres_cup: "Vertieres Cup",
+  flag_day: "Flag Day",
+  intrasquad: "Intrasquad",
+  international: "International",
 };
 
 export const colorFromPlayerStatus = (
@@ -44,11 +49,14 @@ export const colorFromPaymentStatus = (
 
 export const colorFromEventType = (
   type: EventType,
-): "primary" | "warning" | "info" => {
-  if (type === "match") {
-    return "primary";
+): "primary" | "warning" | "info" | "success" | "error" => {
+  if (type === "match" || type === "live_diffusion") {
+    return "error";
   }
-  if (type === "entrainement") {
+  if (type === "entrainement" || type === "vertieres_cup" || type === "flag_day") {
+    return "success";
+  }
+  if (type === "intrasquad" || type === "international") {
     return "warning";
   }
   return "info";

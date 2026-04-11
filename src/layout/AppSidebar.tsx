@@ -30,6 +30,11 @@ const navItems: NavItem[] = [
     path: "/dashboard",
   },
   {
+    icon: <DocsIcon />,
+    name: "Demandes",
+    path: "/demandes",
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Articles",
     subItems: [

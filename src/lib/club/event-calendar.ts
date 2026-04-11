@@ -17,11 +17,14 @@ export const calendarColorToType: Record<EventCalendarColor, EventType> = {
 export const eventTypeToCalendarColor = (
   type: EventType,
 ): EventCalendarColor => {
-  if (type === "match") {
+  if (type === "match" || type === "live_diffusion") {
     return "Danger";
   }
-  if (type === "entrainement") {
+  if (type === "entrainement" || type === "vertieres_cup" || type === "flag_day") {
     return "Success";
+  }
+  if (type === "intrasquad" || type === "international") {
+    return "Warning";
   }
   return "Primary";
 };

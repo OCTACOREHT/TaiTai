@@ -2,7 +2,15 @@ export type PlayerStatus = "actif" | "blesse" | "suspendu";
 
 export type PaymentStatus = "paid" | "pending" | "late";
 
-export type EventType = "match" | "entrainement" | "reunion";
+export type EventType =
+  | "match"
+  | "entrainement"
+  | "reunion"
+  | "live_diffusion"
+  | "vertieres_cup"
+  | "flag_day"
+  | "intrasquad"
+  | "international";
 
 export type EventCalendarColor = "Danger" | "Success" | "Primary" | "Warning";
 
@@ -40,6 +48,11 @@ export interface ClubEvent {
   type: EventType;
   calendarColor?: EventCalendarColor;
   participants: string[];
+  youtubeUrl?: string;
+  home_team_id?: string;
+  away_team_id?: string;
+  home_team?: { name: string; logo_url: string };
+  away_team?: { name: string; logo_url: string };
 }
 
 export interface Payment {
@@ -65,6 +78,7 @@ export interface Parent {
 export interface StaffMember {
   id: string;
   nom: string;
+  photoUrl: string;
   role: StaffRole;
   telephone: string;
   email: string;
@@ -117,6 +131,7 @@ export interface PlayerFormValues {
   dateNaissance: string;
   poste: string;
   categorie: string;
+  statut: string;
   telephone: string;
   email: string;
 }
@@ -131,6 +146,7 @@ export interface ParentFormValues {
 }
 
 export interface StaffFormValues {
+  photoUrl: string;
   nom: string;
   role: StaffRole;
   telephone: string;

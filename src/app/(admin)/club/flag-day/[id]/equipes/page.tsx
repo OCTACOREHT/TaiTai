@@ -177,7 +177,15 @@ export default function TournamentTeamsPage() {
               <input
                 type="text"
                 value={newTeam.name}
-                onChange={(e) => setNewTeam({ ...newTeam, name: e.target.value })}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  const found = globalTeams.find(t => t.name.toLowerCase() === name.toLowerCase());
+                  setNewTeam({ 
+                    ...newTeam, 
+                    name, 
+                    logo: found ? found.logo_url : (newTeam.logo?.startsWith('data:') ? newTeam.logo : "")
+                  });
+                }}
                 placeholder="Tapez le nom ou choisissez..."
                 className={inputClassName}
                 list="global-teams-list"

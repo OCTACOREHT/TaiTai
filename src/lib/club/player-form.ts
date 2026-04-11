@@ -9,6 +9,7 @@ export const normalizePlayerFormValues = (
   dateNaissance: values.dateNaissance.trim(),
   poste: values.poste.trim(),
   categorie: values.categorie.trim(),
+  statut: (values.statut || 'actif').trim(),
   telephone: values.telephone.trim(),
   email: values.email.trim(),
 });
@@ -21,6 +22,7 @@ export const toPlayerFormValues = (player: Player): PlayerFormValues => ({
     dateNaissance: player.dateNaissance,
     poste: player.poste,
     categorie: player.categorie,
+    statut: (player as any).statut || (player as any).status || 'actif',
     telephone: player.telephone,
     email: player.email,
   }),

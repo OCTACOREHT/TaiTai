@@ -98,11 +98,12 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
         setStaff(
           (staffRes.data || []).map((row: any) => ({
             id: row.id,
-            nom: row.nom,
+            nom: row.name || row.nom,
+            photoUrl: row.photo_url,
             role: row.role,
-            telephone: row.telephone,
+            telephone: row.phone || row.telephone,
             email: row.email,
-            dateDebut: row.date_debut,
+            dateDebut: row.start_date || row.date_debut,
           })),
         );
         setAlumni(

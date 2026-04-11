@@ -25,6 +25,7 @@ const defaultValues: PlayerFormValues = {
   dateNaissance: "",
   poste: "",
   categorie: "U15",
+  statut: "actif",
   telephone: "",
   email: "",
 };
@@ -227,6 +228,25 @@ export default function PlayerForm({
               <option key={category} value={category}>
                 {category}
               </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+            Statut
+          </label>
+          <select
+            value={formValues.statut}
+            onChange={(event) => updateField("statut", event.target.value)}
+            className={selectClassName}
+          >
+            {[
+              { value: 'actif', label: 'Actif' },
+              { value: 'blesse', label: 'Blessé' },
+              { value: 'suspendu', label: 'Suspendu' },
+            ].map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
         </div>

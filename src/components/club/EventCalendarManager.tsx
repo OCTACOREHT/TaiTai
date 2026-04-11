@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useMemo, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useMemo, useRef, useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -15,7 +15,7 @@ import {
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import Badge from "@/components/ui/badge/Badge";
-import { ClubEvent, EventCalendarColor, Player } from "@/types/club";
+import { ClubEvent, EventCalendarColor, Player, EventType } from "@/types/club";
 import { eventTypeLabel, colorFromEventType } from "@/lib/club/status";
 import { formatClubDate } from "@/lib/club/metrics";
 import {
@@ -37,6 +37,11 @@ interface EventFormState {
   startDate: string;
   endDate: string;
   lieu: string;
+  type: EventType;
+  youtubeUrl: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  participants: string[];
   calendarColor: EventCalendarColor;
 }
 
@@ -45,22 +50,37 @@ const defaultFormState: EventFormState = {
   startDate: "",
   endDate: "",
   lieu: "",
+  type: "flag_day",
+  youtubeUrl: "",
+  homeTeamId: "",
+  awayTeamId: "",
+  participants: [],
   calendarColor: "Primary",
 };
 
 const inputClassName =
   "h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90";
 
+const selectClassName =
+  "h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90";
+
 const toInputDate = (value: string) => {
   if (!value) {
     return "";
   }
   const date = new Date(value);
+  if (isNaN(date.getTime())) return "";
   const yyyy = date.getFullYear();
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
+
+interface Team {
+  id: string;
+  name: string;
+  logo_url: string;
+}
 
 export default function EventCalendarManager({
   events,
@@ -71,7 +91,53 @@ export default function EventCalendarManager({
   const [submitError, setSubmitError] = useState("");
   const [saving, setSaving] = useState(false);
   const calendarRef = useRef<FullCalendar>(null);
+  
   const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen: isTeamModalOpen, openModal: openTeamModal, closeModal: closeTeamModal } = useModal();
+  
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [newTeamLogo, setNewTeamLogo] = useState("");
+  const [creatingTeam, setCreatingTeam] = useState(false);
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  const fetchTeams = async () => {
+    try {
+      const res = await fetch("/api/tournaments/global-teams");
+      const json = await res.json();
+      if (json.success) {
+        setTeams(json.data);
+      }
+    } catch (e) {
+      console.error("Failed to fetch teams", e);
+    }
+  };
+
+  const handleCreateTeam = async () => {
+    if (!newTeamName) return;
+    setCreatingTeam(true);
+    try {
+      const res = await fetch("/api/tournaments/global-teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newTeamName, logo_url: newTeamLogo }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setTeams((prev) => [...prev, json.data]);
+        setNewTeamName("");
+        setNewTeamLogo("");
+        closeTeamModal();
+      }
+    } catch (e) {
+      console.error("Failed to create team", e);
+    } finally {
+      setCreatingTeam(false);
+    }
+  };
 
   const eventInputs = useMemo<EventInput[]>(
     () =>
@@ -96,17 +162,42 @@ export default function EventCalendarManager({
     [events],
   );
 
-const resetForm = () => {
+  const resetForm = () => {
     setFormState(defaultFormState);
     setSubmitError("");
   };
 
+  const handleTypeChange = (newType: EventType) => {
+    const typeLabels: Record<string, string> = {
+      live_diffusion: "Live Diffusion",
+      vertieres_cup: "Vertieres Cup",
+      flag_day: "Flag Day",
+      intrasquad: "Intrasquad",
+      international: "International",
+    };
+
+    setFormState((prev) => ({
+      ...prev,
+      type: newType,
+      titre: typeLabels[newType] || prev.titre,
+      calendarColor: eventTypeToCalendarColor(newType),
+      youtubeUrl: newType === "live_diffusion" ? prev.youtubeUrl : "",
+      homeTeamId: newType === "live_diffusion" ? prev.homeTeamId : "",
+      awayTeamId: newType === "live_diffusion" ? prev.awayTeamId : "",
+      participants: newType === "live_diffusion" ? prev.participants : [],
+    }));
+  };
+
   const openCreateModal = (dateValue?: string) => {
+    const initialDate = dateValue ?? toInputDate(new Date().toISOString());
     setFormState({
       ...defaultFormState,
-      startDate: dateValue ?? toInputDate(new Date().toISOString()),
-      endDate: dateValue ?? toInputDate(new Date().toISOString()),
+      startDate: initialDate,
+      endDate: initialDate,
       lieu: "Stade FC Toro",
+      type: "flag_day",
+      titre: "Flag Day",
+      calendarColor: eventTypeToCalendarColor("flag_day"),
     });
     openModal();
   };
@@ -118,6 +209,11 @@ const resetForm = () => {
       startDate: toInputDate(event.date),
       endDate: toInputDate(event.date),
       lieu: event.lieu,
+      type: event.type,
+      youtubeUrl: (event as any).youtubeUrl || (event as any).youtube_url || "",
+      homeTeamId: event.home_team_id || "",
+      awayTeamId: event.away_team_id || "",
+      participants: event.participants || [],
       calendarColor: event.calendarColor ?? eventTypeToCalendarColor(event.type),
     });
     openModal();
@@ -141,69 +237,54 @@ const resetForm = () => {
     }
 
     const eventDate = `${formState.startDate}T18:00:00`;
-    const eventType = calendarColorToType[formState.calendarColor];
     setSaving(true);
     setSubmitError("");
 
-    if (formState.id) {
-      const nextEvents = events.map((event) =>
-        event.id === formState.id
-          ? {
-              ...event,
-              titre: formState.titre,
-              date: eventDate,
-              lieu: formState.lieu || "Stade FC Toro",
-              type: eventType,
-              calendarColor: formState.calendarColor,
-            }
-          : event,
-      );
+    const payloadEvent = {
+      id: formState.id || crypto.randomUUID(),
+      titre: formState.titre,
+      date: eventDate,
+      lieu: formState.lieu || "Stade FC Toro",
+      type: formState.type,
+      youtubeUrl: formState.youtubeUrl,
+      home_team_id: formState.homeTeamId || null,
+      away_team_id: formState.awayTeamId || null,
+      calendarColor: formState.calendarColor,
+      participants: formState.participants,
+    };
 
-      const response = await fetch("/api/club/events", {
+    if (formState.id) {
+       const response = await fetch("/api/club/events", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: nextEvents }),
+        body: JSON.stringify({ data: events.map(e => e.id === formState.id ? { ...e, ...payloadEvent } : e) }),
       });
-
-      const payload = await response
-        .json()
-        .catch(() => ({ error: "Impossible d'enregistrer l'evenement." }));
-
-      if (!response.ok) {
-        setSubmitError(payload.error || "Impossible d'enregistrer l'evenement.");
+      if (response.ok) {
+        const res2 = await fetch("/api/club/events");
+        const json2 = await res2.json();
+        if (json2.data) setEvents(json2.data);
+      } else {
+        const payload = await response.json().catch(() => ({ error: "Erreur sauvegarde." }));
+        setSubmitError(payload.error || "Erreur sauvegarde.");
         setSaving(false);
         return;
       }
-
-      setEvents(nextEvents);
     } else {
-      const nextEvent = {
-        id: crypto.randomUUID(),
-        titre: formState.titre,
-        date: eventDate,
-        lieu: formState.lieu || "Stade FC Toro",
-        type: eventType,
-        calendarColor: formState.calendarColor,
-        participants: [],
-      };
-
       const response = await fetch("/api/club/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nextEvent),
+        body: JSON.stringify(payloadEvent),
       });
-
-      const payload = await response
-        .json()
-        .catch(() => ({ error: "Impossible d'enregistrer l'evenement." }));
-
-      if (!response.ok) {
-        setSubmitError(payload.error || "Impossible d'enregistrer l'evenement.");
+      if (response.ok) {
+        const res2 = await fetch("/api/club/events");
+        const json2 = await res2.json();
+        if (json2.data) setEvents(json2.data);
+      } else {
+        const payload = await response.json().catch(() => ({ error: "Erreur creation." }));
+        setSubmitError(payload.error || "Erreur creation.");
         setSaving(false);
         return;
       }
-
-      setEvents((prevEvents) => [...prevEvents, nextEvent]);
     }
 
     setSaving(false);
@@ -220,12 +301,8 @@ const resetForm = () => {
       body: JSON.stringify({ data: nextEvents }),
     });
 
-    const payload = await response
-      .json()
-      .catch(() => ({ error: "Impossible de supprimer l'evenement." }));
-
     if (!response.ok) {
-      setSubmitError(payload.error || "Impossible de supprimer l'evenement.");
+      setSubmitError("Impossible de supprimer l'evenement.");
       setSaving(false);
       return;
     }
@@ -249,11 +326,13 @@ const resetForm = () => {
         className={`event-fc-color flex fc-event-main items-center ${colorClass}`}
       >
         <div className="fc-daygrid-event-dot"></div>
-        <div className="fc-event-time">{eventInfo.timeText}</div>
         <div className="fc-event-title">{eventInfo.event.title}</div>
       </div>
     );
   };
+
+  const selectedHomeTeam = teams.find(t => t.id === formState.homeTeamId);
+  const selectedAwayTeam = teams.find(t => t.id === formState.awayTeamId);
 
   return (
     <div className="space-y-6">
@@ -264,7 +343,7 @@ const resetForm = () => {
               Calendrier des evenements
             </h3>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Planifiez les matchs, entrainements et reunions
+              Planifiez les matchs, diffusions et tournois
             </p>
           </div>
           <button
@@ -317,12 +396,14 @@ const resetForm = () => {
                   <Badge size="sm" color={colorFromEventType(event.type)}>
                     {eventTypeLabel[event.type]}
                   </Badge>
+                  {event.home_team && event.away_team && (
+                    <span className="text-xs text-gray-400 font-medium">
+                      ({event.home_team.name} vs {event.away_team.name})
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {formatClubDate(event.date)} - {event.lieu}
-                </p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  Participants: {event.participants.length}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -346,25 +427,39 @@ const resetForm = () => {
         </div>
       </div>
 
-      <Modal
-        isOpen={isOpen}
-        onClose={closeAndReset}
-        className="max-w-[900px] p-6 lg:p-10"
-      >
+      <Modal isOpen={isOpen} onClose={closeAndReset} className="max-w-[750px] p-6 lg:p-10">
         <div className="space-y-6">
           <div>
             <h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
-              {formState.id ? "Edit Event" : "Add Event"}
+              {formState.id ? "Modifier l'événement" : "Ajouter un événement"}
             </h4>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Plan your next big moment: schedule or edit an event to stay on track
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            <div>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div className="md:col-span-2">
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Event Title
+                Type d&apos;événement
+              </label>
+              <select
+                value={formState.type}
+                onChange={(event) => handleTypeChange(event.target.value as EventType)}
+                className={selectClassName}
+              >
+                <optgroup label="DIFFUSION">
+                  <option value="live_diffusion">Live Diffusion</option>
+                </optgroup>
+                <optgroup label="TOURNOIS">
+                  <option value="vertieres_cup">Vertieres Cup</option>
+                  <option value="flag_day">Flag Day</option>
+                  <option value="intrasquad">Intrasquad</option>
+                  <option value="international">International</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                Titre
               </label>
               <input
                 value={formState.titre}
@@ -376,47 +471,8 @@ const resetForm = () => {
             </div>
 
             <div>
-              <label className="mb-4 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Event Color
-              </label>
-              <div className="flex flex-wrap items-center gap-5">
-                {calendarColors.map((calendarColor) => (
-                  <label
-                    key={calendarColor}
-                    className="inline-flex items-center gap-2 text-lg text-gray-800 dark:text-white/90"
-                  >
-                    <span className="relative">
-                      <input
-                        type="radio"
-                        className="sr-only"
-                        name="event-color"
-                        checked={formState.calendarColor === calendarColor}
-                        onChange={() =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            calendarColor,
-                          }))
-                        }
-                      />
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 dark:border-gray-700">
-                        <span
-                          className={`h-3 w-3 rounded-full bg-brand-500 ${
-                            formState.calendarColor === calendarColor
-                              ? "block"
-                              : "hidden"
-                          }`}
-                        ></span>
-                      </span>
-                    </span>
-                    {calendarColor}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Enter Start Date
+                Date
               </label>
               <input
                 type="date"
@@ -433,21 +489,7 @@ const resetForm = () => {
 
             <div>
               <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Enter End Date
-              </label>
-              <input
-                type="date"
-                value={formState.endDate}
-                onChange={(event) =>
-                  setFormState((prev) => ({ ...prev, endDate: event.target.value }))
-                }
-                className={inputClassName}
-              />
-            </div>
-
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                Location
+                Lieu
               </label>
               <input
                 value={formState.lieu}
@@ -455,9 +497,109 @@ const resetForm = () => {
                   setFormState((prev) => ({ ...prev, lieu: event.target.value }))
                 }
                 className={inputClassName}
-                placeholder="Stade FC Toro"
               />
             </div>
+
+            {formState.type === "live_diffusion" && (
+              <div className="md:col-span-2 border-t border-gray-100 dark:border-gray-800 pt-4 mt-2">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-sm font-semibold text-gray-800 dark:text-white/90">Configuration du Match</h4>
+                  <button 
+                    type="button" 
+                    onClick={openTeamModal}
+                    className="text-xs font-medium text-brand-500 hover:text-brand-600 underline"
+                  >
+                    + Nouvelle équipe
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                      Équipe Domicile
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={formState.homeTeamId}
+                        onChange={(e) => setFormState(prev => ({ ...prev, homeTeamId: e.target.value }))}
+                        className={selectClassName}
+                      >
+                        <option value="">Choisir</option>
+                        {teams.map(t => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                      {selectedHomeTeam && (
+                        <img src={selectedHomeTeam.logo_url} className="h-9 w-9 object-contain" alt="logo" />
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                      Équipe Extérieur
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={formState.awayTeamId}
+                        onChange={(e) => setFormState(prev => ({ ...prev, awayTeamId: e.target.value }))}
+                        className={selectClassName}
+                      >
+                        <option value="">Choisir</option>
+                        {teams.map(t => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                      </select>
+                      {selectedAwayTeam && (
+                        <img src={selectedAwayTeam.logo_url} className="h-9 w-9 object-contain" alt="logo" />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {formState.type === "live_diffusion" && (
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Lien YouTube
+                </label>
+                <input
+                  value={formState.youtubeUrl}
+                  onChange={(event) =>
+                    setFormState((prev) => ({ ...prev, youtubeUrl: event.target.value }))
+                  }
+                  className={inputClassName}
+                />
+              </div>
+            )}
+
+            {formState.type === "live_diffusion" && (
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                  Participants
+                </label>
+                <select
+                  multiple
+                  value={formState.participants}
+                  onChange={(event) =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      participants: Array.from(event.target.selectedOptions).map(
+                        (option) => option.value,
+                      ),
+                    }))
+                  }
+                  className="min-h-36 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
+                >
+                  {players.map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.prenom} {player.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
@@ -471,7 +613,7 @@ const resetForm = () => {
               className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-white/[0.03]"
               onClick={closeAndReset}
             >
-              Close
+              Fermer
             </button>
             <button
               type="button"
@@ -479,7 +621,41 @@ const resetForm = () => {
               onClick={handleSaveEvent}
               disabled={saving}
             >
-              {saving ? "Saving..." : formState.id ? "Update Event" : "Add Event"}
+              {saving ? "Sauvegarde..." : formState.id ? "Mettre à jour" : "Ajouter l'événement"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isTeamModalOpen} onClose={closeTeamModal} className="max-w-[500px] p-6">
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold">Créer une nouvelle équipe</h3>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nom de l&apos;équipe</label>
+            <input 
+              value={newTeamName}
+              onChange={e => setNewTeamName(e.target.value)}
+              className={inputClassName}
+              placeholder="Ex: Tempête FC"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">URL du Logo (Optionnel)</label>
+            <input 
+              value={newTeamLogo}
+              onChange={e => setNewTeamLogo(e.target.value)}
+              className={inputClassName}
+              placeholder="https://..."
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <button onClick={closeTeamModal} className="px-4 py-2 text-sm text-gray-600">Annuler</button>
+            <button 
+              onClick={handleCreateTeam} 
+              disabled={creatingTeam || !newTeamName}
+              className="px-4 py-2 bg-brand-500 text-white rounded-lg text-sm disabled:opacity-50"
+            >
+              {creatingTeam ? "Création..." : "Enregistrer l'équipe"}
             </button>
           </div>
         </div>
