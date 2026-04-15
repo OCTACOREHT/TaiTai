@@ -20,9 +20,6 @@ const defaultValues: StaffFormValues = {
   photoUrl: "",
   nom: "",
   role: "Coach",
-  telephone: "",
-  email: "",
-  dateDebut: "",
 };
 
 export default function StaffForm({
@@ -76,18 +73,58 @@ export default function StaffForm({
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result !== "string") {
+    reader.onload = (e) => {
+      if (typeof e.target?.result !== "string") {
         setPhotoError("Impossible de charger l'image.");
         return;
       }
-      updateField("photoUrl", reader.result);
-      setSelectedFileName(file.name);
-      setPhotoError(null);
+      
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        
+        // Redimensionner si c'est plus grand que 1600px (Très haute résolution pour la meilleure netteté possible)
+        const MAX_SIZE = 1600;
+        if (width > height && width > MAX_SIZE) {
+          height = Math.round((height * MAX_SIZE) / width);
+          width = MAX_SIZE;
+        } else if (height > MAX_SIZE) {
+          width = Math.round((width * MAX_SIZE) / height);
+          height = MAX_SIZE;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        
+        // Un fond blanc au cas où c'est un PNG transparent
+        if (ctx) {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+        
+        // Compresser en JPEG avec une qualité quasi-maximale (95%)
+        const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+        
+        updateField("photoUrl", compressedDataUrl);
+        setSelectedFileName(file.name);
+        setPhotoError(null);
+      };
+      
+      img.onerror = () => {
+        setPhotoError("Fichier d'image corrompu.");
+      };
+      
+      img.src = e.target.result;
     };
+    
     reader.onerror = () => {
       setPhotoError("Impossible de lire ce fichier.");
     };
+    
     reader.readAsDataURL(file);
   };
 
@@ -189,40 +226,7 @@ export default function StaffForm({
             ))}
           </select>
         </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Date de debut
-          </label>
-          <input
-            required
-            type="date"
-            value={formValues.dateDebut}
-            onChange={(event) => updateField("dateDebut", event.target.value)}
-            className={inputClassName}
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Telephone
-          </label>
-          <input
-            value={formValues.telephone}
-            onChange={(event) => updateField("telephone", event.target.value)}
-            className={inputClassName}
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-            Email
-          </label>
-          <input
-            required
-            type="email"
-            value={formValues.email}
-            onChange={(event) => updateField("email", event.target.value)}
-            className={inputClassName}
-          />
-        </div>
+
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3">

@@ -70,7 +70,7 @@ export default function PlayerTable({
   );
 
   const categories = useMemo(
-    () => [...new Set(players.map((player) => player.categorie))].sort(),
+    () => [...new Set(players.map((player) => player.categorie).filter(Boolean))].sort(),
     [players],
   );
 

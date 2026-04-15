@@ -9,10 +9,10 @@ export async function PUT(request, { params }) {
     const row = body.data || body;
     const { rows } = await db.query(
       `UPDATE club_staff
-       SET nom=$2, role=$3, telephone=$4, email=$5, date_debut=$6
+       SET name=$2, role=$3
        WHERE id=$1
        RETURNING *`,
-      [id, row.nom, row.role, row.telephone, row.email, row.dateDebut],
+      [id, row.nom, row.role],
     );
     return NextResponse.json({ data: rows[0] });
   } catch (err) {

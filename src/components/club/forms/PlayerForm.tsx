@@ -63,6 +63,10 @@ export default function PlayerForm({
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!formValues.photoUrl) {
+      alert("La photo du joueur est obligatoire.");
+      return;
+    }
     onSubmit(normalizePlayerFormValues(formValues));
   };
 
@@ -171,7 +175,6 @@ export default function PlayerForm({
             Nom
           </label>
           <input
-            required
             value={formValues.nom}
             onChange={(event) => updateField("nom", event.target.value)}
             className={inputClassName}
@@ -183,7 +186,6 @@ export default function PlayerForm({
             Prenom
           </label>
           <input
-            required
             value={formValues.prenom}
             onChange={(event) => updateField("prenom", event.target.value)}
             className={inputClassName}
@@ -195,7 +197,6 @@ export default function PlayerForm({
             Date de naissance
           </label>
           <input
-            required
             type="date"
             value={formValues.dateNaissance}
             onChange={(event) => updateField("dateNaissance", event.target.value)}
@@ -208,7 +209,6 @@ export default function PlayerForm({
             Poste
           </label>
           <input
-            required
             value={formValues.poste}
             onChange={(event) => updateField("poste", event.target.value)}
             className={inputClassName}
@@ -267,7 +267,6 @@ export default function PlayerForm({
             Email
           </label>
           <input
-            required
             type="email"
             value={formValues.email}
             onChange={(event) => updateField("email", event.target.value)}

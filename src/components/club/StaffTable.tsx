@@ -12,7 +12,6 @@ import Pagination from "@/components/tables/Pagination";
 import Badge from "@/components/ui/badge/Badge";
 import { PencilIcon, TrashBinIcon } from "@/icons";
 import { StaffMember } from "@/types/club";
-import { formatClubDate } from "@/lib/club/metrics";
 
 interface StaffTableProps {
   staff: StaffMember[];
@@ -50,8 +49,7 @@ export default function StaffTable({
       }
       return (
         member.nom.toLowerCase().includes(query) ||
-        member.role.toLowerCase().includes(query) ||
-        member.email.toLowerCase().includes(query)
+        member.role.toLowerCase().includes(query)
       );
     });
   }, [searchQuery, staff]);
@@ -105,24 +103,6 @@ export default function StaffTable({
                 isHeader
                 className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
               >
-                Telephone
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-              >
-                Email
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-              >
-                Date de debut
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-              >
                 Actions
               </TableCell>
             </TableRow>
@@ -131,7 +111,7 @@ export default function StaffTable({
             {pagedStaff.length === 0 ? (
               <TableRow>
                 <td
-                  colSpan={6}
+                  colSpan={3}
                   className="py-6 text-center text-theme-sm text-gray-500 dark:text-gray-400"
                 >
                   Aucun membre trouve.
@@ -162,15 +142,6 @@ export default function StaffTable({
                     <Badge size="sm" color={roleBadgeColor(member.role)}>
                       {member.role}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                    {member.telephone}
-                  </TableCell>
-                  <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                    {member.email}
-                  </TableCell>
-                  <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                    {formatClubDate(member.dateDebut)}
                   </TableCell>
                   <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-3">

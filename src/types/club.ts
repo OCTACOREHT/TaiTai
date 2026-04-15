@@ -80,9 +80,6 @@ export interface StaffMember {
   nom: string;
   photoUrl: string;
   role: StaffRole;
-  telephone: string;
-  email: string;
-  dateDebut: string;
 }
 
 export interface Alumni {
@@ -149,9 +146,6 @@ export interface StaffFormValues {
   photoUrl: string;
   nom: string;
   role: StaffRole;
-  telephone: string;
-  email: string;
-  dateDebut: string;
 }
 
 export interface AlumniFormValues {

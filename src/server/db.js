@@ -14,7 +14,7 @@ const pool =
       ? {
           connectionString: normalizedDatabaseUrl,
           ssl: { rejectUnauthorized: false },
-          max: 1,
+          max: 20,
           idleTimeoutMillis: 30000,
           connectionTimeoutMillis: 15000,
           query_timeout: 30000,
@@ -28,7 +28,7 @@ const pool =
           database: process.env.DB_NAME || "fctoro",
           user: process.env.DB_USER || "postgres",
           password: process.env.DB_PASSWORD || "",
-          max: 1,
+          max: 20,
           idleTimeoutMillis: 30000,
           connectionTimeoutMillis: 15000,
           query_timeout: 30000,
