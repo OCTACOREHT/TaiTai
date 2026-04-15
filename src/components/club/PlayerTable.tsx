@@ -30,9 +30,9 @@ const defaultColumns: PlayerColumnKey[] = [
   "poste",
   "categorie",
   "statut",
-  "cotisation",
-  "montant",
-  "dernierPaiement",
+  "telephone",
+  "email",
+  "dateNaissance",
   "actions",
 ];
 
@@ -112,8 +112,8 @@ export default function PlayerTable({
 
   const visibleColumnsCount = Math.max(1, visibleColumnSet.size);
 
-  const getSafeAvatarSrc = (photoUrl: string, fullName: string) => {
-    const trimmed = photoUrl.trim();
+  const getSafeAvatarSrc = (photoUrl: string | undefined | null, fullName: string) => {
+    const trimmed = photoUrl?.trim() || "";
     if (trimmed.length > 0) {
       return trimmed;
     }
@@ -204,28 +204,28 @@ export default function PlayerTable({
                   Statut
                 </TableCell>
               ) : null}
-              {visibleColumnSet.has("cotisation") ? (
+              {visibleColumnSet.has("telephone") ? (
                 <TableCell
                   isHeader
                   className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Cotisation
+                  Telephone
                 </TableCell>
               ) : null}
-              {visibleColumnSet.has("montant") ? (
+              {visibleColumnSet.has("email") ? (
                 <TableCell
                   isHeader
                   className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Montant
+                  Email
                 </TableCell>
               ) : null}
-              {visibleColumnSet.has("dernierPaiement") ? (
+              {visibleColumnSet.has("dateNaissance") ? (
                 <TableCell
                   isHeader
                   className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Dernier paiement
+                  Date de naissance
                 </TableCell>
               ) : null}
               {visibleColumnSet.has("actions") ? (
@@ -295,29 +295,19 @@ export default function PlayerTable({
                       </Badge>
                     </TableCell>
                   ) : null}
-                  {visibleColumnSet.has("cotisation") ? (
+                  {visibleColumnSet.has("telephone") ? (
                     <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                      <span
-                        className={`inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1 text-sm font-medium ${
-                          player.cotisationStatut === "paid"
-                            ? "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500"
-                            : player.cotisationStatut === "pending"
-                            ? "bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-orange-400"
-                            : "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-500"
-                        }`}
-                      >
-                        {paymentStatusLabel[player.cotisationStatut]}
-                      </span>
+                      {player.telephone || "-"}
                     </TableCell>
                   ) : null}
-                  {visibleColumnSet.has("montant") ? (
-                    <TableCell className="py-3 text-theme-sm font-medium text-gray-700 dark:text-gray-300">
-                      {formatClubCurrency(player.cotisationMontant)}
+                  {visibleColumnSet.has("email") ? (
+                    <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                      {player.email || "-"}
                     </TableCell>
                   ) : null}
-                  {visibleColumnSet.has("dernierPaiement") ? (
+                  {visibleColumnSet.has("dateNaissance") ? (
                     <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
-                      {formatClubDate(player.dernierPaiement)}
+                      {formatClubDate(player.dateNaissance)}
                     </TableCell>
                   ) : null}
                   {visibleColumnSet.has("actions") ? (

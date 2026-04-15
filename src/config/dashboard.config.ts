@@ -12,9 +12,9 @@ export type PlayerColumnKey =
   | "poste"
   | "categorie"
   | "statut"
-  | "cotisation"
-  | "montant"
-  | "dernierPaiement"
+  | "telephone"
+  | "email"
+  | "dateNaissance"
   | "actions";
 
 export interface DashboardWidgetConfig {
@@ -55,9 +55,9 @@ const defaultPlayerColumns: PlayerColumnConfig[] = [
   { key: "poste", label: "Poste", enabled: true },
   { key: "categorie", label: "Categorie", enabled: true },
   { key: "statut", label: "Statut", enabled: true },
-  { key: "cotisation", label: "Cotisation", enabled: true },
-  { key: "montant", label: "Montant", enabled: true },
-  { key: "dernierPaiement", label: "Dernier paiement", enabled: true },
+  { key: "telephone", label: "Telephone", enabled: true },
+  { key: "email", label: "Email", enabled: true },
+  { key: "dateNaissance", label: "Date de naissance", enabled: true },
   { key: "actions", label: "Actions", enabled: true },
 ];
 

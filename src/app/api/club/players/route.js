@@ -3,7 +3,26 @@ const db = require("@/server/db");
 export const runtime = "nodejs";
 
 export async function GET() {
-  const { rows } = await db.query("SELECT * FROM club_players ORDER BY registration_date DESC, last_name ASC");
+  const { rows } = await db.query(`
+    SELECT
+      id,
+      last_name AS "nom",
+      first_name AS "prenom",
+      photo_url AS "photoUrl",
+      position AS "poste",
+      category AS "categorie",
+      status AS "statut",
+      phone AS "telephone",
+      email,
+      registration_date AS "dateInscription",
+      birth_date AS "dateNaissance",
+      address AS "adresse",
+      membership_amount AS "cotisationMontant",
+      membership_status AS "cotisationStatut",
+      last_payment_date AS "dernierPaiement"
+    FROM club_players
+    ORDER BY registration_date DESC, last_name ASC
+  `);
   return NextResponse.json({ data: rows });
 }
 

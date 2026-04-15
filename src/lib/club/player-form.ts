@@ -3,15 +3,15 @@ import { Player, PlayerFormValues } from "@/types/club";
 export const normalizePlayerFormValues = (
   values: PlayerFormValues,
 ): PlayerFormValues => ({
-  photoUrl: values.photoUrl.trim(),
-  nom: values.nom.trim(),
-  prenom: values.prenom.trim(),
-  dateNaissance: values.dateNaissance.trim(),
-  poste: values.poste.trim(),
-  categorie: values.categorie.trim(),
+  photoUrl: (values.photoUrl || '').trim(),
+  nom: (values.nom || '').trim(),
+  prenom: (values.prenom || '').trim(),
+  dateNaissance: (values.dateNaissance || '').trim(),
+  poste: (values.poste || '').trim(),
+  categorie: (values.categorie || '').trim(),
   statut: (values.statut || 'actif').trim(),
-  telephone: values.telephone.trim(),
-  email: values.email.trim(),
+  telephone: (values.telephone || '').trim(),
+  email: (values.email || '').trim(),
 });
 
 export const toPlayerFormValues = (player: Player): PlayerFormValues => ({
@@ -45,6 +45,10 @@ export const createPlayerFromForm = (
     ...normalized,
     photoUrl: avatar,
     dateInscription,
+    dateNaissance: normalized.dateNaissance || "",
+    adresse: "",
+    cotisationMontant: 0,
+    cotisationStatut: "pending",
     dernierPaiement: dateInscription,
-  };
+  } as Player;
 };

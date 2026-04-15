@@ -2,8 +2,13 @@ import { NextResponse } from "next/server";
 const db = require("@/server/db");
 export const runtime = "nodejs";
 export async function GET() {
-  const { rows } = await db.query("SELECT * FROM club_staff ORDER BY name ASC");
-  return NextResponse.json({ data: rows });
+  try {
+    const { rows } = await db.query("SELECT * FROM club_staff ORDER BY name ASC");
+    return NextResponse.json({ data: rows });
+  } catch (err) {
+    console.error("[GET /api/club/staff]", err.message);
+    return NextResponse.json({ error: "Erreur lecture staff." }, { status: 500 });
+  }
 }
 export async function POST(request) {
   try {

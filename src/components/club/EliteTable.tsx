@@ -13,9 +13,21 @@ import {
 import Button from "@/components/ui/button/Button";
 import { PencilIcon, TrashBinIcon, EyeIcon } from "@/icons";
 
+interface ElitePlayer {
+  id: string | number;
+  number: string | number;
+  first_name: string;
+  last_name: string;
+  position: string;
+  weight: string;
+  height: string;
+  photo_url?: string;
+  video_url?: string;
+}
+
 export default function EliteTable() {
   const router = useRouter();
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<ElitePlayer[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchData = async () => {
@@ -33,7 +45,7 @@ export default function EliteTable() {
     fetchData();
   }, []);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string | number) => {
     if (!window.confirm("Supprimer ce joueur Elite ?")) return;
     try {
       const response = await fetch(`/api/club/elite/${id}`, { method: "DELETE" });
