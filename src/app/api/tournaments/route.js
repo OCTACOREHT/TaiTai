@@ -6,7 +6,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("flagday_competitions")
       .select("*")
-      .order("date_creation", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -31,9 +31,12 @@ export async function POST(request) {
       .insert([
         {
           name: body.name,
-          slug: body.name.toLowerCase().replace(/\s+/g, "-"),
-          season: body.startDate ? new Date(body.startDate).getFullYear().toString() : "",
+          slug: body.name.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, ''),
+          season: body.season || new Date().getFullYear().toString(),
           description: body.description || "",
+          age_category: body.age_category || "",
+          status: "preparation",
+          is_published: false,
           active: true,
         },
       ])
@@ -52,22 +55,19 @@ export async function POST(request) {
 
     const tournamentId = data.id;
 
-    // 2. Créer les catégories associées si présentes
-    if (body.categories && Array.isArray(body.categories) && body.categories.length > 0) {
-      const categoriesData = body.categories.map((cat, index) => ({
-        competition_id: tournamentId,
-        name: cat,
-        sort_order: index + 1,
-        active: true,
-      }));
-
+    // 2. Créer la catégorie associée (une seule par tournoi maintenant)
+    if (body.age_category) {
       const { error: catError } = await supabase
         .from("flagday_categories")
-        .insert(categoriesData);
+        .insert({
+          competition_id: tournamentId,
+          name: body.age_category,
+          sort_order: 1,
+          active: true,
+        });
 
       if (catError) {
-        console.error("Erreur creation categories:", catError.message);
-        // On ne bloque pas tout le processus si les categories echouent
+        console.error("Erreur creation categorie:", catError.message);
       }
     }
 

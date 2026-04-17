@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useCms } from "@/context/CmsContext";
 import {
   BoxCubeIcon,
   ChevronDownIcon,
@@ -67,6 +68,12 @@ const navItems: NavItem[] = [
       { name: "Flag Day", path: "/club/flag-day" },
     ],
   },
+  {
+    icon: <GroupIcon />,
+    name: "Equipe",
+    path: "/equipe",
+    restricted: true,
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -74,13 +81,14 @@ const othersItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Configuration",
     subItems: [
-      { name: "Site public", path: "/parametres", pro: false },
+      { name: "Site public", path: "/parametres", pro: false, restricted: true },
       { name: "Mon compte", path: "/profile", pro: false },
     ],
   },
 ];
 
 const AppSidebar: React.FC = () => {
+  const { currentUser } = useCms();
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const isSubItemActive = useCallback(
@@ -104,7 +112,12 @@ const AppSidebar: React.FC = () => {
     menuType: "main" | "others"
   ) => (
     <ul className="flex flex-col gap-4">
-      {navItems.map((nav, index) => (
+      {navItems
+        .filter((nav: any) => {
+          if (nav.restricted && currentUser?.role !== "super_admin") return false;
+          return true;
+        })
+        .map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
             <button
@@ -179,7 +192,12 @@ const AppSidebar: React.FC = () => {
               }}
             >
               <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
+                {nav.subItems
+                  .filter((subItem: any) => {
+                    if (subItem.restricted && currentUser?.role !== "super_admin") return false;
+                    return true;
+                  })
+                  .map((subItem) => (
                   <li key={subItem.name}>
                     <Link
                       href={subItem.path}

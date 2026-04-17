@@ -26,6 +26,17 @@ export default function AdminLayout({
 
     if (!currentUser) {
       router.replace(`/signin?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // Role-based protection for routes
+    const superAdminOnlyPaths = ["/equipe", "/parametres"];
+    const isRestricted = superAdminOnlyPaths.some(path => 
+      pathname === path || pathname.startsWith(`${path}/`)
+    );
+
+    if (isRestricted && currentUser.role !== "super_admin") {
+      router.replace("/dashboard");
     }
   }, [currentUser, hydrated, pathname, router]);
 

@@ -45,6 +45,7 @@ CREATE TYPE club_player_status AS ENUM ('actif', 'blesse', 'suspendu');
 CREATE TYPE club_event_type AS ENUM ('match', 'entrainement', 'reunion');
 CREATE TYPE club_event_color AS ENUM ('Danger', 'Success', 'Primary', 'Warning');
 CREATE TYPE flagday_stage AS ENUM ('group', 'barrage', 'final');
+CREATE TYPE flagday_status AS ENUM ('preparation', 'in_progress', 'completed');
 
 -- [3] CMS TABLES
 
@@ -286,6 +287,9 @@ CREATE TABLE public.flagday_competitions (
   active boolean NOT NULL DEFAULT true,
   sort_order integer NOT NULL DEFAULT 0,
   logo_url text NOT NULL DEFAULT '',
+  status flagday_status NOT NULL DEFAULT 'preparation'::flagday_status,
+  is_published boolean NOT NULL DEFAULT false,
+  age_category character varying NOT NULL DEFAULT '',
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT flagday_competitions_pkey PRIMARY KEY (id)

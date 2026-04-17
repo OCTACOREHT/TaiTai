@@ -49,8 +49,8 @@ interface CmsContextValue extends CmsDataSnapshot {
   deleteStage: (stageId: string) => void;
   savePartner: (input: CmsPartner) => CmsPartner;
   deletePartner: (partnerId: string) => void;
-  saveUser: (input: CmsUser) => SaveUserResponse;
-  deleteUser: (userId: string) => SaveUserResponse;
+  saveUser: (input: CmsUser) => Promise<SaveUserResponse>;
+  deleteUser: (userId: string) => Promise<SaveUserResponse>;
   updateHomePage: (patch: Partial<HomePageSettings>) => void;
   updateSiteSettings: (patch: Partial<SiteSettings>) => void;
   trackArticleView: (articleId: string) => void;
@@ -133,12 +133,7 @@ function mapRole(value: string | null | undefined): CmsUser["role"] {
   if (value === "super_admin") {
     return "super_admin";
   }
-
-  if (value === "editor" || value === "author") {
-    return value;
-  }
-
-  return "admin";
+  return "moderator";
 }
 
 function mapDbArticle(row: Record<string, unknown>): CmsArticle {
@@ -215,14 +210,14 @@ function mapDbPartner(row: Record<string, unknown>): CmsPartner {
 function mapDbUser(row: Record<string, unknown>): CmsUser {
   return {
     id: String(row.id ?? ""),
-    name: String(row.nom ?? ""),
+    name: String(row.name ?? row.nom ?? ""),
     email: String(row.email ?? ""),
     password: "",
     role: mapRole(String(row.role ?? "")),
     title: String(row.title ?? ""),
     avatar: String(row.avatar ?? "/images/user/owner.jpg"),
     bio: String(row.bio ?? ""),
-    active: Boolean(row.actif ?? true),
+    active: Boolean(row.active ?? row.actif ?? true),
     lastLoginAt: row.last_login_at ? String(row.last_login_at) : null,
   };
 }
@@ -308,6 +303,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
           pathname.startsWith("/dashboard");
         const needsUsers =
           pathname.startsWith("/profile") ||
+          pathname.startsWith("/equipe") ||
           pathname.startsWith("/dashboard");
         const needsSettings =
           pathname.startsWith("/parametres") ||
@@ -423,14 +419,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     return () => controller.abort();
   }, [hydrated, currentUser, pathname]);
 
-  useEffect(() => {
-    if (!currentUser) {
-      setData((prev) => ({ ...prev, users: [] }));
-      return;
-    }
-
-    setData((prev) => ({ ...prev, users: [currentUser] }));
-  }, [currentUser]);
+  // Removed redundant useEffect that was overwriting data.users with [currentUser]
 
   const publishedArticles = useMemo(
     () => data.articles.filter((article) => article.status === "published" && article.publishedAt),
@@ -593,22 +582,68 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     void fetch(`/api/admin/partners/${partnerId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
   };
 
-  const saveUser = (input: CmsUser): SaveUserResponse => {
+  const saveUser = async (input: CmsUser): Promise<SaveUserResponse> => {
     const token = getAdminToken();
     if (!token) return { success: false, message: "Session admin absente." };
-    const payload = { nom: input.name, email: input.email, password: input.password, role: input.role, title: input.title, avatar: input.avatar, bio: input.bio, actif: input.active };
+    
+    const payload = { 
+      nom: input.name, 
+      email: input.email, 
+      password: input.password, 
+      role: input.role, 
+      title: input.title, 
+      avatar: input.avatar, 
+      bio: input.bio, 
+      actif: input.active 
+    };
+    
     const method = input.id ? "PUT" : "POST";
     const url = input.id ? `/api/admin/users/${input.id}` : "/api/admin/users";
-    void fetch(url, { method, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
-    return { success: true, user: input };
+    
+    try {
+      const res = await fetch(url, { 
+        method, 
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, 
+        body: JSON.stringify(payload) 
+      });
+      
+      const json = await res.json();
+      if (!res.ok) return { success: false, message: json.error || "Erreur API" };
+      
+      const saved = mapDbUser(json.data);
+      setData(prev => ({
+        ...prev,
+        users: input.id 
+          ? prev.users.map(u => u.id === input.id ? saved : u)
+          : [saved, ...prev.users]
+      }));
+      
+      return { success: true, user: saved };
+    } catch (e) {
+      return { success: false, message: "Erreur de connexion reseau." };
+    }
   };
 
-  const deleteUser = (userId: string): SaveUserResponse => {
+  const deleteUser = async (userId: string): Promise<SaveUserResponse> => {
     const token = getAdminToken();
     if (!token) return { success: false, message: "Session admin absente." };
-    setData((prev) => ({ ...prev, users: prev.users.filter((user) => user.id !== userId) }));
-    void fetch(`/api/admin/users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-    return { success: true };
+    
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { 
+        method: "DELETE", 
+        headers: { Authorization: `Bearer ${token}` } 
+      });
+      
+      if (!res.ok) {
+        const json = await res.json();
+        return { success: false, message: json.error || "Erreur lors de la suppression" };
+      }
+      
+      setData((prev) => ({ ...prev, users: prev.users.filter((user) => user.id !== userId) }));
+      return { success: true };
+    } catch (e) {
+      return { success: false, message: "Erreur de connexion reseau." };
+    }
   };
 
   const updateHomePage = (patch: Partial<HomePageSettings>) => {
@@ -743,7 +778,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
         publishedArticles,
         publishedStages,
         alerts,
-        canManageUsers: currentUser?.role === "admin" || currentUser?.role === "super_admin",
+        canManageUsers: currentUser?.role === "super_admin",
         signIn,
         signOut,
         saveArticle,

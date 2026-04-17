@@ -18,26 +18,26 @@ export async function PUT(request, { params }) {
     }
     const { rows } = await db.query(
       `UPDATE admin_users SET
-       nom = COALESCE($1, nom),
+       name = COALESCE($1, name),
        email = COALESCE($2, email),
-       mot_de_passe_hash = COALESCE($3, mot_de_passe_hash),
+       password_hash = COALESCE($3, password_hash),
        role = COALESCE($4, role),
        title = COALESCE($5, title),
        avatar = COALESCE($6, avatar),
        bio = COALESCE($7, bio),
-       actif = COALESCE($8, actif),
-       date_modification = NOW()
+       active = COALESCE($8, active),
+       updated_at = NOW()
        WHERE id = $9
        RETURNING *`,
       [
-        body.nom,
+        body.name || body.nom,
         body.email,
         passwordHash,
         body.role,
         body.title,
         body.avatar,
         body.bio,
-        typeof body.actif === "boolean" ? body.actif : undefined,
+        typeof (body.active ?? body.actif) === "boolean" ? (body.active ?? body.actif) : undefined,
         id,
       ],
     );

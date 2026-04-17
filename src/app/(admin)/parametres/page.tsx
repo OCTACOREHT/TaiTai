@@ -11,7 +11,8 @@ import {
 } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { useCms } from "@/context/CmsContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SiteSettingsPage() {
   const {
@@ -21,8 +22,19 @@ export default function SiteSettingsPage() {
     publishedStages,
     updateHomePage,
     updateSiteSettings,
+    canManageUsers,
+    hydrated
   } = useCms();
+  const router = useRouter();
   const [saved, setSaved] = useState("");
+
+  useEffect(() => {
+    if (hydrated && !canManageUsers) {
+      router.replace("/dashboard");
+    }
+  }, [hydrated, canManageUsers, router]);
+
+  if (!hydrated || !canManageUsers) return null;
 
   const toggleFeaturedArticle = (articleId: string) => {
     const next = homePage.featuredArticleIds.includes(articleId)

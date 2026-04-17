@@ -5,16 +5,15 @@ export async function GET(request, { params }) {
   try {
     const { id } = await params;
     
-    // 1. Récupérer les buteurs cumulés pour ce championnat
-    // Puisque flagday_match_scorers lie les buts aux matchs
-    // On filtre par les matchs du championnat
+    // 1. Récupérer les buteurs pour ce championnat
+    // On sélectionne tous les buteurs dont le match appartient à la compétition
     const { data: scorers, error } = await supabase
       .from("flagday_match_scorers")
       .select(`
         player_name,
         team_name,
         goals,
-        flagday_matches!inner(*)
+        flagday_matches!inner(competition_id)
       `)
       .eq("flagday_matches.competition_id", id);
 

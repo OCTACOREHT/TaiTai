@@ -1,77 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase-client";
 
-// Ajouter une équipe à un championnat
+// Inscription massive d'équipes à un championnat
 export async function POST(request, { params }) {
   try {
-    const { id } = await params;
+    const { id: competitionId } = await params;
     const body = await request.json();
-    const { teamName, logo, category } = body;
+    const { teamIds, category } = body;
 
-    // 1. Créer ou récupérer l'équipe
-    let team;
-    const { data: existingTeam, error: fetchError } = await supabase
-      .from("flagday_teams")
-      .select("id")
-      .eq("name", teamName)
-      .single();
-
-    if (fetchError && fetchError.code !== "PGRST116") {
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    if (!teamIds || !Array.isArray(teamIds) || teamIds.length === 0) {
+      return NextResponse.json({ error: "Liste d'équipes requise" }, { status: 400 });
     }
 
-    if (existingTeam) {
-      team = existingTeam;
-      
-      // OPTIMISATION: Si un nouveau logo est fourni ET que le logo actuel de l'équipe 
-      // est celui par défaut (ou vide), on met à jour l'équipe GLOBALEMENT.
-      const defaultLogo = "/images/logo/fc-toro.png";
-      const { data: teamData } = await supabase
-        .from("flagday_teams")
-        .select("logo_url")
-        .eq("id", existingTeam.id)
-        .single();
-        
-      if (logo && logo !== defaultLogo && (!teamData?.logo_url || teamData.logo_url === defaultLogo)) {
-        await supabase
-          .from("flagday_teams")
-          .update({ logo_url: logo })
-          .eq("id", existingTeam.id);
-        console.log(`Logo mis à jour globalement pour l'équipe: ${teamName}`);
-      }
-    } else {
-      const { data: newTeam, error: insertError } = await supabase
-        .from("flagday_teams")
-        .insert([
-          {
-            name: teamName,
-            slug: teamName.toLowerCase().replace(/\s+/g, "-"),
-            logo_url: logo || "/images/logo/fc-toro.png",
-          },
-        ])
-        .select()
-        .single();
+    // 1. Nettoyer les anciennes inscriptions pour éviter les doublons
+    await supabase
+      .from("flagday_competition_teams")
+      .delete()
+      .eq("competition_id", competitionId);
 
-      if (insertError) {
-        return NextResponse.json({ error: insertError.message }, { status: 500 });
-      }
+    // 2. Préparer les données d'insertion
+    const teamsData = teamIds.map((teamId) => ({
+      competition_id: competitionId,
+      team_id: teamId,
+      category: category || "U9",
+    }));
 
-      team = newTeam;
-    }
-
-    // 2. Ajouter l'équipe au championnat
+    // 3. Insérer les nouvelles équipes
     const { data, error } = await supabase
       .from("flagday_competition_teams")
-      .insert([
-        {
-          competition_id: id,
-          team_id: team.id,
-          logo_url: logo || "/images/logo/fc-toro.png",
-          category: category || "U9",
-        },
-      ])
-      .select()
-      .single();
+      .insert(teamsData)
+      .select();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -79,9 +37,9 @@ export async function POST(request, { params }) {
 
     return NextResponse.json({ data, success: true }, { status: 201 });
   } catch (error) {
-    console.error("Erreur:", error);
+    console.error("Erreur [POST /api/tournaments/[id]/teams]:", error);
     return NextResponse.json(
-      { error: "Erreur lors de l'ajout de l'équipe" },
+      { error: "Erreur lors de l'inscription des équipes" },
       { status: 500 }
     );
   }

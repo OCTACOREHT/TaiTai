@@ -1,6 +1,6 @@
 export type PublishStatus = "draft" | "review" | "published" | "archived";
 export type StageWorkMode = "onsite" | "hybrid" | "remote";
-export type UserRole = "admin" | "editor" | "author" | "super_admin";
+export type UserRole = "super_admin" | "moderator";
 export type PartnerTier = "principal" | "gold" | "silver" | "media";
 
 export interface CmsUser {

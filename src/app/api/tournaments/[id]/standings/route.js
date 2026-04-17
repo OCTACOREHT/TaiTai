@@ -3,54 +3,46 @@ import { supabase } from "@/lib/supabase-client";
 
 export async function GET(request, { params }) {
   try {
-    const { id } = await params;
-    // Get all matches for this tournament
-    const { data: matches, error: matchError } = await supabase
-      .from("flagday_matches")
-      .select(`
-        *,
-        home_team:home_team_id(id, name, logo, color, category),
-        away_team:away_team_id(id, name, logo, color, category)
-      `)
-      .eq("competition", id)
-      .eq("status", "finished");
+    const { id: competitionId } = await params;
 
-    if (matchError) {
-      return NextResponse.json({ error: matchError.message }, { status: 500 });
+    // 1. Récupérer les infos du tournoi (catégorie)
+    const { data: tournament } = await supabase
+      .from("flagday_competitions")
+      .select("age_category")
+      .eq("id", competitionId)
+      .single();
+
+    const category = tournament?.age_category || "U9";
+
+    // 2. Récupérer les groupes assignés lors du tirage
+    const { data: catData } = await supabase
+      .from("flagday_categories")
+      .select("id")
+      .eq("competition_id", competitionId)
+      .eq("name", category)
+      .single();
+
+    if (!catData) return NextResponse.json({ data: {}, success: true });
+
+    const { data: standingsMapping } = await supabase
+      .from("flagday_standings")
+      .select("team_id, group_name, flagday_teams:team_id(id, name, logo_url, color)")
+      .eq("category_id", catData.id);
+
+    if (!standingsMapping || standingsMapping.length === 0) {
+      return NextResponse.json({ data: {}, success: true });
     }
 
-    // Get all teams in this tournament
-    const { data: teams, error: teamError } = await supabase
-      .from("flagday_competition_teams")
-      .select(`
-        flagday_teams:team_id(*)
-      `)
-      .eq("competition_id", id);
-
-    if (teamError) {
-      return NextResponse.json({ error: teamError.message }, { status: 500 });
-    }
-
-    // Calculate standings by category
-    const standings = {};
-
-    // Initialize standings for each team
-    const teamMap = {};
-    teams?.forEach((item) => {
-      const team = item.flagday_teams;
-      const category = team.category || "U9";
-
-      if (!standings[category]) {
-        standings[category] = [];
-      }
-
-      teamMap[team.id] = team;
-
-      standings[category].push({
-        teamId: team.id,
+    // 3. Initialiser les stats
+    const teamStats = {};
+    standingsMapping.forEach(s => {
+      const team = s.flagday_teams;
+      teamStats[s.team_id] = {
+        teamId: s.team_id,
         teamName: team.name,
-        teamLogo: team.logo,
+        teamLogo: team.logo_url,
         teamColor: team.color,
+        groupName: s.group_name,
         points: 0,
         played: 0,
         won: 0,
@@ -59,76 +51,55 @@ export async function GET(request, { params }) {
         goalsFor: 0,
         goalsAgainst: 0,
         goalDifference: 0,
-      });
+      };
     });
 
-    // Process finished matches
-    matches?.forEach((match) => {
-      const homeCategory = match.home_team?.category || "U9";
-      const awayCategory = match.away_team?.category || "U9";
+    // 4. Récupérer et traiter les matchs terminés
+    const { data: matches } = await supabase
+      .from("flagday_matches")
+      .select("*")
+      .eq("competition_id", competitionId)
+      .eq("status", "finished")
+      .filter("round", "ilike", `%${category}%Groupe%`);
 
-      // Handle home team
-      const homeTeamStanding = standings[homeCategory]?.find(
-        (s) => s.teamId === match.home_team_id
-      );
-      if (homeTeamStanding) {
-        homeTeamStanding.played += 1;
-        homeTeamStanding.goalsFor += match.home_score || 0;
-        homeTeamStanding.goalsAgainst += match.away_score || 0;
+    matches?.forEach((match) => {
+      const home = teamStats[match.home_team_id];
+      const away = teamStats[match.away_team_id];
+
+      if (home && away) {
+        home.played += 1;
+        away.played += 1;
+        home.goalsFor += match.home_score || 0;
+        home.goalsAgainst += match.away_score || 0;
+        away.goalsFor += match.away_score || 0;
+        away.goalsAgainst += match.home_score || 0;
 
         if (match.home_score > match.away_score) {
-          homeTeamStanding.won += 1;
-          homeTeamStanding.points += 3;
-        } else if (match.home_score === match.away_score) {
-          homeTeamStanding.drawn += 1;
-          homeTeamStanding.points += 1;
+          home.won += 1;
+          home.points += 3;
+          away.lost += 1;
+        } else if (match.home_score < match.away_score) {
+          away.won += 1;
+          away.points += 3;
+          home.lost += 1;
         } else {
-          homeTeamStanding.lost += 1;
-        }
-      }
-
-      // Handle away team
-      const awayTeamStanding = standings[awayCategory]?.find(
-        (s) => s.teamId === match.away_team_id
-      );
-      if (awayTeamStanding) {
-        awayTeamStanding.played += 1;
-        awayTeamStanding.goalsFor += match.away_score || 0;
-        awayTeamStanding.goalsAgainst += match.home_score || 0;
-
-        if (match.away_score > match.home_score) {
-          awayTeamStanding.won += 1;
-          awayTeamStanding.points += 3;
-        } else if (match.away_score === match.home_score) {
-          awayTeamStanding.drawn += 1;
-          awayTeamStanding.points += 1;
-        } else {
-          awayTeamStanding.lost += 1;
+          home.drawn += 1;
+          away.drawn += 1;
+          home.points += 1;
+          away.points += 1;
         }
       }
     });
 
-    // Calculate goal difference and sort by points
-    Object.keys(standings).forEach((category) => {
-      standings[category] = standings[category]
-        .map((team) => ({
-          ...team,
-          goalDifference: team.goalsFor - team.goalsAgainst,
-        }))
-        .sort((a, b) => {
-          if (b.points !== a.points) {
-            return b.points - a.points;
-          }
-          return b.goalDifference - a.goalDifference;
-        });
-    });
+    // 5. Calculer la différence de buts et trier
+    const result = Object.values(teamStats).map(s => ({
+      ...s,
+      goalDifference: s.goalsFor - s.goalsAgainst
+    })).sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
 
-    return NextResponse.json({ data: standings, success: true });
+    return NextResponse.json({ data: { [category]: result }, success: true });
   } catch (error) {
     console.error("Erreur standings:", error);
-    return NextResponse.json(
-      { error: "Erreur lors du calcul des classements" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

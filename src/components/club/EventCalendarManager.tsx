@@ -12,6 +12,7 @@ import {
   EventContentArg,
   EventInput,
 } from "@fullcalendar/core";
+import { useCms } from "@/context/CmsContext";
 import { Modal } from "@/components/ui/modal";
 import { useModal } from "@/hooks/useModal";
 import Badge from "@/components/ui/badge/Badge";
@@ -87,6 +88,7 @@ export default function EventCalendarManager({
   setEvents,
   players,
 }: EventCalendarManagerProps) {
+  const { currentUser } = useCms();
   const [formState, setFormState] = useState<EventFormState>(defaultFormState);
   const [submitError, setSubmitError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -414,13 +416,15 @@ export default function EventCalendarManager({
                 >
                   Modifier
                 </button>
-                <button
-                  type="button"
-                  className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-error-600 hover:bg-error-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.03]"
-                  onClick={() => handleDeleteEvent(event.id)}
-                >
-                  Supprimer
-                </button>
+                {currentUser?.role === "super_admin" && (
+                  <button
+                    type="button"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-error-600 hover:bg-error-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-white/[0.03]"
+                    onClick={() => handleDeleteEvent(event.id)}
+                  >
+                    Supprimer
+                  </button>
+                )}
               </div>
             </div>
           ))}

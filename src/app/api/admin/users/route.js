@@ -43,6 +43,7 @@ export async function POST(request) {
     );
     return NextResponse.json({ data: rows[0] }, { status: 201 });
   } catch (err) {
-    return NextResponse.json({ error: "Erreur serveur." }, { status: 500 });
+    console.error("[API Users POST] Error:", err);
+    return NextResponse.json({ error: err.message || "Erreur serveur." }, { status: 500 });
   }
 }
