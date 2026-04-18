@@ -62,6 +62,7 @@ const navItems: NavItem[] = [
     name: "Club",
     subItems: [
       { name: "Joueurs", path: "/club/joueurs" },
+      { name: "Fans", path: "/club/fans" },
       { name: "Élite", path: "/club/elite" },
       { name: "Staff", path: "/club/staff" },
 

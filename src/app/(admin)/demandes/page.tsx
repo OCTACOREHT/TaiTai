@@ -103,6 +103,7 @@ type Demande = {
   message: string | null;
   payload: Record<string, unknown> | null;
   is_read: boolean;
+  status: string | null;
   created_at: string;
 };
 
@@ -142,6 +143,26 @@ export default function DemandesPage() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateStatus = async (id: string, status: string) => {
+    try {
+      const res = await fetch("/api/demandes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status, is_read: true }),
+      });
+      if (res.ok) {
+        setDemandes((prev) =>
+          prev.map((d) => (d.id === id ? { ...d, status, is_read: true } : d))
+        );
+        if (selectedDemande?.id === id) {
+          setSelectedDemande((prev) => prev ? { ...prev, status, is_read: true } : null);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -364,9 +385,63 @@ export default function DemandesPage() {
                 </div>
               )}
 
-              {/* ─── Reply form ─── */}
-              {selectedDemande.email ? (
-                <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+              {/* ─── Action for Fan vs Reply for others ─── */}
+              {selectedDemande.type === "fan" ? (
+                <div className="rounded-xl border border-brand-100 bg-brand-50/20 dark:border-brand-900/30 dark:bg-brand-900/5 p-6 text-center space-y-4 shadow-sm">
+                  <div className="flex flex-col items-center">
+                    <div className="text-xs font-bold uppercase tracking-[0.1em] text-brand-600 dark:text-brand-400 mb-1">
+                      Gestion de la Demande Fan
+                    </div>
+                    <div className="h-1 w-12 bg-brand-500 rounded-full mb-4"></div>
+                  </div>
+                  
+                  {selectedDemande.status && selectedDemande.status !== "pending" ? (
+                    <div className="flex flex-col items-center py-2 animate-in fade-in duration-500">
+                      <div className={`flex items-center gap-2 px-6 py-3 rounded-2xl border-2 font-bold text-lg mb-2 shadow-sm ${
+                        selectedDemande.status === "accepted" 
+                          ? "bg-success-50 border-success-200 text-success-700 dark:bg-success-900/10 dark:border-success-900/30 dark:text-success-400" 
+                          : "bg-error-50 border-error-200 text-error-700 dark:bg-error-900/10 dark:border-error-900/30 dark:text-error-400"
+                      }`}>
+                        {selectedDemande.status === "accepted" ? (
+                          <><CheckCircleIcon className="w-6 h-6" /> Demande Acceptée</>
+                        ) : (
+                          <><TrashBinIcon className="w-6 h-6" /> Demande Refusée</>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 max-w-[280px]">
+                        {selectedDemande.status === "accepted" 
+                          ? "Ce membre fait maintenant partie des fans officiels du FC Toro." 
+                          : "Cette demande a été rejetée."}
+                      </p>
+                      <button 
+                        onClick={() => updateStatus(selectedDemande.id, "pending")}
+                        className="mt-4 text-xs font-semibold text-gray-400 hover:text-brand-500 transition-colors uppercase tracking-wider"
+                      >
+                        Annuler la décision
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Voulez-vous accepter ce membre dans le club des fans ?</p>
+                      <div className="flex gap-3 justify-center">
+                        <button
+                          onClick={() => updateStatus(selectedDemande.id, "accepted")}
+                          className="flex items-center gap-2 px-8 py-3 bg-success-600 hover:bg-success-700 text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-success-900/20"
+                        >
+                          <CheckCircleIcon className="w-5 h-5" /> Accepter
+                        </button>
+                        <button
+                          onClick={() => updateStatus(selectedDemande.id, "rejected")}
+                          className="flex items-center gap-2 px-8 py-3 bg-error-600 hover:bg-error-700 text-white rounded-xl font-bold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-error-900/20"
+                        >
+                          <TrashBinIcon className="w-5 h-5" /> Refuser
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : selectedDemande.email ? (
+                <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
                   <div className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
                     ✉️ Répondre à {selectedDemande.name}
                   </div>
