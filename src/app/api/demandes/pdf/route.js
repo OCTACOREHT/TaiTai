@@ -15,22 +15,38 @@ export async function GET(request) {
       return NextResponse.json({ error: "ID manquant." }, { status: 400 });
     }
 
-    // 1. Fetch Registration Data
-    const { rows: regRows } = await db.query(
-      "SELECT * FROM player_registrations WHERE id = $1",
+    // 1. Fetch the message first to get the linkage metadata
+    const { rows: msgRows } = await db.query(
+      "SELECT email, created_at FROM site_messages WHERE id = $1",
       [id]
     );
 
+    if (msgRows.length === 0) {
+      return NextResponse.json({ error: "Message non trouvé." }, { status: 404 });
+    }
+
+    const { email, created_at } = msgRows[0];
+
+    // 2. Find the matching registration (using the same logic as the backfill script, but robust to microsecond precision issues)
+    const { rows: regRows } = await db.query(
+      `SELECT * FROM player_registrations 
+       WHERE guardian_email = $1 
+       ORDER BY ABS(EXTRACT(EPOCH FROM created_at) - EXTRACT(EPOCH FROM $2::timestamptz)) ASC 
+       LIMIT 1`,
+      [email, created_at]
+    );
+
     if (regRows.length === 0) {
-      return NextResponse.json({ error: "Inscription non trouvée." }, { status: 404 });
+      return NextResponse.json({ error: "Inscription correspondante non trouvée." }, { status: 404 });
     }
 
     const reg = regRows[0];
+    const registrationId = reg.id;
 
-    // 2. Fetch Associated Documents
+    // 3. Fetch Associated Documents using the REAL registration ID
     const { rows: docRows } = await db.query(
       "SELECT * FROM player_registration_documents WHERE registration_id = $1",
-      [id]
+      [registrationId]
     );
 
     // 3. Create PDF
@@ -96,36 +112,45 @@ export async function GET(request) {
     const playerPhotoDoc = docRows.find(d => d.doc_key === 'document_photo_id');
     if (playerPhotoDoc) {
       try {
-        const photoPath = path.join(process.cwd(), "public", playerPhotoDoc.path);
-        const photoBytes = fs.existsSync(photoPath) 
-                             ? fs.readFileSync(photoPath)
-                             : playerPhotoDoc.data; // Fallback to DB buffer if disk file missing
-
-          if (photoBytes) {
-            const photoImage = playerPhotoDoc.content_type === 'image/jpeg' 
-                               ? await pdfDoc.embedJpg(photoBytes) 
-                               : await pdfDoc.embedPng(photoBytes);
-            
-            // Draw a frame for the photo
-            page.drawRectangle({
-              x: width - 152,
-              y: height - 212,
-              width: 104,
-              height: 124,
-              borderColor: rgb(0.8, 0.8, 0.8),
-              borderWidth: 1,
-            });
-
-            page.drawImage(photoImage, {
-              x: width - 150,
-              y: height - 210,
-              width: 100,
-              height: 120,
-            });
+        let photoBytes = null;
+        if (playerPhotoDoc.path) {
+          const photoPath = path.join(process.cwd(), "public", playerPhotoDoc.path);
+          if (fs.existsSync(photoPath)) {
+            photoBytes = fs.readFileSync(photoPath);
           }
-        } catch (e) {
-          console.warn("Photo error:", e.message);
         }
+        
+        // Fallback to DB buffer if disk file missing OR path was null
+        if (!photoBytes && playerPhotoDoc.data) {
+          photoBytes = playerPhotoDoc.data;
+        }
+
+        if (photoBytes) {
+          const mime = (playerPhotoDoc.content_type || '').toLowerCase();
+          const photoImage = (mime === 'image/jpeg' || mime === 'image/jpg')
+                             ? await pdfDoc.embedJpg(photoBytes) 
+                             : await pdfDoc.embedPng(photoBytes);
+          
+          // Draw a frame for the photo
+          page.drawRectangle({
+            x: width - 152,
+            y: height - 212,
+            width: 104,
+            height: 124,
+            borderColor: rgb(0.8, 0.8, 0.8),
+            borderWidth: 1,
+          });
+
+          page.drawImage(photoImage, {
+            x: width - 150,
+            y: height - 210,
+            width: 100,
+            height: 120,
+          });
+        }
+      } catch (e) {
+        console.warn("Photo error:", e.message);
+      }
     }
 
     // HELPERS FOR DRAWING SECTIONS
@@ -221,8 +246,17 @@ export async function GET(request) {
       if (doc.doc_key === 'document_photo_id') continue; // Already handled on page 1
       
       try {
-        const filePath = path.join(process.cwd(), "public", doc.path);
-        const fileBytes = fs.existsSync(filePath) ? fs.readFileSync(filePath) : doc.data;
+        let fileBytes = null;
+        if (doc.path) {
+          const filePath = path.join(process.cwd(), "public", doc.path);
+          if (fs.existsSync(filePath)) {
+            fileBytes = fs.readFileSync(filePath);
+          }
+        }
+
+        if (!fileBytes && doc.data) {
+          fileBytes = doc.data;
+        }
 
         if (fileBytes) {
           const attPage = pdfDoc.addPage([595.28, 841.89]);
@@ -235,7 +269,8 @@ export async function GET(request) {
             font: timesBoldFont
           });
 
-          const attImage = doc.content_type === 'image/jpeg' 
+          const mime = (doc.content_type || '').toLowerCase();
+          const attImage = (mime === 'image/jpeg' || mime === 'image/jpg')
                             ? await pdfDoc.embedJpg(fileBytes) 
                             : await pdfDoc.embedPng(fileBytes);
           

@@ -3,7 +3,8 @@ const db = require("@/server/db");
 export const runtime = "nodejs";
 
 export async function GET() {
-  const { rows } = await db.query("SELECT * FROM site_messages ORDER BY created_at DESC");
+  // Added a LIMIT to prevent PostgreSQL timeout issues when fetching many rows with large JSON payloads
+  const { rows } = await db.query("SELECT * FROM site_messages ORDER BY created_at DESC LIMIT 200");
   return NextResponse.json({ data: rows });
 }
 
