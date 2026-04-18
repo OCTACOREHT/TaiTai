@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
+const db = require("@/server/db");
 export const runtime = "nodejs";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
-    const { to, toName, subject, replyMessage } = await request.json();
+    const { to, toName, subject, replyMessage, messageId } = await request.json();
 
     if (!to || !subject || !replyMessage) {
       return NextResponse.json(
@@ -61,6 +62,40 @@ export async function POST(request) {
     if (error) {
       console.error("[Resend]", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // ── DATABASE STORAGE FOR HISTORY ──
+    if (messageId) {
+      try {
+        // Fetch current message
+        const { rows } = await db.query("SELECT payload FROM site_messages WHERE id = $1", [messageId]);
+        if (rows.length > 0) {
+          let currentPayload = rows[0].payload || {};
+          if (typeof currentPayload === 'string') {
+             try { currentPayload = JSON.parse(currentPayload); } catch { currentPayload = {}; }
+          }
+          
+          // Ensure replies array exists
+          if (!currentPayload.replies) currentPayload.replies = [];
+          
+          // Add new reply
+          currentPayload.replies.push({
+            role: 'admin',
+            message: replyMessage,
+            subject: subject,
+            timestamp: new Date().toISOString()
+          });
+
+          // Update database
+          await db.query(
+            "UPDATE site_messages SET payload = $1 WHERE id = $2",
+            [JSON.stringify(currentPayload), messageId]
+          );
+        }
+      } catch (dbErr) {
+        console.error("[DB History Error]", dbErr.message);
+        // We don't fail the whole request if history storage fails, but we log it
+      }
     }
 
     return NextResponse.json({ ok: true });

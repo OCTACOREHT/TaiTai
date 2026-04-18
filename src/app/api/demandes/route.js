@@ -13,21 +13,37 @@ export async function PUT(request) {
     const id = body.id;
     const is_read = body.is_read;
     const status = body.status;
+    const payload = body.payload;
 
     if (!id) {
       return NextResponse.json({ error: "ID manquant." }, { status: 400 });
     }
 
-    let query = "UPDATE site_messages SET is_read = $1";
-    let params = [is_read];
+    let queryParts = [];
+    let params = [];
+    let paramIndex = 1;
+
+    if (is_read !== undefined) {
+      queryParts.push(`is_read = $${paramIndex++}`);
+      params.push(is_read);
+    }
 
     if (status !== undefined) {
-      query += ", status = $2 WHERE id = $3 RETURNING *";
-      params.push(status, id);
-    } else {
-      query += " WHERE id = $2 RETURNING *";
-      params.push(id);
+      queryParts.push(`status = $${paramIndex++}`);
+      params.push(status);
     }
+
+    if (payload !== undefined) {
+      queryParts.push(`payload = $${paramIndex++}`);
+      params.push(typeof payload === 'string' ? payload : JSON.stringify(payload));
+    }
+
+    if (queryParts.length === 0) {
+      return NextResponse.json({ error: "Rien à mettre à jour." }, { status: 400 });
+    }
+
+    let query = `UPDATE site_messages SET ${queryParts.join(", ")} WHERE id = $${paramIndex} RETURNING *`;
+    params.push(id);
 
     const { rows } = await db.query(query, params);
 
