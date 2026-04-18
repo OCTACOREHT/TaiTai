@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import Button from "@/components/ui/button/Button";
 import { PencilIcon, TrashBinIcon, EyeIcon } from "@/icons";
+import Loader from "@/components/common/Loader";
 
 interface ElitePlayer {
   id: string | number;
@@ -19,6 +20,7 @@ interface ElitePlayer {
   first_name: string;
   last_name: string;
   position: string;
+  club: string;
   weight: string;
   height: string;
   photo_url?: string;
@@ -28,16 +30,20 @@ interface ElitePlayer {
 export default function EliteTable() {
   const router = useRouter();
   const [data, setData] = useState<ElitePlayer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch("/api/club/elite");
       if (!response.ok) throw new Error("Erreur");
       const json = await response.json();
       setData(json.data || []);
     } catch (err) {
-      alert("Erreur de chargement");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,12 +90,28 @@ export default function EliteTable() {
               <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">No</TableCell>
               <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Joueur</TableCell>
               <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Poste</TableCell>
+              <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Club</TableCell>
               <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Poids / Hauteur</TableCell>
               <TableCell isHeader className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">Actions</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {filteredData.map((member) => (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="py-10 text-center">
+                  <div className="flex flex-col items-center justify-center gap-3 py-6">
+                     <Loader />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : filteredData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-10 text-center text-gray-500">
+                    Aucun joueur trouvé.
+                  </TableCell>
+                </TableRow>
+            ) : (
+                filteredData.map((member) => (
               <TableRow key={member.id}>
                 <TableCell className="font-bold text-gray-800 dark:text-white/90">
                     {member.number}
@@ -113,6 +135,7 @@ export default function EliteTable() {
                   </div>
                 </TableCell>
                 <TableCell>{member.position}</TableCell>
+                <TableCell>{member.club}</TableCell>
                 <TableCell>
                     <div className="text-sm">
                         <p>{member.weight} - {member.height}</p>
@@ -120,13 +143,15 @@ export default function EliteTable() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-3">
-                    <button
-                      className="text-gray-500 transition hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      title="Voir"
-                      onClick={() => window.open(member.video_url || "/", "_blank")}
-                    >
-                      <EyeIcon />
-                    </button>
+                    {member.video_url && (
+                        <button
+                          className="text-gray-500 transition hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                          title="Voir"
+                          onClick={() => window.open(member.video_url, "_blank")}
+                        >
+                          <EyeIcon />
+                        </button>
+                    )}
                     <button
                       className="text-blue-500 transition hover:text-blue-600 dark:text-blue-400"
                       title="Modifier"
@@ -144,7 +169,7 @@ export default function EliteTable() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            )))}
           </TableBody>
         </Table>
       </div>

@@ -39,23 +39,23 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Articles",
     subItems: [
-      { name: "Tous les articles", path: "/joueurs" },
-      { name: "Nouvel article", path: "/joueurs/nouveau" },
+      { name: "Tous les articles", path: "/articles" },
+      { name: "Nouvel article", path: "/articles/nouveau" },
     ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "Stages",
     subItems: [
-      { name: "Tous les stages", path: "/staff" },
-      { name: "Nouveau stage", path: "/staff/nouveau" },
+      { name: "Tous les stages", path: "/stages" },
+      { name: "Nouveau stage", path: "/stages/nouveau" },
     ],
   },
 
   {
     icon: <TableIcon />,
     name: "Tracking",
-    path: "/classement",
+    path: "/tracking",
   },
   {
     icon: <GroupIcon />,

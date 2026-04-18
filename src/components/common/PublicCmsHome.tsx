@@ -4,6 +4,7 @@ import { formatDate } from "@/components/common/CmsShared";
 import PublicSiteShell from "@/components/common/PublicSiteShell";
 import { useCms } from "@/context/CmsContext";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
 export default function PublicCmsHome({ embedded = false }: { embedded?: boolean }) {
@@ -27,6 +28,8 @@ export default function PublicCmsHome({ embedded = false }: { embedded?: boolean
   const [selectedStageId, setSelectedStageId] = useState<string | null>(
     homePage.featuredStageIds[0] || publishedStages[0]?.id || null,
   );
+  const [isConnecting, setIsConnecting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (!embedded) {
@@ -102,12 +105,18 @@ export default function PublicCmsHome({ embedded = false }: { embedded?: boolean
               >
                 {homePage.heroSecondaryCtaLabel}
               </a>
-              <Link
-                href="/signin"
-                className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white"
+              <button
+                onClick={() => {
+                  trackHomeCta();
+                  setIsConnecting(true);
+                  // Maintain the loading state as requested
+                  router.push("/signin");
+                }}
+                disabled={isConnecting}
+                className="flex items-center justify-center min-w-[140px] rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed"
               >
-                Connexion CMS
-              </Link>
+                {isConnecting ? <Loader /> : "Connexion CMS"}
+              </button>
             </div>
           </div>
           <div className="grid gap-4 rounded-[28px] border border-white/10 bg-white/8 p-4 backdrop-blur">

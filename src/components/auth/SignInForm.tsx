@@ -76,16 +76,6 @@ export default function SignInForm() {
 
   return (
     <div className="flex w-full flex-1 flex-col lg:w-1/2">
-      <div className="mx-auto mb-5 w-full max-w-md sm:pt-10">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-        >
-          <ChevronLeftIcon />
-          Accueil CMS
-        </Link>
-      </div>
-
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div className="mb-5 sm:mb-8">
           <h1 className="mb-2 text-title-sm font-semibold text-gray-800 dark:text-white/90 sm:text-title-md">
@@ -93,13 +83,6 @@ export default function SignInForm() {
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Connectez-vous pour gerer les articles, stages, partenaires et contenus du site.
-          </p>
-        </div>
-
-        <div className="mb-6 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-4 text-sm text-brand-900 dark:border-brand-900/30 dark:bg-brand-900/10 dark:text-brand-100">
-          <p className="font-semibold">Connexion base de donnees</p>
-          <p className="mt-2">
-            Utilisez ici un compte present dans votre table <code>admin_users</code>.
           </p>
         </div>
 

@@ -10,6 +10,11 @@ const outfit = Outfit({
   subsets: ["latin"],
 });
 
+export const metadata = {
+  title: "FC Toro CMS",
+  description: "Le système de pilotage de FC Toro",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

@@ -1,21 +1,18 @@
-MIT License
+# CERTIFICAT DE PROPRIÉTÉ ET LICENCE EXCLUSIVE
 
-Copyright (c) 2023 TailAdmin
+**PROPRIÉTAIRE LÉGAL :** FC Toro
+**DÉVELOPPEUR/INFRASTRUCTURE :** Octacore
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Ce document certifie formellement que le présent logiciel, identifié comme le "FC Toro CMS" (Système de Gestion de Contenu de l'Académie FC Toro), est la propriété exclusive de l'organisation FC Toro.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## 1. DROITS DE PROPRIÉTÉ
+L'ensemble du code source, de la base de données, des interfaces graphiques, du contenu éditorial (articles, stages) et des données des utilisateurs stockés et traités par ce système appartiennent de façon intégrale et inaliénable à FC Toro. Toute extraction, copie, reproduction ou modification non autorisée par la direction de FC Toro est strictement interdite.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+## 2. INFRASTRUCTURE ET DÉVELOPPEMENT
+L'infrastructure technique sous-jacente a été conçue, configurée et déployée par Octacore. Octacore agit en tant que prestataire technologique assurant le maintien et la solidité de la plateforme. La propriété intellectuelle des données métier reste chez FC Toro.
+
+## 3. CONFIDENTIALITÉ
+Toutes les données générées par ce CMS (candidatures aux stages, tracking des clics partenaires, données des joueurs et de l'élite) sont hautement confidentielles. Tout accès doit être formellement accordé par un administrateur système.
+
+---
+*Délivré et certifié pour un usage exclusif par l'Académie FC Toro.*

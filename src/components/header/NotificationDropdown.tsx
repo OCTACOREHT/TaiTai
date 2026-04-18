@@ -7,7 +7,9 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { alerts } = useCms();
+  const { alerts, unreadDemandesCount } = useCms();
+
+  const totalAlerts = alerts.length + (unreadDemandesCount > 0 ? 1 : 0);
 
   return (
     <div className="relative">
@@ -15,7 +17,7 @@ export default function NotificationDropdown() {
         className="dropdown-toggle relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
         onClick={() => setIsOpen((value) => !value)}
       >
-        {alerts.length > 0 ? (
+        {totalAlerts > 0 ? (
           <span className="absolute right-0 top-0.5 z-10 flex h-2 w-2 rounded-full bg-orange-400">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
           </span>
@@ -44,17 +46,32 @@ export default function NotificationDropdown() {
         <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
           <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Alertes CMS</h5>
           <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/20 dark:text-brand-300">
-            {alerts.length}
+            {totalAlerts}
           </span>
         </div>
 
         <div className="max-h-[360px] space-y-2 overflow-y-auto custom-scrollbar">
-          {alerts.length === 0 ? (
+          {totalAlerts === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
               Aucun contenu en attente pour le moment.
             </div>
           ) : (
-            alerts.map((alert) => (
+            <>
+              {unreadDemandesCount > 0 && (
+                <Link
+                  href="/demandes"
+                  onClick={() => setIsOpen(false)}
+                  className="block rounded-xl border border-brand-100 bg-brand-50/50 px-4 py-3 transition hover:bg-brand-50 dark:border-brand-900/30 dark:bg-brand-900/10 dark:hover:bg-brand-900/20"
+                >
+                  <p className="text-sm font-semibold text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider text-[10px]">
+                     Nouveaux Messages
+                  </p>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white/90 font-medium">
+                    Vous avez {unreadDemandesCount} message{unreadDemandesCount > 1 ? 's' : ''} non lu{unreadDemandesCount > 1 ? 's' : ''} dans votre boîte de réception.
+                  </p>
+                </Link>
+              )}
+              {alerts.map((alert) => (
               <Link
                 key={alert.id}
                 href={alert.href}
@@ -64,7 +81,8 @@ export default function NotificationDropdown() {
                 <p className="text-sm font-semibold text-gray-900 dark:text-white/90">{alert.title}</p>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{alert.description}</p>
               </Link>
-            ))
+              ))}
+            </>
           )}
         </div>
       </Dropdown>

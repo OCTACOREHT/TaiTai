@@ -9,7 +9,7 @@ import { useClubData } from "@/context/ClubDataContext";
 
 export default function ClubStaffPage() {
   const router = useRouter();
-  const { staff, setStaff } = useClubData();
+  const { staff, setStaff, hydrated } = useClubData();
 
   return (
     <div className="space-y-6">
@@ -29,6 +29,7 @@ export default function ClubStaffPage() {
       >
         <StaffTable
           staff={staff}
+          isLoading={!hydrated}
           onEditStaff={(member) => router.push(`/club/staff/${member.id}/modifier`)}
           onDeleteStaff={async (member) => {
             const response = await fetch(`/api/club/staff/${member.id}`, { method: "DELETE" });

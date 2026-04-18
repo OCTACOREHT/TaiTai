@@ -4,8 +4,10 @@ import React, { useEffect, useState } from "react";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SectionCard } from "@/components/common/CmsShared";
 import Badge from "@/components/ui/badge/Badge";
+import Loader from "@/components/common/Loader";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { EyeIcon, TrashBinIcon, CheckCircleIcon } from "@/icons";
+import { useCms } from "@/context/CmsContext";
 
 // ─── Friendly field label mapping ───────────────────────────────────────────
 
@@ -110,8 +112,10 @@ type Demande = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function DemandesPage() {
+  const { refreshUnreadDemandesCount } = useCms();
   const [demandes, setDemandes] = useState<Demande[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"contact" | "joueur" | "fan">("contact");
   const [selectedDemande, setSelectedDemande] = useState<Demande | null>(null);
 
   // Reply state
@@ -143,6 +147,7 @@ export default function DemandesPage() {
       console.error(e);
     } finally {
       setLoading(false);
+      refreshUnreadDemandesCount();
     }
   };
 
@@ -160,6 +165,7 @@ export default function DemandesPage() {
         if (selectedDemande?.id === id) {
           setSelectedDemande((prev) => prev ? { ...prev, status, is_read: true } : null);
         }
+        refreshUnreadDemandesCount();
       }
     } catch (e) {
       console.error(e);
@@ -177,6 +183,7 @@ export default function DemandesPage() {
         setDemandes((prev) =>
           prev.map((d) => (d.id === id ? { ...d, is_read: !currentStatus } : d))
         );
+        refreshUnreadDemandesCount();
       }
     } catch (e) {
       console.error(e);
@@ -190,6 +197,7 @@ export default function DemandesPage() {
       if (res.ok) {
         setDemandes((prev) => prev.filter((d) => d.id !== id));
         setSelectedDemande(null);
+        refreshUnreadDemandesCount();
       }
     } catch (e) {
       console.error(e);
@@ -225,18 +233,52 @@ export default function DemandesPage() {
     }
   };
 
+  const filteredDemandes = demandes.filter((d) => d.type === activeTab);
+  const unreadCountForTab = (type: string) => demandes.filter((d) => d.type === type && !d.is_read).length;
+
+  const tabs = [
+    { id: "contact" as const, label: "Messages" },
+    { id: "joueur" as const, label: "Inscriptions Joueur" },
+    { id: "fan" as const, label: "Devenir Fan" },
+  ];
+
   const typeInfo = (type: string) =>
     TYPE_LABELS[type] ?? { label: type.toUpperCase(), color: "info" };
-
-  const unread = demandes.filter((d) => !d.is_read).length;
 
   return (
     <div className="space-y-6">
       <PageBreadCrumb pageTitle="Boîte de réception" />
 
+      {/* TABS NAVIGATION */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+         <div className="flex bg-gray-100 dark:bg-white/5 p-1 rounded-xl w-fit">
+            {tabs.map((tab) => {
+               const count = unreadCountForTab(tab.id);
+               return (
+                  <button
+                     key={tab.id}
+                     onClick={() => setActiveTab(tab.id)}
+                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg flex items-center gap-2 ${
+                        activeTab === tab.id
+                           ? "bg-white dark:bg-gray-800 text-brand-600 dark:text-brand-400 shadow-sm"
+                           : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                     }`}
+                  >
+                     {tab.label}
+                     {count > 0 && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] text-white">
+                           {count}
+                        </span>
+                     )}
+                  </button>
+               );
+            })}
+         </div>
+      </div>
+
       <SectionCard
-        title={`Messagerie & Inscriptions${unread > 0 ? ` (${unread} nouveau${unread > 1 ? "x" : ""})` : ""}`}
-        description="Gérez les formulaires de joueurs, fans, et contacts directement depuis le site public."
+        title={tabs.find(t => t.id === activeTab)?.label || ""}
+        description={`Consultez et gérez les ${activeTab === 'joueur' ? "inscriptions des nouveaux joueurs" : activeTab === 'fan' ? "demandes d'adhésion au club des fans" : "messages de contact"}.`}
       >
         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
           <div className="max-w-full overflow-x-auto">
@@ -253,14 +295,24 @@ export default function DemandesPage() {
               <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {loading ? (
                   <TableRow>
-                    <td colSpan={5} className="py-6 text-center text-sm text-gray-500">Chargement...</td>
+                    <td colSpan={5} className="py-12">
+                       <div className="flex flex-col items-center justify-center gap-4">
+                          <Loader />
+                          <p className="text-sm font-medium text-gray-400">Récupération des données...</p>
+                       </div>
+                    </td>
                   </TableRow>
-                ) : demandes.length === 0 ? (
+                ) : filteredDemandes.length === 0 ? (
                   <TableRow>
-                    <td colSpan={5} className="py-6 text-center text-sm text-gray-500">Aucune demande trouvée.</td>
+                    <td colSpan={5} className="py-20 flex flex-col items-center justify-center text-center">
+                       <div className="bg-gray-50 dark:bg-white/5 p-4 rounded-full mb-4">
+                          <EyeIcon className="w-8 h-8 text-gray-300" />
+                       </div>
+                       <p className="text-gray-400 font-medium">Aucun résultat dans cette catégorie.</p>
+                    </td>
                   </TableRow>
                 ) : (
-                  demandes.map((d) => {
+                  filteredDemandes.map((d) => {
                     const { label, color } = typeInfo(d.type);
                     return (
                       <TableRow key={d.id} className={!d.is_read ? "bg-brand-50/50 dark:bg-brand-900/10" : ""}>

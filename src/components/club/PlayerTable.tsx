@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Loader from "@/components/common/Loader";
 import {
   Table,
   TableBody,
@@ -38,6 +39,7 @@ const defaultColumns: PlayerColumnKey[] = [
 
 interface PlayerTableProps {
   players: Player[];
+  isLoading?: boolean;
   columns?: PlayerColumnKey[];
   title?: string;
   showToolbar?: boolean;
@@ -50,6 +52,7 @@ interface PlayerTableProps {
 
 export default function PlayerTable({
   players,
+  isLoading = false,
   columns = defaultColumns,
   title = "Joueurs",
   showToolbar = true,
@@ -240,7 +243,19 @@ export default function PlayerTable({
           </TableHeader>
 
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {pagedPlayers.length === 0 ? (
+            {isLoading ? (
+               <TableRow>
+                <TableCell
+                  className="py-10 text-center"
+                  colSpan={visibleColumnsCount}
+                >
+                   <div className="flex flex-col items-center justify-center gap-3">
+                      <Loader />
+                      <p className="text-sm font-medium text-gray-400">Chargement des joueurs...</p>
+                   </div>
+                </TableCell>
+              </TableRow>
+            ) : pagedPlayers.length === 0 ? (
               <TableRow>
                 <TableCell
                   className="py-6 text-center text-theme-sm text-gray-500 dark:text-gray-400"

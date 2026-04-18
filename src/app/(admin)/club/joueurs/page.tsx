@@ -9,7 +9,7 @@ import { useClubData } from "@/context/ClubDataContext";
 
 export default function ClubPlayersPage() {
   const router = useRouter();
-  const { players, setPlayers } = useClubData();
+  const { players, setPlayers, hydrated } = useClubData();
 
   return (
     <div className="space-y-6">
@@ -29,6 +29,7 @@ export default function ClubPlayersPage() {
       >
         <PlayerTable
           players={players}
+          isLoading={!hydrated}
           onEditPlayer={(player) => router.push(`/club/joueurs/${player.id}/modifier`)}
           onDeletePlayer={async (player) => {
             const response = await fetch(`/api/club/players/${player.id}`, { method: "DELETE" });

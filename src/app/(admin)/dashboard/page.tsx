@@ -43,13 +43,13 @@ export default function DashboardPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/joueurs/nouveau"
+              href="/articles/nouveau"
               className="rounded-lg bg-brand-500 px-4 py-3 text-sm font-medium text-white transition hover:bg-brand-600"
             >
               Nouvel article
             </Link>
             <Link
-              href="/staff/nouveau"
+              href="/stages/nouveau"
               className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               Nouveau stage
@@ -85,8 +85,8 @@ export default function DashboardPage() {
                 {[...articles.slice(0, 3), ...stages.slice(0, 3)].map((entry) => {
                   const isArticle = "category" in entry;
                   const href = isArticle
-                    ? `/joueurs/${entry.id}/modifier`
-                    : `/staff/${entry.id}/modifier`;
+                    ? `/articles/${entry.id}/modifier`
+                    : `/stages/${entry.id}/modifier`;
                   const metric = isArticle
                     ? `${formatNumber(entry.metrics.views)} vues`
                     : `${formatNumber(entry.metrics.applications)} candidatures`;

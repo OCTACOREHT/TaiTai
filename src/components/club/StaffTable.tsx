@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Loader from "@/components/common/Loader";
 import {
   Table,
   TableBody,
@@ -15,6 +16,7 @@ import { StaffMember } from "@/types/club";
 
 interface StaffTableProps {
   staff: StaffMember[];
+  isLoading?: boolean;
   onEditStaff?: (member: StaffMember) => void;
   onDeleteStaff?: (member: StaffMember) => void;
 }
@@ -34,6 +36,7 @@ const roleBadgeColor = (role: StaffMember["role"]) => {
 
 export default function StaffTable({
   staff,
+  isLoading = false,
   onEditStaff,
   onDeleteStaff,
 }: StaffTableProps) {
@@ -108,7 +111,16 @@ export default function StaffTable({
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {pagedStaff.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={3} className="py-10">
+                   <div className="flex flex-col items-center justify-center gap-3">
+                      <Loader />
+                      <p className="text-sm font-medium text-gray-400">Chargement du personnel...</p>
+                   </div>
+                </TableCell>
+              </TableRow>
+            ) : pagedStaff.length === 0 ? (
               <TableRow>
                 <td
                   colSpan={3}

@@ -61,6 +61,8 @@ interface CmsContextValue extends CmsDataSnapshot {
   trackPartnerClick: (partnerId: string) => void;
   trackHomeVisit: () => void;
   trackHomeCta: () => void;
+  unreadDemandesCount: number;
+  refreshUnreadDemandesCount: () => Promise<void>;
 }
 
 const defaultHomePage: HomePageSettings = {
@@ -140,25 +142,25 @@ function mapDbArticle(row: Record<string, unknown>): CmsArticle {
   return {
     id: String(row.id ?? ""),
     slug: String(row.slug ?? ""),
-    title: String(row.titre_fr ?? row.title ?? ""),
-    excerpt: String(row.extrait_fr ?? row.excerpt ?? ""),
-    body: String(row.contenu_fr ?? row.body ?? row.extrait_fr ?? ""),
-    coverImage: String(row.photo_couverture ?? row.coverImage ?? "/images/grid-image/image-01.png"),
-    category: String(row.categorie ?? row.category ?? "Articles"),
+    title: String(row.title_fr ?? row.titre_fr ?? row.title ?? ""),
+    excerpt: String(row.excerpt_fr ?? row.extrait_fr ?? row.excerpt ?? ""),
+    body: String(row.content_fr ?? row.contenu_fr ?? row.body ?? row.excerpt_fr ?? row.extrait_fr ?? ""),
+    coverImage: String(row.cover_image ?? row.photo_couverture ?? row.coverImage ?? "/images/grid-image/image-01.png"),
+    category: String(row.category ?? row.categorie ?? row.category ?? "Articles"),
     tags: Array.isArray(row.tags) ? row.tags.map(String) : [],
     authorId: String(row.auteur_id ?? row.authorId ?? row.auteur ?? ""),
     featured: Boolean(row.featured),
-    status: mapStatus(String(row.statut ?? row.status ?? "")),
+    status: mapStatus(String(row.status ?? row.statut ?? "")),
     seoTitle: String(row.seo_title ?? row.titre_en ?? row.seoTitle ?? row.titre_fr ?? ""),
     seoDescription: String(row.seo_description ?? row.seoDescription ?? row.extrait_fr ?? ""),
-    createdAt: String(row.date_creation ?? row.createdAt ?? new Date().toISOString()),
+    createdAt: String(row.created_at ?? row.date_creation ?? row.createdAt ?? new Date().toISOString()),
     updatedAt: String(
-      row.date_modification ?? row.updatedAt ?? row.date_creation ?? new Date().toISOString(),
+      row.updated_at ?? row.date_modification ?? row.updatedAt ?? row.created_at ?? row.date_creation ?? new Date().toISOString(),
     ),
-    publishedAt: row.date_publication ? String(row.date_publication) : null,
+    publishedAt: row.published_at ? String(row.published_at) : row.date_publication ? String(row.date_publication) : null,
     metrics: {
       views: Number(row.views ?? 0),
-      linkClicks: Number(row.linkClicks ?? 0),
+      linkClicks: Number(row.link_clicks ?? row.linkClicks ?? 0),
       shares: Number(row.shares ?? 0),
       leads: Number(row.leads ?? 0),
     },
@@ -169,21 +171,21 @@ function mapDbStage(row: Record<string, unknown>): CmsStage {
   return {
     id: String(row.id ?? ""),
     slug: String(row.slug ?? ""),
-    title: String(row.titre ?? ""),
-    excerpt: String(row.extrait ?? ""),
-    body: String(row.contenu ?? ""),
-    coverImage: String(row.photo_couverture ?? "/images/grid-image/image-01.png"),
-    department: String(row.departement ?? ""),
+    title: String(row.title ?? row.titre ?? ""),
+    excerpt: String(row.excerpt ?? row.extrait ?? ""),
+    body: String(row.content ?? row.contenu ?? ""),
+    coverImage: String(row.cover_image ?? row.photo_couverture ?? "/images/grid-image/image-01.png"),
+    department: String(row.department ?? row.departement ?? ""),
     location: String(row.location ?? ""),
     workMode: (row.work_mode as CmsStage["workMode"]) || "hybrid",
     duration: String(row.duration ?? ""),
-    contactEmail: String(row.contact_email ?? ""),
+    contactEmail: String(row.contact_email ?? row.contactEmail ?? ""),
     closeDate: row.close_date ? String(row.close_date) : null,
     featured: Boolean(row.featured),
-    status: mapStatus(String(row.statut ?? "")),
-    createdAt: String(row.date_creation ?? new Date().toISOString()),
-    updatedAt: String(row.date_modification ?? new Date().toISOString()),
-    publishedAt: row.date_publication ? String(row.date_publication) : null,
+    status: mapStatus(String(row.status ?? row.statut ?? "")),
+    createdAt: String(row.created_at ?? row.date_creation ?? new Date().toISOString()),
+    updatedAt: String(row.updated_at ?? row.date_modification ?? row.date_creation ?? new Date().toISOString()),
+    publishedAt: row.published_at ? String(row.published_at) : row.date_publication ? String(row.date_publication) : null,
     metrics: {
       views: Number(row.views ?? 0),
       applications: Number(row.applications ?? 0),
@@ -195,14 +197,14 @@ function mapDbStage(row: Record<string, unknown>): CmsStage {
 function mapDbPartner(row: Record<string, unknown>): CmsPartner {
   return {
     id: String(row.id ?? ""),
-    name: String(row.nom ?? ""),
+    name: String(row.name ?? row.nom ?? ""),
     website: String(row.website ?? ""),
     logo: String(row.logo ?? ""),
-    category: String(row.categorie ?? "Media"),
+    category: String(row.category ?? row.categorie ?? "Media"),
     tier: (row.tier as CmsPartner["tier"]) || "silver",
     description: String(row.description ?? ""),
     featured: Boolean(row.featured),
-    createdAt: String(row.date_creation ?? new Date().toISOString()),
+    createdAt: String(row.created_at ?? row.date_creation ?? new Date().toISOString()),
     clicks: Number(row.clicks ?? 0),
   };
 }
@@ -244,6 +246,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
   const [data, setData] = useState<CmsDataSnapshot>(initialData);
   const [currentUser, setCurrentUser] = useState<CmsUser | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [unreadDemandesCount, setUnreadDemandesCount] = useState(0);
 
   useEffect(() => {
     const validateSession = async () => {
@@ -296,8 +299,10 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
 
         const needsArticles =
           pathname === "/" ||
+          pathname.startsWith("/articles") ||
           pathname.startsWith("/dashboard");
         const needsStages =
+          pathname.startsWith("/stages") ||
           pathname.startsWith("/dashboard");
         const needsPartners =
           pathname.startsWith("/dashboard");
@@ -307,63 +312,61 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
           pathname.startsWith("/dashboard");
         const needsSettings =
           pathname.startsWith("/parametres") ||
+          pathname.startsWith("/apercu-site") ||
+          pathname.startsWith("/articles") ||
+          pathname.startsWith("/stages") ||
+          pathname.startsWith("/tracking") ||
           pathname === "/" ||
           pathname.startsWith("/dashboard");
 
-        const articlesRes = await fetch(
-          token
-            ? needsArticles
-              ? "/api/admin/articles?limit=100"
-              : "/api/admin/articles?limit=20"
-            : "/api/articles?limit=100",
-          {
-            headers,
-            signal: controller.signal,
-            cache: "no-store",
-          },
-        );
-        const stagesRes = token && needsStages
-          ? await fetch("/api/admin/stages", {
-              headers,
-              signal: controller.signal,
-              cache: "no-store",
-            })
-          : null;
-        const partnersRes = token && needsPartners
-          ? await fetch("/api/admin/partners", {
-              headers,
-              signal: controller.signal,
-              cache: "no-store",
-            })
-          : null;
-        const settingsRes = token && needsSettings
-          ? await fetch("/api/admin/settings", {
-              headers,
-              signal: controller.signal,
-              cache: "no-store",
-            })
-          : null;
-        const usersRes = token && needsUsers
-          ? await fetch("/api/admin/users", {
-              headers,
-              signal: controller.signal,
-              cache: "no-store",
-            })
-          : null;
+        const articlesUrl = token
+          ? needsArticles
+            ? "/api/admin/articles?limit=100"
+            : "/api/admin/articles?limit=20"
+          : "/api/articles?limit=100";
 
-        const articlePayload = articlesRes && articlesRes.ok ? await articlesRes.json() : { data: [] };
-        const stagePayload = stagesRes && stagesRes.ok ? await stagesRes.json() : { data: [] };
-        const partnerPayload = partnersRes && partnersRes.ok ? await partnersRes.json() : { data: [] };
-        const settingsPayload = settingsRes && settingsRes.ok ? await settingsRes.json() : {};
-        const usersPayload = usersRes && usersRes.ok ? await usersRes.json() : { data: [] };
+        const fetchOptions = {
+          headers,
+          signal: controller.signal,
+          cache: "no-store",
+        } as const;
+
+        // Fetch all needed resources in parallel
+        const [
+          articlesRes,
+          stagesRes,
+          partnersRes,
+          settingsRes,
+          usersRes,
+        ] = await Promise.all([
+          fetch(articlesUrl, fetchOptions),
+          token && needsStages ? fetch("/api/admin/stages", fetchOptions) : Promise.resolve(null),
+          token && needsPartners ? fetch("/api/admin/partners", fetchOptions) : Promise.resolve(null),
+          token && needsSettings ? fetch("/api/admin/settings", fetchOptions) : Promise.resolve(null),
+          token && needsUsers ? fetch("/api/admin/users", fetchOptions) : Promise.resolve(null),
+        ]);
+
+        const [
+          articlePayload,
+          stagePayload,
+          partnerPayload,
+          settingsPayload,
+          usersPayload,
+        ] = await Promise.all([
+          articlesRes && articlesRes.ok ? articlesRes.json() : { data: [] },
+          stagesRes && stagesRes.ok ? stagesRes.json() : { data: [] },
+          partnersRes && partnersRes.ok ? partnersRes.json() : { data: [] },
+          settingsRes && settingsRes.ok ? settingsRes.json() : {},
+          usersRes && usersRes.ok ? usersRes.json() : { data: [] },
+        ]);
 
         setData((prev) => ({
           ...prev,
-          articles: Array.isArray(articlePayload.data) ? articlePayload.data.map(mapDbArticle) : [],
-          stages: Array.isArray(stagePayload.data) ? stagePayload.data.map(mapDbStage) : prev.stages,
-          partners: Array.isArray(partnerPayload.data) ? partnerPayload.data.map(mapDbPartner) : prev.partners,
-          users: Array.isArray(usersPayload.data) ? usersPayload.data.map(mapDbUser) : prev.users,
-          homePage: settingsPayload.home
+          articles: Array.isArray(articlePayload?.data) ? articlePayload.data.map(mapDbArticle) : prev.articles,
+          stages: (token && needsStages && Array.isArray(stagePayload?.data)) ? stagePayload.data.map(mapDbStage) : prev.stages,
+          partners: (token && needsPartners && Array.isArray(partnerPayload?.data)) ? partnerPayload.data.map(mapDbPartner) : prev.partners,
+          users: (token && needsUsers && Array.isArray(usersPayload?.data)) ? usersPayload.data.map(mapDbUser) : prev.users,
+          homePage: settingsPayload?.home
             ? {
                 ...prev.homePage,
                 heroBadge: settingsPayload.home.hero_badge,
@@ -389,7 +392,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
                 metrics: Array.isArray(settingsPayload.metrics) ? settingsPayload.metrics.map((m: any) => ({ label: m.label, value: m.value, note: m.note || undefined })) : prev.homePage.metrics,
               }
             : prev.homePage,
-          siteSettings: settingsPayload.site
+          siteSettings: settingsPayload?.site
             ? {
                 ...prev.siteSettings,
                 siteName: settingsPayload.site.site_name,
@@ -440,7 +443,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
           id: `article-${article.id}`,
           title: "Article en revue",
           description: article.title,
-          href: `/joueurs/${article.id}/modifier`,
+          href: `/articles/${article.id}/modifier`,
         })),
     [data.articles],
   );
@@ -744,10 +747,45 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     }));
   };
 
-  const trackStageView = (_stageId: string) => {};
-  const trackStageApplication = (_stageId: string) => {};
-  const trackStageContact = (_stageId: string) => {};
-  const trackPartnerClick = (_partnerId: string) => {};
+  const trackStageView = (stageId: string) => {
+    setData((prev) => ({
+      ...prev,
+      stages: prev.stages.map((s) =>
+        s.id === stageId ? { ...s, metrics: { ...s.metrics, views: s.metrics.views + 1 } } : s,
+      ),
+    }));
+  };
+
+  const trackStageApplication = (stageId: string) => {
+    setData((prev) => ({
+      ...prev,
+      stages: prev.stages.map((s) =>
+        s.id === stageId
+          ? { ...s, metrics: { ...s.metrics, applications: s.metrics.applications + 1 } }
+          : s,
+      ),
+    }));
+  };
+
+  const trackStageContact = (stageId: string) => {
+    setData((prev) => ({
+      ...prev,
+      stages: prev.stages.map((s) =>
+        s.id === stageId
+          ? { ...s, metrics: { ...s.metrics, contactClicks: (s.metrics.contactClicks || 0) + 1 } }
+          : s,
+      ),
+    }));
+  };
+
+  const trackPartnerClick = (partnerId: string) => {
+    setData((prev) => ({
+      ...prev,
+      partners: prev.partners.map((p) =>
+        p.id === partnerId ? { ...p, clicks: (p.clicks || 0) + 1 } : p,
+      ),
+    }));
+  };
 
   const trackHomeVisit = () => {
     setData((prev) => ({
@@ -768,6 +806,25 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
       },
     }));
   };
+
+  const refreshUnreadDemandesCount = async () => {
+    try {
+      const res = await fetch("/api/demandes");
+      if (res.ok) {
+        const json = await res.json();
+        const unread = (json.data || []).filter((d: any) => !d.is_read).length;
+        setUnreadDemandesCount(unread);
+      }
+    } catch (e) {
+      console.error("[CmsContext] Erreur refresh unread", e);
+    }
+  };
+
+  useEffect(() => {
+    if (hydrated && currentUser) {
+      refreshUnreadDemandesCount();
+    }
+  }, [hydrated, currentUser]);
 
   return (
     <CmsContext.Provider
@@ -799,6 +856,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
         trackPartnerClick,
         trackHomeVisit,
         trackHomeCta,
+        unreadDemandesCount,
+        refreshUnreadDemandesCount,
       }}
     >
       {children}

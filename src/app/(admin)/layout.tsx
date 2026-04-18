@@ -6,8 +6,8 @@ import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import { usePathname, useRouter } from "next/navigation";
-import React from "react";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import Loader from "@/components/common/Loader";
 
 export default function AdminLayout({
   children,
@@ -49,10 +49,11 @@ export default function AdminLayout({
 
   if (!hydrated || !currentUser) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="rounded-2xl border border-gray-200 bg-white px-6 py-5 text-sm text-gray-500 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <Loader />
+        <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
           Chargement du CMS...
-        </div>
+        </p>
       </div>
     );
   }

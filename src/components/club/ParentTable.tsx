@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Loader from "@/components/common/Loader";
 import {
   Table,
   TableBody,
@@ -16,6 +17,7 @@ import { getPlayerFullName } from "@/lib/club/metrics";
 interface ParentTableProps {
   parents: Parent[];
   players: Player[];
+  isLoading?: boolean;
   onEditParent?: (parent: Parent) => void;
   onDeleteParent?: (parent: Parent) => void;
 }
@@ -23,6 +25,7 @@ interface ParentTableProps {
 export default function ParentTable({
   parents,
   players,
+  isLoading = false,
   onEditParent,
   onDeleteParent,
 }: ParentTableProps) {
@@ -128,7 +131,16 @@ export default function ParentTable({
             </TableRow>
           </TableHeader>
           <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {pagedParents.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="py-10 text-center">
+                   <div className="flex flex-col items-center justify-center gap-3">
+                      <Loader />
+                      <p className="text-sm font-medium text-gray-400">Chargement des parents...</p>
+                   </div>
+                </TableCell>
+              </TableRow>
+            ) : pagedParents.length === 0 ? (
               <TableRow>
                 <td
                   colSpan={6}

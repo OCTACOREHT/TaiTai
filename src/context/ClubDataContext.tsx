@@ -9,12 +9,8 @@ type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 interface ClubDataContextValue {
   players: Player[];
   setPlayers: SetState<Player[]>;
-  parents: Parent[];
-  setParents: SetState<Parent[]>;
   staff: StaffMember[];
   setStaff: SetState<StaffMember[]>;
-  alumni: Alumni[];
-  setAlumni: SetState<Alumni[]>;
   events: ClubEvent[];
   setEvents: SetState<ClubEvent[]>;
   payments: Payment[];
@@ -35,9 +31,7 @@ async function fetchJson(url: string) {
 export const ClubDataProvider = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [players, setPlayers] = useState<Player[]>([]);
-  const [parents, setParents] = useState<Parent[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [events, setEvents] = useState<ClubEvent[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -47,6 +41,7 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
       pathname.startsWith("/club") ||
       pathname.startsWith("/evenements") ||
       pathname.startsWith("/paiements") ||
+      pathname.startsWith("/tracking") ||
       pathname.startsWith("/classement");
 
     if (!shouldLoadClubData) {
@@ -58,12 +53,13 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
       try {
         const isEventSection = pathname.startsWith("/evenements");
         const isPaymentSection = pathname.startsWith("/paiements");
-        const playersRes = await fetchJson("/api/club/players");
-        const parentsRes = isEventSection || isPaymentSection ? { data: [] } : await fetchJson("/api/club/parents");
-        const staffRes = isEventSection || isPaymentSection ? { data: [] } : await fetchJson("/api/club/staff");
-        const alumniRes = isEventSection || isPaymentSection ? { data: [] } : await fetchJson("/api/club/alumni");
-        const eventsRes = isPaymentSection ? { data: [] } : await fetchJson("/api/club/events");
-        const paymentsRes = isEventSection ? { data: [] } : await fetchJson("/api/club/payments");
+
+        const [playersRes, staffRes, eventsRes, paymentsRes] = await Promise.all([
+          fetchJson("/api/club/players"),
+          isEventSection || isPaymentSection ? Promise.resolve({ data: [] }) : fetchJson("/api/club/staff"),
+          isPaymentSection ? Promise.resolve({ data: [] }) : fetchJson("/api/club/events"),
+          isEventSection ? Promise.resolve({ data: [] }) : fetchJson("/api/club/payments"),
+        ]);
 
         setPlayers(
           (playersRes.data || []).map((row: any) => ({
@@ -84,17 +80,6 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
             dernierPaiement: row.dernierPaiement || row.dernier_paiement || row.last_payment_date || "",
           })),
         );
-        setParents(
-          (parentsRes.data || []).map((row: any) => ({
-            id: row.id,
-            nom: row.nom,
-            prenom: row.prenom,
-            telephone: row.telephone,
-            email: row.email,
-            lien: row.lien,
-            playerId: row.player_id,
-          })),
-        );
         setStaff(
           (staffRes.data || []).map((row: any) => ({
             id: row.id,
@@ -104,16 +89,6 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
             telephone: row.phone || row.telephone,
             email: row.email,
             dateDebut: row.start_date || row.date_debut,
-          })),
-        );
-        setAlumni(
-          (alumniRes.data || []).map((row: any) => ({
-            id: row.id,
-            nom: row.nom,
-            anneeEntree: row.annee_entree,
-            anneeSortie: row.annee_sortie,
-            poste: row.poste,
-            situationActuelle: row.situation_actuelle,
           })),
         );
         setEvents(
@@ -139,7 +114,7 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
           })),
         );
       } catch (error) {
-        console.error("[ClubDataContext] chargement partiel impossible", error);
+        console.error("[ClubDataContext] chargement impossible", error);
       } finally {
         setHydrated(true);
       }
@@ -149,7 +124,19 @@ export const ClubDataProvider = ({ children }: { children: React.ReactNode }) =>
   }, [pathname]);
 
   return (
-    <ClubDataContext.Provider value={{ players, setPlayers, parents, setParents, staff, setStaff, alumni, setAlumni, events, setEvents, payments, setPayments, hydrated }}>
+    <ClubDataContext.Provider
+      value={{
+        players,
+        setPlayers,
+        staff,
+        setStaff,
+        events,
+        setEvents,
+        payments,
+        setPayments,
+        hydrated,
+      }}
+    >
       {children}
     </ClubDataContext.Provider>
   );

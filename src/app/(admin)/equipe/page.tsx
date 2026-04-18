@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
+import Loader from "@/components/common/Loader";
 import { SectionCard, StatusBadge, TextInput, SelectInput, SectionCard as Card } from "@/components/common/CmsShared";
 import Button from "@/components/ui/button/Button";
 import { useCms } from "@/context/CmsContext";
@@ -107,7 +108,16 @@ export default function EquipePage() {
     }
   };
 
-  if (!hydrated || !canManageUsers) return null;
+  if (!hydrated || !canManageUsers) {
+    return (
+       <div className="flex h-screen items-center justify-center -mt-20">
+          <div className="flex flex-col items-center gap-4">
+             <Loader />
+             <p className="text-sm font-medium text-gray-500">Validation des accès de l'équipe...</p>
+          </div>
+       </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

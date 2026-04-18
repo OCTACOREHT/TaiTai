@@ -5,6 +5,7 @@ import Link from "next/link";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SectionCard, cn } from "@/components/common/CmsShared";
 import { useCms } from "@/context/CmsContext";
+import Loader from "@/components/common/Loader";
 
 interface TournamentItem {
   id: string;
@@ -145,9 +146,10 @@ export default function FlagDayPage() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-64 rounded-3xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
-          ))
+          <div className="col-span-full py-16 flex flex-col items-center justify-center gap-4 bg-white/5 rounded-3xl border border-white/10">
+            <Loader />
+            <p className="text-sm font-medium text-gray-400">Récupération des tournois Flag Day...</p>
+          </div>
         ) : tournaments.length === 0 ? (
           <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-white/[0.02] rounded-3xl border-2 border-dashed border-gray-100 dark:border-gray-800">
             <p className="text-lg text-gray-400 font-medium">Aucun tournoi disponible. Créez votre première compétition !</p>
