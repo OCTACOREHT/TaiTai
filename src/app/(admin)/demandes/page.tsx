@@ -243,7 +243,7 @@ export default function DemandesPage() {
         // Optimistically update local state to show the reply immediately
         setDemandes((prev) => prev.map(d => {
            if (d.id === selectedDemande.id) {
-              const newReplies = [...(d.payload?.replies || []), {
+              const newReplies = [...((d.payload?.replies as any[]) || []), {
                  role: 'admin',
                  message: replyBody,
                  subject: replySubject,
@@ -478,7 +478,7 @@ export default function DemandesPage() {
                      )}
 
                      {/* CONVERSATION HISTORY */}
-                     {selectedDemande.payload?.replies?.map((reply: any, idx: number) => (
+                     {(selectedDemande.payload?.replies as any[])?.map((reply: any, idx: number) => (
                         <div key={idx} className={`flex flex-col gap-1 max-w-[85%] animate-in ${reply.role === 'admin' ? 'ml-auto items-end' : 'items-start'} duration-300`}>
                            <div className={`text-[10px] text-gray-400 font-bold mb-1 uppercase tracking-tighter ${reply.role === 'admin' ? 'text-right mr-3' : 'ml-3'}`}>
                               {reply.role === 'admin' ? 'Vous' : 'Réponse Client'}
@@ -496,7 +496,7 @@ export default function DemandesPage() {
                         </div>
                      ))}
 
-                     {!selectedDemande.message && (!selectedDemande.payload?.replies || selectedDemande.payload.replies.length === 0) && (
+                     {!selectedDemande.message && (!(selectedDemande.payload?.replies as any[]) || (selectedDemande.payload?.replies as any[]).length === 0) && (
                         <div className="flex flex-col items-center justify-center p-8 text-center space-y-3 opacity-50">
                            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full">
                               <EyeIcon className="w-6 h-6 text-gray-400" />

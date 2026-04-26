@@ -21,6 +21,7 @@ import {
   getPlayerFullName,
 } from "@/lib/club/metrics";
 import {
+  colorFromPaymentStatus,
   colorFromPlayerStatus,
   paymentStatusLabel,
   playerStatusLabel,
@@ -231,6 +232,30 @@ export default function PlayerTable({
                   Date de naissance
                 </TableCell>
               ) : null}
+              {visibleColumnSet.has("cotisation") ? (
+                <TableCell
+                  isHeader
+                  className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Cotisation
+                </TableCell>
+              ) : null}
+              {visibleColumnSet.has("montant") ? (
+                <TableCell
+                  isHeader
+                  className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Montant
+                </TableCell>
+              ) : null}
+              {visibleColumnSet.has("dernierPaiement") ? (
+                <TableCell
+                  isHeader
+                  className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                >
+                  Dernier paiement
+                </TableCell>
+              ) : null}
               {visibleColumnSet.has("actions") ? (
                 <TableCell
                   isHeader
@@ -323,6 +348,23 @@ export default function PlayerTable({
                   {visibleColumnSet.has("dateNaissance") ? (
                     <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
                       {formatClubDate(player.dateNaissance)}
+                    </TableCell>
+                  ) : null}
+                  {visibleColumnSet.has("cotisation") ? (
+                    <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                      <Badge size="sm" color={colorFromPaymentStatus(player.cotisationStatut)}>
+                        {paymentStatusLabel[player.cotisationStatut]}
+                      </Badge>
+                    </TableCell>
+                  ) : null}
+                  {visibleColumnSet.has("montant") ? (
+                    <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                      {formatClubCurrency(player.cotisationMontant)}
+                    </TableCell>
+                  ) : null}
+                  {visibleColumnSet.has("dernierPaiement") ? (
+                    <TableCell className="py-3 text-theme-sm text-gray-500 dark:text-gray-400">
+                      {formatClubDate(player.dernierPaiement)}
                     </TableCell>
                   ) : null}
                   {visibleColumnSet.has("actions") ? (

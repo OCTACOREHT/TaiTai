@@ -1,6 +1,5 @@
 import GridShape from "@/components/common/GridShape";
 import ThemeTogglerTwo from "@/components/common/ThemeTogglerTwo";
-
 import { ThemeProvider } from "@/context/ThemeContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,32 +11,31 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
+    <div className="relative z-1 bg-white p-6 dark:bg-gray-900 sm:p-0">
       <ThemeProvider>
-        <div className="relative flex lg:flex-row w-full h-screen justify-center flex-col  dark:bg-gray-900 sm:p-0">
+        <div className="relative flex h-screen w-full flex-col justify-center dark:bg-gray-900 sm:p-0 lg:flex-row">
           {children}
-          <div className="lg:w-1/2 w-full h-full bg-brand-950 dark:bg-white/5 lg:grid items-center hidden">
-            <div className="relative items-center justify-center  flex z-1">
-              {/* <!-- ===== Common Grid Shape Start ===== --> */}
+          <div className="hidden h-full w-full items-center bg-brand-950 dark:bg-white/5 lg:grid lg:w-1/2">
+            <div className="relative z-1 flex items-center justify-center">
               <GridShape />
-              <div className="flex flex-col items-center max-w-xs">
-                <Link href="/" className="block mb-4">
+              <div className="flex max-w-xs flex-col items-center">
+                <Link href="/" className="mb-4 block">
                   <div className="flex items-center gap-3">
                     <Image
                       width={52}
                       height={52}
-                      src="/images/logo/fc-toro.png"
-                      alt="FC Toro"
+                      src="/images/logo/tailogo.png"
+                      alt="TaiTai"
                       className="rounded-lg object-contain"
                     />
                     <div>
-                      <p className="text-2xl font-semibold text-white">FC Toro</p>
-                      <p className="text-sm text-gray-300">CMS Editorial</p>
+                      <p className="text-2xl font-semibold text-white">TaiTai</p>
+                      <p className="text-sm text-gray-300">Restaurant SaaS</p>
                     </div>
                   </div>
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Espace de gestion officiel du site FC Toro
+                  Espace de demonstration du back-office TaiTai
                 </p>
               </div>
             </div>

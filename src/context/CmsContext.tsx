@@ -66,7 +66,7 @@ interface CmsContextValue extends CmsDataSnapshot {
 }
 
 const defaultHomePage: HomePageSettings = {
-  heroBadge: "FC Toro CMS",
+  heroBadge: "TaiTai CMS",
   heroTitle: "Pilotez vos contenus depuis le CMS.",
   heroSubtitle: "Les articles visibles sur cette page sont charges depuis la base de donnees.",
   heroPrimaryCtaLabel: "Voir les articles",
@@ -78,10 +78,10 @@ const defaultHomePage: HomePageSettings = {
   aboutBody: "Le site public lit maintenant les articles depuis votre API Next et PostgreSQL.",
   articleSectionTitle: "Articles publies",
   articleSectionIntro: "Les articles ci-dessous proviennent directement de votre base.",
-  stageSectionTitle: "Stages",
-  stageSectionIntro: "Aucune source de base n'est encore branchee pour les stages.",
+  stageSectionTitle: "Recrutements",
+  stageSectionIntro: "Préparez vos équipes pour le restaurant.",
   partnerSectionTitle: "Partenaires",
-  partnerSectionIntro: "Aucune source de base n'est encore branchee pour les partenaires.",
+  partnerSectionIntro: "Gérez vos relations fournisseurs et partenaires.",
   metrics: [],
   featuredArticleIds: [],
   featuredStageIds: [],
@@ -90,18 +90,18 @@ const defaultHomePage: HomePageSettings = {
 };
 
 const defaultSiteSettings: SiteSettings = {
-  siteName: "FC Toro CMS",
-  publicTagline: "Gestion editoriale connectee a PostgreSQL",
-  primaryEmail: "contact@fctoro.cms",
+  siteName: "TaiTai CMS",
+  publicTagline: "Gestion restaurant connectee a PostgreSQL",
+  primaryEmail: "contact@taitai.cms",
   phone: "+509 0000-0000",
   address: "Port-au-Prince",
   footerText: "Le contenu editorial public est synchronise avec la base de donnees.",
   partnerPageTitle: "Partenaires",
-  partnerPageIntro: "Section en attente de branchement base de donnees.",
+  partnerPageIntro: "Gestion des partenaires logistiques.",
   articlePageTitle: "Articles",
   articlePageIntro: "Les articles de cette page proviennent de PostgreSQL.",
-  stagePageTitle: "Stages",
-  stagePageIntro: "Section en attente de branchement base de donnees.",
+  stagePageTitle: "Recrutements",
+  stagePageIntro: "Offres d'emploi et de stage pour TaiTai.",
 };
 
 const initialData: CmsDataSnapshot = {

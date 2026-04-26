@@ -3,16 +3,14 @@
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
-import { useCms } from "@/context/CmsContext";
 import { useSidebar } from "@/context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-  const { currentUser } = useCms();
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -21,7 +19,6 @@ const AppHeader: React.FC = () => {
       toggleMobileSidebar();
     }
   };
-
 
   return (
     <header className="sticky top-0 z-99999 flex w-full border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 lg:border-b">
@@ -70,12 +67,12 @@ const AppHeader: React.FC = () => {
               <Image
                 width={36}
                 height={36}
-                src="/images/logo/fc-toro.png"
-                alt="FC Toro"
+                src="/images/logo/tailogo.png"
+                alt="TaiTai"
                 className="h-9 w-9 rounded-lg object-contain"
               />
               <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                FC Toro CMS
+                TaiTai SaaS
               </span>
             </div>
           </Link>
@@ -99,7 +96,6 @@ const AppHeader: React.FC = () => {
               />
             </svg>
           </button>
-
         </div>
 
         <div
@@ -111,7 +107,7 @@ const AppHeader: React.FC = () => {
             <ThemeToggleButton />
             <NotificationDropdown />
           </div>
-          {currentUser ? <UserDropdown /> : null}
+          <UserDropdown />
         </div>
       </div>
     </header>

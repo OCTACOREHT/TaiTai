@@ -11,8 +11,13 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "FC Toro CMS",
-  description: "Le système de pilotage de FC Toro",
+  title: "TaiTai | Restaurant SaaS",
+  description: "Interface front-end de gestion de restaurant pour TaiTai",
+  icons: {
+    icon: "/images/logo/tailogo.png",
+    shortcut: "/images/logo/tailogo.png",
+    apple: "/images/logo/tailogo.png",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
           <ClubDataProvider>

@@ -7,6 +7,7 @@ import { SectionCard } from "@/components/common/CmsShared";
 import PlayerForm from "@/components/club/forms/PlayerForm";
 import { useClubData } from "@/context/ClubDataContext";
 import { toPlayerFormValues } from "@/lib/club/player-form";
+import { Player } from "@/types/club";
 
 export default function EditClubPlayerPage() {
   const params = useParams<{ id: string }>();
@@ -43,7 +44,7 @@ export default function EditClubPlayerPage() {
               ...player,
               ...values,
               photoUrl: values.photoUrl || player.photoUrl,
-            };
+            } as Player;
             const response = await fetch(`/api/club/players/${player.id}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },

@@ -38,18 +38,18 @@
   --color-white: #ffffff;
   --color-black: #101828;
 
-  --color-brand-25: #fff7f7;
-  --color-brand-50: #ffecec;
-  --color-brand-100: #ffd5d8;
-  --color-brand-200: #ffb3b9;
-  --color-brand-300: #ff8590;
-  --color-brand-400: #ff5768;
-  --color-brand-500: #d11829;
-  --color-brand-600: #b90f1f;
-  --color-brand-700: #950f1f;
-  --color-brand-800: #7a101f;
-  --color-brand-900: #65131f;
-  --color-brand-950: #38080f;
+  --color-brand-25: #fffaf1;
+  --color-brand-50: #fff3df;
+  --color-brand-100: #ffe2b5;
+  --color-brand-200: #ffd086;
+  --color-brand-300: #ffbc5d;
+  --color-brand-400: #f7ad48;
+  --color-brand-500: #f4a640;
+  --color-brand-600: #db8923;
+  --color-brand-700: #b46b17;
+  --color-brand-800: #8f5315;
+  --color-brand-900: #754513;
+  --color-brand-950: #422407;
 
   --color-blue-light-25: #f5fbff;
   --color-blue-light-50: #f0f9ff;
@@ -148,7 +148,7 @@
     0px 20px 24px -4px rgba(16, 24, 40, 0.08),
     0px 8px 8px -4px rgba(16, 24, 40, 0.03);
   --shadow-datepicker: -5px 0 0 #262d3c, 5px 0 0 #262d3c;
-  --shadow-focus-ring: 0px 0px 0px 4px rgba(209, 24, 41, 0.16);
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(244, 166, 64, 0.18);
   --shadow-slider-navigation:
     0px 1px 2px 0px rgba(16, 24, 40, 0.1), 0px 1px 3px 0px rgba(16, 24, 40, 0.1);
   --shadow-tooltip:
@@ -467,13 +467,13 @@ span.flatpickr-weekday,
 .flatpickr-day.selected.nextMonthDay,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
-  background: #465fff;
+  background: var(--color-brand-500);
   @apply !border-brand-500 !bg-brand-500 hover:!border-brand-50 hover:!bg-brand-500;
 }
 .flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.endRange.startRange + .endRange:not(:nth-child(7n + 1)) {
-  box-shadow: -10px 0 0 #465fff;
+  box-shadow: -10px 0 0 var(--color-brand-500);
 }
 
 .flatpickr-months .flatpickr-prev-month svg,
@@ -812,4 +812,33 @@ span.flatpickr-weekday,
 .dark .cms-editor-content blockquote,
 .dark .cms-prose blockquote {
   color: var(--color-gray-300);
+}
+
+/* Receipt paper effect */
+.receipt-paper {
+  background: white;
+  position: relative;
+  color: #1a1a1a;
+}
+
+.receipt-paper::before,
+.receipt-paper::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-size: 12px 100%;
+  background-repeat: repeat-x;
+  z-index: 10;
+}
+
+.receipt-paper::before {
+  top: -8px;
+  background-image: linear-gradient(135deg, #fff 25%, transparent 25%), linear-gradient(225deg, #fff 25%, transparent 25%);
+}
+
+.receipt-paper::after {
+  bottom: -8px;
+  background-image: linear-gradient(315deg, #fff 25%, transparent 25%), linear-gradient(45deg, #fff 25%, transparent 25%);
 }

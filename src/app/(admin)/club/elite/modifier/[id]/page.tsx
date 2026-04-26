@@ -3,7 +3,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import EliteForm from "@/components/club/forms/EliteForm";
 const db = require("@/server/db");
 
-export default async function ModifierJoueurElite({ params }: { params: { id: string } }) {
+export default async function ModifierJoueurElite({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   const { rows } = await db.query(

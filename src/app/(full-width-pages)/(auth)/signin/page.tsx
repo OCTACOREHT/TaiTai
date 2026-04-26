@@ -2,8 +2,8 @@ import SignInForm from "@/components/auth/SignInForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Connexion | FC Toro CMS",
-  description: "Page de connexion pour le CMS FC Toro",
+  title: "Connexion | TaiTai SaaS",
+  description: "Acces de demonstration pour l'interface TaiTai",
 };
 
 export default function SignIn() {

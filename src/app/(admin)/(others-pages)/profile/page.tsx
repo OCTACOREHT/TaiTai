@@ -27,8 +27,8 @@ export default function ProfilePage() {
         initialValue={currentUser}
         submitLabel="Enregistrer mon compte"
         allowAdminFields={false}
-        onSubmit={(value) => {
-          const result = saveUser(value);
+        onSubmit={async (value) => {
+          const result = await saveUser(value);
           if (result.success) {
             setMessage("Votre profil a ete mis a jour.");
             window.setTimeout(() => setMessage(""), 2500);
