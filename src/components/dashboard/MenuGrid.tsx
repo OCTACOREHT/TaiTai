@@ -1,6 +1,9 @@
+"use client";
+
 import { MenuItem, formatCurrency } from "@/lib/data";
-import { StatusPill } from "./StatusPill";
 import Image from "next/image";
+import { supabase } from "@/lib/supabase-client";
+import { useState } from "react";
 
 const gradients = [
   "from-brand-500/15 via-brand-500/8 to-transparent",
@@ -9,17 +12,34 @@ const gradients = [
   "from-brand-400/15 via-brand-400/8 to-transparent",
 ];
 
-export function MenuGrid({ items }: { items: MenuItem[] }) {
+export function MenuGrid({ items: initialItems }: { items: MenuItem[] }) {
+  const [items, setItems] = useState(initialItems);
+
+  const toggleAvailability = async (id: string, currentStatus: boolean) => {
+    const nextStatus = !currentStatus;
+    
+    // Optimistic
+    setItems(prev => prev.map(item => item.id === id ? { ...item, disponible: nextStatus } : item));
+
+    const { error } = await supabase
+      .from("menu_items")
+      .update({ disponible: nextStatus })
+      .eq("id", id);
+
+    if (error) {
+      alert("Erreur de mise à jour : " + error.message);
+      // Rollback
+      setItems(prev => prev.map(item => item.id === id ? { ...item, disponible: currentStatus } : item));
+    }
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {items.map((item, index) => {
-        const stockStatus = item.stock <= Math.ceil(item.maxStock * 0.35) ? "A recommander" : "Stable";
-        const stockWidth = `${Math.max((item.stock / item.maxStock) * 100, 10)}%`;
-
         return (
           <article
             key={item.id}
-            className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]"
+            className={`overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-xs transition dark:border-gray-800 dark:bg-white/[0.03] ${!item.disponible ? 'opacity-60 grayscale-[0.5]' : ''}`}
           >
             <div className={`bg-gradient-to-br ${gradients[index % gradients.length]} p-5`}>
               <div className="flex items-start justify-between gap-4">
@@ -73,22 +93,20 @@ export function MenuGrid({ items }: { items: MenuItem[] }) {
                 </div>
               </div>
 
-              <div>
-                <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Stock restant</span>
-                  <span className="font-medium text-gray-900 dark:text-white/90">
-                    {item.stock}/{item.maxStock}
-                  </span>
-                </div>
-                <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-800">
-                  <div
-                    className="h-full rounded-full bg-brand-500"
-                    style={{ width: stockWidth }}
-                  />
-                </div>
-                <div className="mt-3">
-                  <StatusPill value={stockStatus} />
-                </div>
+              <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                <span className={`text-sm font-medium ${item.disponible ? 'text-green-600' : 'text-red-500'}`}>
+                  {item.disponible ? 'Disponible' : 'Indisponible'}
+                </span>
+                <button
+                  onClick={() => toggleAvailability(item.id, item.disponible ?? true)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                    item.disponible 
+                    ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-500/10' 
+                    : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-500/10'
+                  }`}
+                >
+                  {item.disponible ? 'Désactiver' : 'Activer'}
+                </button>
               </div>
             </div>
           </article>

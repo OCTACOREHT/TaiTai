@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.ixpap.com",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "qieidcgyajmbeslgpdwl.supabase.co",
+      },
     ],
   },
   webpack(config) {

@@ -356,7 +356,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
           articlesRes && articlesRes.ok ? articlesRes.json() : { data: [] },
           stagesRes && stagesRes.ok ? stagesRes.json() : { data: [] },
           partnersRes && partnersRes.ok ? partnersRes.json() : { data: [] },
-          settingsRes && settingsRes.ok ? settingsRes.json() : {},
+          settingsRes && settingsRes.ok ? settingsRes.json() : { home: null, site: null, metrics: [] },
           usersRes && usersRes.ok ? usersRes.json() : { data: [] },
         ]);
 

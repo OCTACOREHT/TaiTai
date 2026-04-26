@@ -18,10 +18,11 @@ const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: <GridIcon /> },
   { name: "Données", path: "/donnees", icon: <BoxIconLine /> },
   { name: "Commandes", path: "/commandes", icon: <TableIcon /> },
-  { name: "Menu", path: "/menu", icon: <BoxCubeIcon /> },
+  { name: "Menu", path: "/menu-admin", icon: <BoxCubeIcon /> },
   { name: "Stocks", path: "/stocks", icon: <TableIcon /> },
   { name: "Fournisseurs", path: "/fournisseurs", icon: <UserCircleIcon /> },
   { name: "Clients", path: "/clients", icon: <UserCircleIcon /> },
+  { name: "Site Public", path: "/", icon: <GridIcon /> },
 ];
 
 const AppSidebar: React.FC = () => {

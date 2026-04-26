@@ -10,17 +10,52 @@ import { OrdersTable } from "@/components/dashboard/OrdersTable";
 import { QuickActionLinks } from "@/components/dashboard/QuickActionLinks";
 import { SalesPerformanceChart } from "@/components/dashboard/SalesPerformanceChart";
 import {
-  customers,
-  dashboardMetrics,
-  menuItems,
-  restaurantOrders,
+  getCommandes,
+  getMenuItems,
+  dashboardMetrics as initialMetrics,
   salesTrend,
-  stockItems,
   suppliers,
+  stockItems,
+  customers,
 } from "@/lib/data";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { MenuItem, RestaurantOrder, DashboardMetric } from "@/lib/data";
 
 export default function DashboardPage() {
+  const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [orders, setOrders] = useState<RestaurantOrder[]>([]);
+  const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [menuData, ordersData] = await Promise.all([
+          getMenuItems(),
+          getCommandes()
+        ]);
+        
+        setMenu(menuData);
+        setOrders(ordersData);
+
+        // Update metrics based on real data
+        const totalRevenue = ordersData.reduce((acc, curr) => acc + curr.total, 0);
+        const updatedMetrics = [...initialMetrics];
+        updatedMetrics[0].value = totalRevenue;
+        updatedMetrics[1].value = ordersData.length;
+        updatedMetrics[3].value = ordersData.length > 0 ? Math.round(totalRevenue / ordersData.length) : 0;
+        
+        setMetrics(updatedMetrics);
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
   return (
     <div className="space-y-6">
       <PageBreadCrumb pageTitle="Dashboard restaurant" />
@@ -33,8 +68,7 @@ export default function DashboardPage() {
               Pilotage complet du restaurant TaiTai
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-              Le shell admin reste intact, mais il pilote maintenant les ventes, les commandes,
-              le menu, les stocks et la relation client avec des donnees fictives.
+              Interface connectée en temps réel à Supabase. {loading ? "Mise à jour des données..." : "Données synchronisées."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -48,17 +82,17 @@ export default function DashboardPage() {
               href="/menu"
               className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              Gerer le menu
+              Gérer le menu
             </Link>
           </div>
         </div>
       </section>
 
-      <MetricGrid metrics={dashboardMetrics} />
+      <MetricGrid metrics={metrics} />
 
       <SectionCard
-        title="Acces rapides"
-        description="Un bouton par module, avec sa propre icone et sa page dediee."
+        title="Accès rapides"
+        description="Navigation directe vers les modules de gestion."
       >
         <QuickActionLinks />
       </SectionCard>
@@ -67,8 +101,8 @@ export default function DashboardPage() {
         <SalesPerformanceChart data={salesTrend} />
 
         <SectionCard
-          title="Commandes recentes"
-          description="Tickets prioritaires a traiter pendant le service."
+          title="Commandes récentes"
+          description="Les derniers tickets arrivés du site client."
           actions={
             <Link
               href="/commandes"
@@ -78,27 +112,20 @@ export default function DashboardPage() {
             </Link>
           }
         >
-          <OrdersTable orders={restaurantOrders.slice(0, 5)} />
+          <OrdersTable orders={orders.slice(0, 5)} />
         </SectionCard>
       </div>
 
       <SectionCard
         title="Gestion des plats"
-        description="Cartes menu, categories et disponibilites."
+        description="État actuel du menu et disponibilités."
       >
-        <MenuGrid items={menuItems} />
-      </SectionCard>
-
-      <SectionCard
-        title="Fournisseurs & stocks"
-        description="Suivi rapide des livraisons et des matieres premieres."
-      >
-        <InventoryOverview suppliers={suppliers} stockItems={stockItems} />
+        <MenuGrid items={menu} />
       </SectionCard>
 
       <SectionCard
         title="Clients"
-        description="Profils VIP et clients les plus actifs."
+        description="Profils clients (données de démonstration)."
       >
         <CustomersTable customers={customers} />
       </SectionCard>

@@ -3,14 +3,10 @@
 import { cn } from "@/components/common/CmsShared";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { OrderStatus, RestaurantOrder, formatCurrency, orderStatusOptions } from "@/lib/data";
-import { PrinterIcon } from "lucide-react";
-import Link from "next/link";
-import { StatusPill } from "./StatusPill";
+import { PrinterIcon, ChevronDown, CheckCircle2, Clock, Package } from "lucide-react";
 
 interface OrdersTableProps {
   orders: RestaurantOrder[];
-  actionHref?: string;
-  actionLabel?: string;
   selectedOrderId?: string | null;
   onReceiptClick?: (order: RestaurantOrder) => void;
   onPrintClick?: (order: RestaurantOrder) => void;
@@ -19,8 +15,6 @@ interface OrdersTableProps {
 
 export function OrdersTable({
   orders,
-  actionHref = "/commandes",
-  actionLabel = "Voir recu",
   selectedOrderId,
   onReceiptClick,
   onPrintClick,
@@ -31,42 +25,12 @@ export function OrdersTable({
       <Table>
         <TableHeader className="border-y border-gray-100 dark:border-gray-800">
           <TableRow>
-            <TableCell
-              isHeader
-              className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-            >
-              Commande
-            </TableCell>
-            <TableCell
-              isHeader
-              className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-            >
-              Client / Table
-            </TableCell>
-            <TableCell
-              isHeader
-              className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-            >
-              Canal
-            </TableCell>
-            <TableCell
-              isHeader
-              className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-            >
-              Total
-            </TableCell>
-            <TableCell
-              isHeader
-              className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-            >
-              Statut
-            </TableCell>
-            <TableCell
-              isHeader
-              className="py-3 text-right text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-            >
-              Action
-            </TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">ID / Heure</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Client & Destination</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Service</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Total</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Statut</TableCell>
+            <TableCell isHeader className="py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Actions</TableCell>
           </TableRow>
         </TableHeader>
 
@@ -75,73 +39,96 @@ export function OrdersTable({
             <TableRow
               key={order.id}
               className={cn(
-                "transition-colors",
-                selectedOrderId === order.id && "bg-brand-25/60 dark:bg-brand-500/10",
+                "group transition-all hover:bg-gray-50/50",
+                selectedOrderId === order.id && "bg-brand-50/40 dark:bg-brand-500/5 ring-1 ring-inset ring-brand-100",
               )}
             >
-              <TableCell className="py-4">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white/90">{order.id}</p>
-                  <p className="text-theme-xs text-gray-500 dark:text-gray-400">{order.placedAt}</p>
+              <TableCell className="py-5">
+                <div className="flex flex-col gap-1">
+                  <span className="font-black text-gray-900 dark:text-white/90 text-sm tracking-tight">{order.numero}</span>
+                  <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1">
+                     <Clock size={10} /> {order.placedAt}
+                  </span>
                 </div>
               </TableCell>
-              <TableCell className="py-4">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white/90">{order.customer}</p>
-                  <p className="text-theme-xs text-gray-500 dark:text-gray-400">{order.table}</p>
+              
+              <TableCell className="py-5">
+                <div className="flex flex-col gap-1 max-w-[200px]">
+                  <span className="font-bold text-gray-900 dark:text-white/90 text-sm truncate">{order.customer}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 italic">{order.table}</span>
                 </div>
               </TableCell>
-              <TableCell className="py-4 text-theme-sm text-gray-500 dark:text-gray-400">
-                {order.channel}
+              
+              <TableCell className="py-5">
+                 <div className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest",
+                    order.channel === 'Livraison' ? "bg-blue-50 text-blue-600" : 
+                    order.channel === 'Salle' ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
+                 )}>
+                    {order.channel}
+                 </div>
               </TableCell>
-              <TableCell className="py-4 text-theme-sm font-medium text-gray-900 dark:text-white/90">
-                {formatCurrency(order.total)}
+              
+              <TableCell className="py-5">
+                <span className="font-black text-gray-900 dark:text-white/90">{formatCurrency(order.total)}</span>
               </TableCell>
-              <TableCell className="py-4">
+              
+              <TableCell className="py-5">
                 {onStatusChange ? (
-                  <select
-                    value={order.status}
-                    onChange={(event) =>
-                      onStatusChange(order.id, event.target.value as OrderStatus)
-                    }
-                    className="h-10 min-w-[140px] rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
-                  >
-                    {orderStatusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative group/status min-w-[140px]">
+                    <select
+                      value={order.status}
+                      onChange={(event) =>
+                        onStatusChange(order.id, event.target.value as OrderStatus)
+                      }
+                      className={cn(
+                        "appearance-none w-full h-10 pl-4 pr-10 rounded-xl border text-xs font-bold transition-all cursor-pointer focus:outline-none focus:ring-2",
+                        order.status === 'En attente' ? "bg-amber-50 border-amber-200 text-amber-700 focus:ring-amber-200" :
+                        order.status === 'Pret' ? "bg-emerald-50 border-emerald-200 text-emerald-700 focus:ring-emerald-200" :
+                        "bg-gray-100 border-gray-200 text-gray-600 focus:ring-gray-300"
+                      )}
+                    >
+                      {orderStatusOptions.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-60">
+                       <ChevronDown size={14} strokeWidth={3} />
+                    </div>
+                  </div>
                 ) : (
-                  <StatusPill value={order.status} />
+                  <div className={cn(
+                    "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold",
+                    order.status === 'En attente' ? "bg-amber-50 text-amber-700" :
+                    order.status === 'Pret' ? "bg-emerald-50 text-emerald-700" :
+                    "bg-gray-100 text-gray-600"
+                  )}>
+                    {order.status === 'En attente' && <Clock size={14} />}
+                    {order.status === 'Pret' && <Package size={14} />}
+                    {order.status === 'Livre' && <CheckCircle2 size={14} />}
+                    {order.status}
+                  </div>
                 )}
               </TableCell>
-              <TableCell className="py-4 text-right">
+              
+              <TableCell className="py-5 text-right">
                 <div className="flex justify-end gap-2">
-                  {onReceiptClick ? (
-                    <button
-                      type="button"
-                      onClick={() => onReceiptClick(order)}
-                      className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
-                    >
-                      {actionLabel}
-                    </button>
-                  ) : (
-                    <Link
-                      href={actionHref}
-                      className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
-                    >
-                      {actionLabel}
-                    </Link>
-                  )}
+                  <button
+                    onClick={() => onReceiptClick?.(order)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-xl transition hover:bg-gray-50 active:scale-95 shadow-sm"
+                  >
+                    Détails
+                  </button>
 
                   <button
                     type="button"
                     onClick={() => onPrintClick?.(order)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-white/5"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#101828] text-white transition hover:bg-brand-600 active:scale-95 shadow-lg shadow-black/10"
                     title="Imprimer le reçu"
                   >
-                    <PrinterIcon className="h-5 w-5" />
+                    <PrinterIcon size={18} strokeWidth={2.5} />
                   </button>
                 </div>
               </TableCell>

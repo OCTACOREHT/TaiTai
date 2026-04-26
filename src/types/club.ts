@@ -78,8 +78,11 @@ export interface Parent {
 export interface StaffMember {
   id: string;
   nom: string;
-  photoUrl: string;
+  photoUrl?: string;
   role: StaffRole;
+  telephone?: string;
+  email?: string;
+  dateDebut?: string;
 }
 
 export interface Alumni {
