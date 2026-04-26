@@ -37,18 +37,14 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative h-10 w-10 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-transform group-hover:scale-105">
+          <Link href="/" className="flex items-center group">
+            <div className="relative h-8 w-32 transition-transform group-hover:scale-105">
               <Image 
                 src="/images/logo/tailogo.png" 
                 alt="TaiTai" 
                 fill 
-                className="object-contain p-1.5"
+                className="object-contain object-left"
               />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold tracking-tight leading-none">TaiTai</span>
-              <span className="text-[10px] uppercase tracking-widest text-[#F4A640] font-bold">Authentic Cuisine</span>
             </div>
           </Link>
 
@@ -118,11 +114,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="relative h-8 w-8 overflow-hidden rounded-lg border border-gray-100 shadow-sm">
-                  <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain p-1" />
+              <div className="flex items-center">
+                <div className="relative h-8 w-32">
+                  <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain object-left" />
                 </div>
-                <span className="text-xl font-bold tracking-tight text-[#101828]">TaiTai</span>
               </div>
               <p className="text-sm leading-relaxed text-[#475467]">
                 L'excellence de la cuisine créole revisitée. Des ingrédients frais, des recettes ancestrales et une livraison ultra-rapide.

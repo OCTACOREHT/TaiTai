@@ -63,17 +63,14 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link href="/dashboard" className="lg:hidden">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <Image
-                width={36}
-                height={36}
+                width={100}
+                height={28}
                 src="/images/logo/tailogo.png"
                 alt="TaiTai"
-                className="h-9 w-9 rounded-lg object-contain"
+                className="h-7 w-auto object-contain"
               />
-              <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                TaiTai SaaS
-              </span>
             </div>
           </Link>
 

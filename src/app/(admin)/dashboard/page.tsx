@@ -12,20 +12,22 @@ import { SalesPerformanceChart } from "@/components/dashboard/SalesPerformanceCh
 import {
   getCommandes,
   getMenuItems,
+  aggregateSalesTrend,
   dashboardMetrics as initialMetrics,
-  salesTrend,
+  salesTrend as initialSalesTrend,
   suppliers,
   stockItems,
   customers,
 } from "@/lib/data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MenuItem, RestaurantOrder, DashboardMetric } from "@/lib/data";
+import { MenuItem, RestaurantOrder, DashboardMetric, SalesPoint } from "@/lib/data";
 
 export default function DashboardPage() {
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [orders, setOrders] = useState<RestaurantOrder[]>([]);
   const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
+  const [salesTrendData, setSalesTrendData] = useState<SalesPoint[]>(initialSalesTrend);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function DashboardPage() {
         
         setMenu(menuData);
         setOrders(ordersData);
+        setSalesTrendData(aggregateSalesTrend(ordersData));
 
         // Update metrics based on real data
         const totalRevenue = ordersData.reduce((acc, curr) => acc + curr.total, 0);
@@ -98,7 +101,7 @@ export default function DashboardPage() {
       </SectionCard>
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SalesPerformanceChart data={salesTrend} />
+        <SalesPerformanceChart data={salesTrendData} />
 
         <SectionCard
           title="Commandes récentes"

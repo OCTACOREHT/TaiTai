@@ -3,12 +3,39 @@ import { supabase } from "./supabase-client";
 export type DashboardMetricKind = "currency" | "number";
 export type OrderStatus = "En attente" | "Prêt" | "Livré";
 export type OrderChannel = "Salle" | "Livraison" | "A emporter";
-export type PaymentMethod = "Cash" | "Carte" | "MonCash";
+export type PaymentMethod = "Cash" | "Carte" | "MonCash" | "Unibank" | "Sogebank";
 export type StockStatus = "Normal" | "Faible" | "Critique";
 
 export interface SalesPoint {
   label: string;
   total: number;
+}
+
+export interface HourlyVolume {
+  hour: string;
+  orders: number;
+}
+
+export interface DishSale {
+  name: string;
+  category: string;
+  quantity: number;
+  revenue: number;
+  trend: "up" | "down" | "stable";
+}
+
+export type CustomerSegment = "Nouveau" | "Régulier" | "VIP" | "Inactif";
+
+export interface CustomerRecord {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  visits: number;
+  lifetimeSpend: number;
+  lastOrder: string;
+  favoriteDish: string;
+  segment: CustomerSegment;
 }
 
 export interface DashboardMetric {
@@ -43,6 +70,8 @@ export interface RestaurantOrder {
   channel: OrderChannel;
   paymentMethod: PaymentMethod;
   placedAt: string;
+  date: string;
+  paymentProofUrl?: string;
   items: any[];
 }
 
@@ -65,8 +94,17 @@ export interface Supplier {
 
 export const orderStatusOptions: OrderStatus[] = ["En attente", "Prêt", "Livré"];
 export const orderChannelOptions: OrderChannel[] = ["Salle", "Livraison", "A emporter"];
-export const paymentMethodOptions: PaymentMethod[] = ["Cash", "Carte", "MonCash"];
+export const paymentMethodOptions: PaymentMethod[] = ["Cash", "Carte", "MonCash", "Unibank", "Sogebank"];
 export const stockStatusOptions: StockStatus[] = ["Normal", "Faible", "Critique"];
+export const customerSegmentOptions: CustomerSegment[] = ["Nouveau", "Régulier", "VIP", "Inactif"];
+
+export const clientAvatarPool = [
+  "/images/user/user-01.jpg",
+  "/images/user/user-02.jpg",
+  "/images/user/user-03.jpg",
+  "/images/user/user-04.jpg",
+  "/images/user/user-05.jpg",
+];
 
 export const formatCurrency = (value: number) =>
   `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 }).format(value)} HTG`;
@@ -114,14 +152,64 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     total: cmd.total,
     status: cmd.statut as OrderStatus,
     channel: cmd.canal as OrderChannel,
-    paymentMethod: "Cash",
+    paymentMethod: cmd.methode_paiement as PaymentMethod || "Cash",
     placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
+    date: cmd.created_at,
+    paymentProofUrl: cmd.preuve_paiement_url,
     items: cmd.commande_items.map((item: any) => ({
       name: item.nom_plat,
       quantity: item.quantite,
-      price: item.prix_unitaire
+      price: item.prix_unitaire,
+      category: "Divers" // This would ideally come from the join
     }))
   }));
+}
+
+export function aggregateSalesTrend(orders: RestaurantOrder[]): SalesPoint[] {
+  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+  const trend: Record<string, number> = {};
+  days.forEach(d => trend[d] = 0);
+
+  orders.forEach(order => {
+    const d = new Date(order.date);
+    const dayName = days[(d.getDay() + 6) % 7]; // Map 0-6 (Sun-Sat) to 0-6 (Mon-Sun)
+    trend[dayName] += order.total;
+  });
+
+  return days.map(label => ({ label, total: trend[label] }));
+}
+
+export function aggregateDishSales(orders: RestaurantOrder[]): DishSale[] {
+  const sales: Record<string, { name: string, category: string, quantity: number, revenue: number }> = {};
+
+  orders.forEach(order => {
+    order.items.forEach(item => {
+      if (!sales[item.name]) {
+        sales[item.name] = { name: item.name, category: item.category || "Divers", quantity: 0, revenue: 0 };
+      }
+      sales[item.name].quantity += item.quantity;
+      sales[item.name].revenue += item.price * item.quantity;
+    });
+  });
+
+  return Object.values(sales)
+    .sort((a, b) => b.revenue - a.revenue)
+    .map(s => ({ ...s, trend: "stable" as const }));
+}
+
+export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
+  const hours: Record<string, number> = {};
+  for (let i = 8; i <= 23; i++) hours[`${i}h`] = 0;
+
+  orders.forEach(order => {
+    const h = new Date(order.date).getHours();
+    const label = `${h}h`;
+    if (hours[label] !== undefined) {
+      hours[label]++;
+    }
+  });
+
+  return Object.entries(hours).map(([hour, orders]) => ({ hour, orders }));
 }
 
 // Keep mock data for metrics and others to avoid breaks
@@ -133,8 +221,32 @@ export const dashboardMetrics: DashboardMetric[] = [
 ];
 
 export const salesTrend: SalesPoint[] = [
-  { label: "Lun", total: 0 }, { label: "Mar", total: 0 }, { label: "Mer", total: 0 },
-  { label: "Jeu", total: 0 }, { label: "Ven", total: 0 }, { label: "Sam", total: 0 }, { label: "Dim", total: 0 }
+  { label: "Lun", total: 45000 },
+  { label: "Mar", total: 52000 },
+  { label: "Mer", total: 38000 },
+  { label: "Jeu", total: 61000 },
+  { label: "Ven", total: 89000 },
+  { label: "Sam", total: 124000 },
+  { label: "Dim", total: 95000 }
+];
+
+export const dishSales: DishSale[] = [
+  { name: "Griot Complet", category: "Signature", quantity: 142, revenue: 120700, trend: "up" },
+  { name: "Tassot Cabrit", category: "Grillades", quantity: 98, revenue: 107800, trend: "up" },
+  { name: "Poulet aux Noix", category: "Signature", quantity: 76, revenue: 64600, trend: "stable" },
+  { name: "Lambi en Sauce", category: "Fruits de Mer", quantity: 45, revenue: 58500, trend: "down" },
+  { name: "Burger Créole", category: "Burgers", quantity: 112, revenue: 50400, trend: "up" },
+];
+
+export const peakHours: HourlyVolume[] = [
+  { hour: "11h", orders: 12 },
+  { hour: "12h", orders: 45 },
+  { hour: "13h", orders: 38 },
+  { hour: "14h", orders: 15 },
+  { hour: "18h", orders: 22 },
+  { hour: "19h", orders: 54 },
+  { hour: "20h", orders: 62 },
+  { hour: "21h", orders: 28 },
 ];
 
 export const suppliers: Supplier[] = [
@@ -143,6 +255,62 @@ export const suppliers: Supplier[] = [
 ];
 
 export const stockItems: StockItem[] = [];
-export const customers = [];
+export const customers: CustomerRecord[] = [
+  { 
+    id: "1", 
+    name: "Jean Baptiste", 
+    email: "jean.b@example.com",
+    avatar: "/images/user/user-01.jpg",
+    visits: 12, 
+    lifetimeSpend: 45600,
+    lastOrder: "Il y a 2 jours",
+    favoriteDish: "Griot Complet",
+    segment: "VIP"
+  },
+  { 
+    id: "2", 
+    name: "Marie Claire", 
+    email: "m.claire@example.com",
+    avatar: "/images/user/user-02.jpg",
+    visits: 8, 
+    lifetimeSpend: 32400,
+    lastOrder: "Il y a 5 jours",
+    favoriteDish: "Poulet aux Noix",
+    segment: "Régulier"
+  },
+  { 
+    id: "3", 
+    name: "Pierre Richard", 
+    email: "p.richard@example.com",
+    avatar: "/images/user/user-03.jpg",
+    visits: 15, 
+    lifetimeSpend: 58200,
+    lastOrder: "Hier",
+    favoriteDish: "Tassot Cabrit",
+    segment: "VIP"
+  },
+  { 
+    id: "4", 
+    name: "Naomi Petit", 
+    email: "naomi.p@example.com",
+    avatar: "/images/user/user-04.jpg",
+    visits: 5, 
+    lifetimeSpend: 18900,
+    lastOrder: "Il y a 1 semaine",
+    favoriteDish: "Burger Créole",
+    segment: "Nouveau"
+  },
+  { 
+    id: "5", 
+    name: "Luc Saint-Eloi", 
+    email: "luc.se@example.com",
+    avatar: "/images/user/user-05.jpg",
+    visits: 10, 
+    lifetimeSpend: 38500,
+    lastOrder: "Il y a 3 jours",
+    favoriteDish: "Griot Complet",
+    segment: "Régulier"
+  },
+];
 export const restaurantOrders: RestaurantOrder[] = [];
 export const menuItems: MenuItem[] = [];

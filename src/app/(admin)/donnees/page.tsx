@@ -1,22 +1,56 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { PeakHoursChart } from "@/components/dashboard/PeakHoursChart";
 import { SalesPerformanceChart } from "@/components/dashboard/SalesPerformanceChart";
 import {
-  customers,
-  dishSales,
+  getCommandes,
   formatCurrency,
-  peakHours,
-  salesTrend,
+  aggregateSalesTrend,
+  aggregateDishSales,
+  aggregatePeakHours,
+  DishSale,
+  HourlyVolume,
+  SalesPoint,
+  customers,
 } from "@/lib/data";
-import { TrendingUpIcon, TrendingDownIcon, MinusIcon } from "lucide-react";
+import { TrendingUpIcon, TrendingDownIcon, MinusIcon, Loader2 } from "lucide-react";
 
 export default function DonneesPage() {
+  const [loading, setLoading] = useState(true);
+  const [salesData, setSalesData] = useState<SalesPoint[]>([]);
+  const [dishes, setDishes] = useState<DishSale[]>([]);
+  const [hours, setHours] = useState<HourlyVolume[]>([]);
+
+  useEffect(() => {
+    async function loadRealData() {
+      try {
+        const orders = await getCommandes();
+        setSalesData(aggregateSalesTrend(orders));
+        setDishes(aggregateDishSales(orders));
+        setHours(aggregatePeakHours(orders));
+      } catch (error) {
+        console.error("Failed to load analytics data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadRealData();
+  }, []);
+
   // Sort customers by lifetime spend to find top customers
   const topCustomers = [...customers]
     .sort((a, b) => b.lifetimeSpend - a.lifetimeSpend)
     .slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="animate-spin text-brand-500" size={48} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -33,8 +67,8 @@ export default function DonneesPage() {
       </section>
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <SalesPerformanceChart data={salesTrend} />
-        <PeakHoursChart data={peakHours} />
+        <SalesPerformanceChart data={salesData} />
+        <PeakHoursChart data={hours} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
@@ -55,7 +89,7 @@ export default function DonneesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {dishSales.map((dish) => (
+                {dishes.map((dish) => (
                   <tr key={dish.name} className="hover:bg-gray-50 dark:hover:bg-white/5 transition">
                     <td className="px-6 py-4">
                       <div>

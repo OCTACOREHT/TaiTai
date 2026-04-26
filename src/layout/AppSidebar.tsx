@@ -49,20 +49,14 @@ const AppSidebar: React.FC = () => {
       >
         <Link href="/dashboard">
           {isExpanded || isHovered || isMobileOpen ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
               <Image
                 src="/images/logo/tailogo.png"
                 alt="TaiTai"
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-lg object-contain"
+                width={120}
+                height={32}
+                className="h-8 w-auto object-contain"
               />
-              <div>
-                <p className="text-lg font-semibold leading-5 text-gray-900 dark:text-white">
-                  TaiTai
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Restaurant SaaS</p>
-              </div>
             </div>
           ) : (
             <Image

@@ -48,7 +48,7 @@ export function CustomersTable({ customers }: { customers: CustomerRecord[] }) {
               <TableCell className="py-4">
                 <div className="flex items-center gap-3">
                   <Image
-                    src={customer.avatar}
+                    src={customer.avatar || "/images/user/user-01.jpg"}
                     alt={customer.name}
                     width={44}
                     height={44}

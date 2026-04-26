@@ -100,6 +100,9 @@ function MenuContent() {
                   src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} 
                   alt={item.nom}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400";
+                  }}
                 />
                 {item.best_seller && (
                   <div className="absolute left-4 top-4 md:left-6 md:top-6 flex items-center gap-2 rounded-xl bg-[#F4A640] px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold text-white shadow-lg">

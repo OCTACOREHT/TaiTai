@@ -38,7 +38,7 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
       <section className="receipt-paper w-full max-w-[340px] px-6 py-10 shadow-2xl font-mono text-gray-800 border-x border-gray-100 bg-white dark:bg-white">
         {/* Header */}
         <div className="flex flex-col items-center space-y-2">
-          <div className="relative h-14 w-14 grayscale brightness-0">
+          <div className="relative h-10 w-32 grayscale brightness-0">
              <Image
                 src="/images/logo/tailogo.png"
                 alt="TaiTai"
@@ -103,6 +103,27 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
             <span>0 HTG</span>
           </div>
         </div>
+
+        {/* Payment Proof Image */}
+        {order.paymentProofUrl && (
+          <div className="mt-8 space-y-4">
+            <div className="border-b border-gray-400 border-dotted" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center text-gray-500">Preuve de paiement</p>
+            <a 
+              href={order.paymentProofUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block relative aspect-video w-full overflow-hidden rounded-xl border-2 border-gray-100 bg-gray-50 transition hover:border-brand-500"
+            >
+              <img 
+                src={order.paymentProofUrl} 
+                alt="Preuve de paiement" 
+                className="h-full w-full object-contain"
+              />
+            </a>
+            <p className="text-[9px] text-center opacity-50 italic uppercase font-bold">Cliquer pour agrandir</p>
+          </div>
+        )}
 
         <div className="my-8 border-b border-gray-400 border-dotted" />
 

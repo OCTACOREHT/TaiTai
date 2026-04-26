@@ -70,7 +70,10 @@ export function OrdersTable({
               </TableCell>
               
               <TableCell className="py-5">
-                <span className="font-black text-gray-900 dark:text-white/90">{formatCurrency(order.total)}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="font-black text-gray-900 dark:text-white/90">{formatCurrency(order.total)}</span>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{order.paymentMethod}</span>
+                </div>
               </TableCell>
               
               <TableCell className="py-5">

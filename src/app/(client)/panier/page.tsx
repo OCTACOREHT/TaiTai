@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { useCart } from "@/context/CartContext";
-import { Trash2, Plus, Minus, ArrowRight, MapPin, ShoppingCart, Info } from "lucide-react";
+import { Trash2, Plus, Minus, ArrowRight, MapPin, ShoppingCart, Info, Camera, Upload } from "lucide-react";
 
 export default function PanierPage() {
   const router = useRouter();
@@ -16,10 +16,12 @@ export default function PanierPage() {
     client_nom: "",
     client_tel: "",
     canal: "Livraison" as "Salle" | "Livraison" | "A emporter",
+    methode_paiement: "Cash" as "Cash" | "Carte" | "MonCash" | "Unibank" | "Sogebank",
     adresse_livraison: "",
     table_numero: "",
     notes: ""
   });
+  const [proofFile, setProofFile] = useState<File | null>(null);
 
   const total = cart.reduce((acc, item) => acc + (item.prix * item.quantity), 0);
 
@@ -30,6 +32,24 @@ export default function PanierPage() {
     setLoading(true);
     
     const numero_commande = "TT-" + Date.now().toString().slice(-4);
+
+    // 0. Upload Payment Proof if exists
+    let proofUrl = null;
+    if (proofFile && formData.methode_paiement !== 'Cash') {
+      const fileExt = proofFile.name.split('.').pop();
+      const fileName = `proofs/${numero_commande}_${Date.now()}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment_proofs')
+        .upload(fileName, proofFile);
+      
+      if (!uploadError) {
+        const { data: { publicUrl } } = supabase.storage
+          .from('payment_proofs')
+          .getPublicUrl(fileName);
+        proofUrl = publicUrl;
+      }
+    }
     
     // 1. Insert Commande
     const { data: commande, error: cmdError } = await supabase
@@ -39,6 +59,8 @@ export default function PanierPage() {
         client_nom: formData.client_nom,
         client_tel: formData.client_tel,
         canal: formData.canal,
+        methode_paiement: formData.methode_paiement,
+        preuve_paiement_url: proofUrl,
         adresse_livraison: formData.canal === 'Livraison' ? formData.adresse_livraison : null,
         table_numero: formData.canal === 'Salle' ? formData.table_numero : null,
         notes: formData.notes,
@@ -49,7 +71,11 @@ export default function PanierPage() {
       .single();
 
     if (cmdError) {
-      alert("Erreur lors de la commande: " + cmdError.message);
+      if (cmdError.message.includes("methode_paiement") || cmdError.message.includes("preuve_paiement_url")) {
+        alert("ERREUR CRITIQUE : Les colonnes 'methode_paiement' et 'preuve_paiement_url' n'ont pas encore été ajoutées à votre table 'commandes' dans Supabase. Veuillez les ajouter pour activer les paiements.");
+      } else {
+        alert("Erreur lors de la commande: " + cmdError.message);
+      }
       setLoading(false);
       return;
     }
@@ -119,7 +145,14 @@ export default function PanierPage() {
           {cart.map((item) => (
             <div key={item.id} className="flex items-center gap-6 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md">
               <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-gray-100">
-                <img src={item.image_url || ""} alt={item.nom} className="h-full w-full object-cover" />
+                <img 
+                  src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} 
+                  alt={item.nom} 
+                  className="h-full w-full object-cover" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400";
+                  }}
+                />
               </div>
               
               <div className="flex-grow space-y-2">
@@ -188,6 +221,43 @@ export default function PanierPage() {
               ))}
             </div>
           </div>
+
+          <div className="space-y-4">
+            <label className="block text-sm font-black uppercase tracking-widest text-[#98A2B3]">Mode de paiement</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {(['Cash', 'Carte', 'MonCash', 'Unibank', 'Sogebank'] as const).map(method => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, methode_paiement: method })}
+                  className={`rounded-2xl py-4 text-sm font-bold transition-all ${
+                    formData.methode_paiement === method 
+                    ? "bg-[#101828] text-white shadow-lg" 
+                    : "bg-gray-50 text-[#667085] border border-transparent hover:border-gray-200"
+                  }`}
+                >
+                  {method}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(formData.methode_paiement !== 'Cash') && (
+            <div className="space-y-4 rounded-3xl bg-amber-50/50 p-6 border border-amber-100">
+               <label className="flex items-center gap-2 text-sm font-bold text-amber-900">
+                 <Camera size={18} /> Preuve de paiement (Optionnel)
+               </label>
+               <p className="text-xs text-amber-600 mb-2">Veuillez télécharger une capture d'écran de votre transfert pour validation rapide.</p>
+               <div className="relative">
+                 <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setProofFile(e.target.files?.[0] || null)}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700 transition-all cursor-pointer"
+                 />
+               </div>
+            </div>
+          )}
 
           <div className="space-y-6">
             <div className="grid gap-6 sm:grid-cols-2">
