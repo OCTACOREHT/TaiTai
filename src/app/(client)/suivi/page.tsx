@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { Commande } from "@/types/restaurant";
-import { Search, Package, CheckCircle2, Clock, MapPin, Loader2, Navigation, History, ArrowRight } from "lucide-react";
+import { Search, Package, CheckCircle2, Clock, ChefHat, MapPin, Loader2, Navigation, History, ArrowRight } from "lucide-react";
 
 export default function SuiviPage() {
   const [numero, setNumero] = useState("");
@@ -73,8 +73,9 @@ export default function SuiviPage() {
   }, [commande?.id]);
 
   const steps = [
-    { label: "En attente", icon: Clock, desc: "Votre commande est bien reçue." },
-    { label: "Prêt", icon: Package, desc: "C'est prêt ! En cours d'emballage." },
+    { label: "En attente", icon: Clock, desc: "Votre commande est bien reçue et en attente de confirmation." },
+    { label: "En préparation", icon: ChefHat, desc: "Nos chefs sont en train de préparer votre commande." },
+    { label: "Prêt", icon: Package, desc: "C'est prêt ! En cours d'emballage ou prêt pour le service." },
     { label: "Livré", icon: CheckCircle2, desc: "Arrivé à destination. Bon appétit !" },
   ];
 

@@ -20,7 +20,9 @@ export interface Commande {
   table_numero: string | null;
   adresse_livraison: string | null;
   notes: string | null;
-  statut: 'En attente' | 'Prêt' | 'Livré';
+  statut: 'En attente' | 'En préparation' | 'Prêt' | 'Livré';
+  methode_paiement: 'Cash' | 'Carte' | 'MonCash' | 'Unibank' | 'Sogebank' | null;
+  preuve_paiement_url: string | null;
   total: number;
   created_at: string;
 }

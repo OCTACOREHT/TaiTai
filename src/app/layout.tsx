@@ -1,10 +1,11 @@
 import { Outfit } from 'next/font/google';
 import './globals.css';
 import "flatpickr/dist/flatpickr.css";
+import { AuthProvider } from '@/context/AuthContext';
 import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { ClubDataProvider } from '@/context/ClubDataContext';
 import { CmsProvider } from '@/context/CmsContext';
+
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -29,11 +30,11 @@ export default function RootLayout({
     <html lang="fr">
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <ThemeProvider>
-          <ClubDataProvider>
-            <CmsProvider>
-              <SidebarProvider>{children}</SidebarProvider>
-            </CmsProvider>
-          </ClubDataProvider>
+          <CmsProvider>
+          <AuthProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </AuthProvider>
+          </CmsProvider>
         </ThemeProvider>
       </body>
     </html>

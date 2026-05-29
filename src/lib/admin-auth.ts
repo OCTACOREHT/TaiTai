@@ -1,8 +1,8 @@
 import { CmsUser } from "@/types/cms";
 
-const ADMIN_TOKEN_KEY = "fctoro-admin-token";
-const ADMIN_SESSION_KEY = "fctoro-admin-session";
-const ADMIN_SESSION_REMEMBERED_KEY = "fctoro-admin-session-persistent";
+const ADMIN_TOKEN_KEY = "taitai-admin-token";
+const ADMIN_SESSION_KEY = "taitai-admin-session";
+const ADMIN_SESSION_REMEMBERED_KEY = "taitai-admin-session-persistent";
 
 interface StoredAdminSession {
   token: string;

@@ -1,6 +1,8 @@
 const toneMap: Record<string, string> = {
   "En attente":
     "border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-900/40 dark:bg-warning-900/10 dark:text-warning-300",
+  "En préparation":
+    "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-900/10 dark:text-orange-300",
   Pret:
     "border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-900/40 dark:bg-brand-900/10 dark:text-brand-300",
   Livre:

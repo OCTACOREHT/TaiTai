@@ -15,7 +15,7 @@ import { supabase } from "@/lib/supabase-client";
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-const filters: Array<"Tous" | OrderStatus> = ["Tous", "En attente", "Prêt", "Livré"];
+const filters: Array<"Tous" | OrderStatus> = ["Tous", "En attente", "En préparation", "Prêt", "Livré"];
 
 export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantOrder[] }) {
   const [orders, setOrders] = useState<RestaurantOrder[]>(initialOrders);
@@ -70,6 +70,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
 
   const counts = {
     pending: orders.filter((order) => order.status === "En attente").length,
+    cooking: orders.filter((order) => order.status === "En préparation").length,
     ready: orders.filter((order) => order.status === "Prêt").length,
     delivered: orders.filter((order) => order.status === "Livré").length,
   };
@@ -101,22 +102,28 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-sm text-gray-500 dark:text-gray-400">En attente</p>
-          <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white/90">
+          <p className="mt-2 text-2xl font-semibold text-warning-600 dark:text-warning-400">
             {counts.pending}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-orange-100 bg-orange-50/50 p-5 shadow-theme-xs dark:border-orange-900/20 dark:bg-orange-900/10">
+          <p className="text-sm text-orange-600 dark:text-orange-400">En préparation</p>
+          <p className="mt-2 text-2xl font-semibold text-orange-700 dark:text-orange-300">
+            {counts.cooking}
           </p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-sm text-gray-500 dark:text-gray-400">Prêts pour service</p>
-          <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white/90">
+          <p className="mt-2 text-2xl font-semibold text-brand-600 dark:text-brand-400">
             {counts.ready}
           </p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-sm text-gray-500 dark:text-gray-400">Déjà livrés</p>
-          <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white/90">
+          <p className="mt-2 text-2xl font-semibold text-success-600 dark:text-success-400">
             {counts.delivered}
           </p>
         </div>

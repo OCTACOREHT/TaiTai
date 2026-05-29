@@ -3,7 +3,7 @@
 import { cn } from "@/components/common/CmsShared";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { OrderStatus, RestaurantOrder, formatCurrency, orderStatusOptions } from "@/lib/data";
-import { PrinterIcon, ChevronDown, CheckCircle2, Clock, Package } from "lucide-react";
+import { PrinterIcon, ChevronDown, CheckCircle2, Clock, Package, ChefHat } from "lucide-react";
 
 interface OrdersTableProps {
   orders: RestaurantOrder[];
@@ -87,7 +87,8 @@ export function OrdersTable({
                       className={cn(
                         "appearance-none w-full h-10 pl-4 pr-10 rounded-xl border text-xs font-bold transition-all cursor-pointer focus:outline-none focus:ring-2",
                         order.status === 'En attente' ? "bg-amber-50 border-amber-200 text-amber-700 focus:ring-amber-200" :
-                        order.status === 'Pret' ? "bg-emerald-50 border-emerald-200 text-emerald-700 focus:ring-emerald-200" :
+                        order.status === 'En préparation' ? "bg-orange-50 border-orange-200 text-orange-700 focus:ring-orange-200" :
+                        order.status === 'Prêt' ? "bg-emerald-50 border-emerald-200 text-emerald-700 focus:ring-emerald-200" :
                         "bg-gray-100 border-gray-200 text-gray-600 focus:ring-gray-300"
                       )}
                     >
@@ -105,12 +106,14 @@ export function OrdersTable({
                   <div className={cn(
                     "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold",
                     order.status === 'En attente' ? "bg-amber-50 text-amber-700" :
-                    order.status === 'Pret' ? "bg-emerald-50 text-emerald-700" :
+                    order.status === 'En préparation' ? "bg-orange-50 text-orange-700" :
+                    order.status === 'Prêt' ? "bg-emerald-50 text-emerald-700" :
                     "bg-gray-100 text-gray-600"
                   )}>
                     {order.status === 'En attente' && <Clock size={14} />}
-                    {order.status === 'Pret' && <Package size={14} />}
-                    {order.status === 'Livre' && <CheckCircle2 size={14} />}
+                    {order.status === 'En préparation' && <ChefHat size={14} />}
+                    {order.status === 'Prêt' && <Package size={14} />}
+                    {order.status === 'Livré' && <CheckCircle2 size={14} />}
                     {order.status}
                   </div>
                 )}

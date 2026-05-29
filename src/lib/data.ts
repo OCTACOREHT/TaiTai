@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client";
 
 export type DashboardMetricKind = "currency" | "number";
-export type OrderStatus = "En attente" | "Prêt" | "Livré";
+export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "Livré";
 export type OrderChannel = "Salle" | "Livraison" | "A emporter";
 export type PaymentMethod = "Cash" | "Carte" | "MonCash" | "Unibank" | "Sogebank";
 export type StockStatus = "Normal" | "Faible" | "Critique";
@@ -90,9 +90,12 @@ export interface Supplier {
   name: string;
   contact: string;
   category: string;
+  specialty?: string;
+  nextDelivery?: string;
+  reliability?: number;
 }
 
-export const orderStatusOptions: OrderStatus[] = ["En attente", "Prêt", "Livré"];
+export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "Livré"];
 export const orderChannelOptions: OrderChannel[] = ["Salle", "Livraison", "A emporter"];
 export const paymentMethodOptions: PaymentMethod[] = ["Cash", "Carte", "MonCash", "Unibank", "Sogebank"];
 export const stockStatusOptions: StockStatus[] = ["Normal", "Faible", "Critique"];
@@ -250,8 +253,8 @@ export const peakHours: HourlyVolume[] = [
 ];
 
 export const suppliers: Supplier[] = [
-  { id: "sup-1", name: "Marché Local", contact: "+509 1234-5678", category: "Légumes" },
-  { id: "sup-2", name: "Boucherie Centrale", contact: "+509 8765-4321", category: "Viande" }
+  { id: "sup-1", name: "Marché Local", contact: "+509 1234-5678", category: "Légumes", specialty: "Fruits & Légumes", nextDelivery: "Lundi 09:00", reliability: 98 },
+  { id: "sup-2", name: "Boucherie Centrale", contact: "+509 8765-4321", category: "Viande", specialty: "Viande rouge", nextDelivery: "Mardi 10:30", reliability: 95 },
 ];
 
 export const stockItems: StockItem[] = [];

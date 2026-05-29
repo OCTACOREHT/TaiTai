@@ -4,9 +4,11 @@ import { Outfit } from 'next/font/google';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ShoppingCart, Home, UtensilsCrossed, Search, MapPin } from 'lucide-react';
+import { ShoppingCart, Home, UtensilsCrossed, MapPin } from 'lucide-react';
 import { CartProvider, useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/components/common/CmsShared';
+import AuthModal from '@/components/auth/AuthModal';
 
 const outfit = Outfit({ subsets: ['latin'] });
 
@@ -24,7 +26,23 @@ export default function ClientLayout({
 
 function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   const { totalItems } = useCart();
+  const { user, loading } = useAuth();
   const pathname = usePathname();
+
+  // Guard: if on /panier and not logged in, show lock screen
+  const isProtected = pathname === '/panier';
+  if (isProtected && !loading && !user) {
+    return (
+      <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center text-center px-6 gap-8`}>
+        <div className="h-24 w-24 rounded-3xl bg-[#F4A640]/10 flex items-center justify-center text-5xl">🔒</div>
+        <div className="space-y-3">
+          <h1 className="text-3xl font-black text-[#101828]">Connexion requise</h1>
+          <p className="text-[#667085] font-medium max-w-sm">Vous devez être connecté pour accéder au panier et passer commande.</p>
+        </div>
+        <AuthModal />
+      </div>
+    );
+  }
   
   const navLinks = [
     { href: '/', label: 'Accueil', icon: Home },
@@ -63,7 +81,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <AuthModal />
             <Link 
               href="/panier"
               className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#475467] shadow-sm transition hover:border-[#F4A640] hover:text-[#F4A640]"

@@ -4,13 +4,16 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { Commande } from "@/types/restaurant";
-import { CheckCircle2, Package, MapPin, ArrowLeft, Loader2, Navigation } from "lucide-react";
+import { CheckCircle2, Package, MapPin, ArrowLeft, Loader2, Navigation, MessageCircle } from "lucide-react";
+
+const WHATSAPP_NUMBER = "50948095613";
 
 export default function ConfirmationPage() {
   const { id } = useParams();
   const router = useRouter();
   const [commande, setCommande] = useState<Commande | null>(null);
   const [loading, setLoading] = useState(true);
+  const [waMsg, setWaMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCommande() {
@@ -25,7 +28,18 @@ export default function ConfirmationPage() {
       }
       setLoading(false);
     }
-    if (id) fetchCommande();
+    if (id) {
+      fetchCommande();
+      const msg = sessionStorage.getItem("pending_whatsapp_msg");
+      if (msg) {
+        setWaMsg(msg);
+        // Try to auto-open WhatsApp, but don't worry if it's blocked, we have the button
+        setTimeout(() => {
+          window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
+          sessionStorage.removeItem("pending_whatsapp_msg");
+        }, 500);
+      }
+    }
   }, [id]);
 
   if (loading) {
@@ -99,6 +113,15 @@ export default function ConfirmationPage() {
       </div>
 
       <div className="flex flex-col gap-6 sm:flex-row sm:justify-center pt-4">
+        {waMsg && (
+          <button 
+            onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`, "_blank")}
+            className="flex items-center justify-center gap-3 rounded-2xl bg-[#25D366] px-12 py-6 font-black text-white transition-all hover:bg-[#128C7E] hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#25D366]/20"
+          >
+            <MessageCircle size={24} />
+            Envoyer sur WhatsApp
+          </button>
+        )}
         <button 
           onClick={() => router.push("/suivi")}
           className="rounded-2xl bg-[#101828] px-12 py-6 font-black text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10"
