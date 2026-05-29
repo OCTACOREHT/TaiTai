@@ -49,7 +49,7 @@ export default function SignInForm() {
       window.location.href = nextPath;
     } else {
       setTimeout(() => {
-        setError("Identifiants incorrects. Veuillez réessayer.");
+        setError("Idantifyan yo pa kòrèk. Eseye ankò.");
         setSubmitting(false);
       }, 600);
     }
@@ -60,10 +60,10 @@ export default function SignInForm() {
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div className="mb-5 sm:mb-8">
           <h1 className="mb-2 text-title-sm font-semibold text-gray-800 dark:text-white/90 sm:text-title-md">
-            Acces demo TaiTai
+            Aksè demo TaiTai
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Cette connexion ouvre directement l'interface front-end du SaaS restaurant.
+            Konekte sa a ouvri entèfas SaaS restoran an dirèk.
           </p>
         </div>
 
@@ -83,19 +83,19 @@ export default function SignInForm() {
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Mot de passe
+              Modpas
             </label>
             <input
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               type="password"
-              placeholder="Mot de passe libre"
+              placeholder="Modpas lib"
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-900 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
             />
           </div>
 
           <label className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-4 py-3 dark:border-gray-800">
-            <span className="text-sm text-gray-700 dark:text-gray-300">Garder la session ouverte</span>
+          <span className="text-sm text-gray-700 dark:text-gray-300">Kenbe sesyon an ouvri</span>
             <button
               type="button"
               onClick={() => setRemember((value) => !value)}
@@ -122,12 +122,12 @@ export default function SignInForm() {
             disabled={submitting}
             className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-brand-300"
           >
-            {submitting ? "Ouverture..." : "Entrer dans le dashboard"}
+            {submitting ? "Ap chaje..." : "Antre nan dashboard la"}
           </button>
         </form>
 
         <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
-          Aucun back-end n'est requis ici, l'interface fonctionne en mode demonstration.
+          Pa bezwen back-end isit la, entèfas la mache an mòd demonstrasyon.
         </p>
       </div>
     </div>

@@ -12,7 +12,7 @@ export default function TextAreaInput() {
       <div className="space-y-6">
         {/* Default TextArea */}
         <div>
-          <Label>Description</Label>
+          <Label>Deskripsyon</Label>
           <TextArea
             value={message}
             onChange={(value) => setMessage(value)}
@@ -22,13 +22,13 @@ export default function TextAreaInput() {
 
         {/* Disabled TextArea */}
         <div>
-          <Label>Description</Label>
+          <Label>Deskripsyon</Label>
           <TextArea rows={6} disabled />
         </div>
 
         {/* Error TextArea */}
         <div>
-          <Label>Description</Label>
+          <Label>Deskripsyon</Label>
           <TextArea
             rows={6}
             value={messageTwo}

@@ -68,10 +68,10 @@ export default function DashboardPage() {
         <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-gray-900 dark:text-white/90">
-              Pilotage complet du restaurant TaiTai
+              Jesyon konplè restoran TaiTai
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-              Interface connectée en temps réel à Supabase. {loading ? "Mise à jour des données..." : "Données synchronisées."}
+              Entèfas konekte an dirèk ak Supabase. {loading ? "Mizajou done yo..." : "Done yo senkronize."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -79,13 +79,13 @@ export default function DashboardPage() {
               href="/commandes"
               className="rounded-lg bg-brand-500 px-4 py-3 text-sm font-medium text-white transition hover:bg-brand-600"
             >
-              Voir les commandes
+              Gade komand yo
             </Link>
             <Link
               href="/menu"
               className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              Gérer le menu
+              Jere meni an
             </Link>
           </div>
         </div>
@@ -94,8 +94,8 @@ export default function DashboardPage() {
       <MetricGrid metrics={metrics} />
 
       <SectionCard
-        title="Accès rapides"
-        description="Navigation directe vers les modules de gestion."
+        title="Aksè rapid"
+        description="Navigasyon dirèk pou modil jesyon yo."
       >
         <QuickActionLinks />
       </SectionCard>
@@ -104,14 +104,14 @@ export default function DashboardPage() {
         <SalesPerformanceChart data={salesTrendData} />
 
         <SectionCard
-          title="Commandes récentes"
-          description="Les derniers tickets arrivés du site client."
+          title="Kòmand resan"
+          description="Dènye tikè ki soti sou sit kliyan an."
           actions={
             <Link
               href="/commandes"
               className="text-sm font-medium text-brand-500 transition hover:text-brand-600"
             >
-              Ouvrir le module
+              Louvri modil la
             </Link>
           }
         >
@@ -120,15 +120,15 @@ export default function DashboardPage() {
       </div>
 
       <SectionCard
-        title="Gestion des plats"
-        description="État actuel du menu et disponibilités."
+        title="Jesyon plat yo"
+        description="Eta aktyèl meni an ak disponibilite yo."
       >
         <MenuGrid items={menu} />
       </SectionCard>
 
       <SectionCard
         title="Clients"
-        description="Profils clients (données de démonstration)."
+        description="Pwofil kliyan (done demonstrasyon)."
       >
         <CustomersTable customers={customers} />
       </SectionCard>

@@ -217,10 +217,10 @@ export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
 
 // Keep mock data for metrics and others to avoid breaks
 export const dashboardMetrics: DashboardMetric[] = [
-  { id: "revenue", label: "Revenu total", value: 0, note: "Réel Supabase", kind: "currency" },
-  { id: "orders", label: "Commandes du jour", value: 0, note: "En direct", kind: "number" },
-  { id: "customers", label: "Nouveaux clients", value: 0, note: "+0% vs hier", kind: "number" },
-  { id: "averageTicket", label: "Panier moyen", value: 0, note: "Calculé", kind: "currency" },
+  { id: "revenue", label: "Total revni", value: 0, note: "Reyèl Supabase", kind: "currency" },
+  { id: "orders", label: "Komand jodi a", value: 0, note: "An dirèk", kind: "number" },
+  { id: "customers", label: "Nouvo kliyan", value: 0, note: "+0% vs yè", kind: "number" },
+  { id: "averageTicket", label: "Panyen mwayen", value: 0, note: "Kalkile", kind: "currency" },
 ];
 
 export const salesTrend: SalesPoint[] = [

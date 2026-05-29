@@ -31,6 +31,7 @@ export default function FournisseursPage() {
     const nextSupplier: Supplier = {
       id: `sup-${Date.now()}`,
       name: draft.name.trim(),
+      category: draft.specialty.trim(),
       specialty: draft.specialty.trim(),
       contact: draft.contact.trim() || "+509 0000-0000",
       nextDelivery: draft.nextDelivery.trim() || "A planifier",
@@ -51,23 +52,23 @@ export default function FournisseursPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <PageBreadCrumb pageTitle="Fournisseurs" />
+      <PageBreadCrumb pageTitle="Founisè" />
         <button
           onClick={() => setIsModalOpen(true)}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600"
         >
           <PlusIcon className="h-5 w-5" />
-          Ajouter un Fournisseur
+          Ajoute yon founisè
         </button>
       </div>
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-        <p className="text-sm text-brand-500">Logistique restaurant</p>
+        <p className="text-sm text-brand-500">Lojistik restoran</p>
         <h1 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white/90">
-          Gestion des Partenaires TaiTai
+          Jesyon patnè TaiTai
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-          Suivez vos sources d'approvisionnement, la fiabilite des livraisons et les contacts directs.
+          Swivi sous apwovizyònman ou yo, fyabilite livrezon yo ak kontak dirèk yo.
         </p>
       </section>
 
@@ -76,11 +77,11 @@ export default function FournisseursPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-gray-100 dark:border-gray-800">
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Fournisseur</th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Specialite</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Founisè</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Espesyalite</th>
                 <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Contact</th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Prochaine livraison</th>
-                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Fiabilite</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Pwochen livrezon</th>
+                <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">Fyabilite</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -97,12 +98,12 @@ export default function FournisseursPage() {
                        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                         <div
                           className={`h-full rounded-full ${
-                            supplier.reliability > 95 ? "bg-success-500" : "bg-brand-500"
+                            (supplier.reliability ?? 0) > 95 ? "bg-success-500" : "bg-brand-500"
                           }`}
-                          style={{ width: `${supplier.reliability}%` }}
+                          style={{ width: `${supplier.reliability ?? 0}%` }}
                         />
                       </div>
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{supplier.reliability}%</span>
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{supplier.reliability ?? 0}%</span>
                     </div>
                   </td>
                 </tr>
@@ -114,28 +115,28 @@ export default function FournisseursPage() {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="md">
         <div className="p-5">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white/90">Nouveau Fournisseur</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white/90">Nouvo founisè</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Ajoutez un nouveau partenaire logistique a votre chaine d'approvisionnement.
+            Ajoute yon nouvo patnè lojistik nan chèn apwovizyònman ou.
           </p>
 
           <form className="mt-5 space-y-3" onSubmit={handleAddSupplier}>
             <TextInput
-              placeholder="Nom du fournisseur"
+              placeholder="Non founisè a"
               value={draft.name}
               onChange={(event) =>
                 setDraft((current) => ({ ...current, name: event.target.value }))
               }
             />
             <TextInput
-              placeholder="Specialite (ex: Fruits & Legumes)"
+              placeholder="Espesyalite (egz: Fwi ak legim)"
               value={draft.specialty}
               onChange={(event) =>
                 setDraft((current) => ({ ...current, specialty: event.target.value }))
               }
             />
             <TextInput
-              placeholder="Telephone ou Email"
+              placeholder="Telefòn oswa imèl"
               value={draft.contact}
               onChange={(event) =>
                 setDraft((current) => ({ ...current, contact: event.target.value }))
@@ -143,7 +144,7 @@ export default function FournisseursPage() {
             />
             <div className="grid gap-4 sm:grid-cols-2">
               <TextInput
-                placeholder="Prochaine livraison"
+                placeholder="Pwochen livrezon"
                 value={draft.nextDelivery}
                 onChange={(event) =>
                   setDraft((current) => ({ ...current, nextDelivery: event.target.value }))
@@ -153,7 +154,7 @@ export default function FournisseursPage() {
                 type="number"
                 min={0}
                 max={100}
-                placeholder="Fiabilite (%)"
+                placeholder="Fyabilite (%)"
                 value={draft.reliability}
                 onChange={(event) =>
                   setDraft((current) => ({ ...current, reliability: event.target.value }))
@@ -166,13 +167,13 @@ export default function FournisseursPage() {
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
               >
-                Annuler
+                Anile
               </button>
               <button
                 type="submit"
                 className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600"
               >
-                Ajouter le fournisseur
+                Ajoute founisè a
               </button>
             </div>
           </form>

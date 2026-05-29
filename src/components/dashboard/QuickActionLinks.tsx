@@ -11,37 +11,37 @@ import Link from "next/link";
 const links = [
   {
     label: "Dashboard",
-    description: "Vue d'ensemble et indicateurs.",
+    description: "Apèsi ak endikatè.",
     href: "/dashboard",
     Icon: GridIcon,
   },
   {
-    label: "Commandes",
-    description: "Suivi live des tickets et recus.",
+    label: "Komand",
+    description: "Swivi an dirèk pou tikè ak resi yo.",
     href: "/commandes",
     Icon: TableIcon,
   },
   {
-    label: "Menu",
-    description: "Plats, categories et disponibilites.",
+    label: "Meni",
+    description: "Plat, kategori ak disponibilite.",
     href: "/menu",
     Icon: BoxIconLine,
   },
   {
     label: "Stocks",
-    description: "Fournisseurs et matieres premieres.",
+    description: "Founisè ak matyè premyè.",
     href: "/stocks",
     Icon: BoxCubeIcon,
   },
   {
     label: "Clients",
-    description: "Fiches clients et badges VIP.",
+    description: "Fich kliyan ak badj VIP.",
     href: "/clients",
     Icon: UserCircleIcon,
   },
   {
     label: "Dates",
-    description: "Agenda du restaurant et rendez-vous clefs.",
+    description: "Ajanda restoran an ak randevou kle yo.",
     href: "/dates",
     Icon: CalenderIcon,
   },
@@ -68,7 +68,7 @@ export function QuickActionLinks() {
             </div>
           </div>
           <div className="mt-4 inline-flex items-center text-sm font-medium text-brand-600 dark:text-brand-300">
-            Ouvrir la page
+            Louvri paj la
           </div>
         </Link>
       ))}

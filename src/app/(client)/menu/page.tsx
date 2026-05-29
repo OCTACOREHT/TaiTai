@@ -17,7 +17,15 @@ function MenuContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>(catParam || "Tous");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const categories = ["Tous", "Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
+  const categories = [
+    { value: "Tous", label: "Tout" },
+    { value: "Grillades", label: "Griyad" },
+    { value: "Signature", label: "Siyati" },
+    { value: "Burgers", label: "Bègè" },
+    { value: "Pâtes", label: "Pat" },
+    { value: "Desserts", label: "Desè" },
+    { value: "Boissons", label: "Bwason" },
+  ];
 
   useEffect(() => {
     async function fetchMenu() {
@@ -50,8 +58,8 @@ function MenuContent() {
     <div className="space-y-8 md:space-y-12">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#101828]">Notre Menu</h1>
-          <p className="text-base md:text-lg text-[#667085] font-medium">Découvrez nos saveurs créoles authentiques.</p>
+          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#101828]">Meni nou</h1>
+          <p className="text-base md:text-lg text-[#667085] font-medium">Dekouvri gou kreyol otantik nou yo.</p>
         </div>
         
         <div className="flex flex-col gap-4 sm:flex-row">
@@ -59,7 +67,7 @@ function MenuContent() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" size={20} />
             <input 
               type="text"
-              placeholder="Rechercher un plat..."
+              placeholder="Chèche yon plat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-6 text-sm font-medium focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none sm:w-80 shadow-sm transition-all"
@@ -73,15 +81,15 @@ function MenuContent() {
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
            {categories.map(cat => (
              <button
-               key={cat}
-               onClick={() => setSelectedCategory(cat)}
+               key={cat.value}
+               onClick={() => setSelectedCategory(cat.value)}
                className={`whitespace-nowrap rounded-xl px-5 py-3 text-xs md:text-sm font-bold transition-all ${
-                 selectedCategory === cat 
+                 selectedCategory === cat.value
                  ? "bg-[#101828] text-white shadow-lg" 
                  : "bg-white text-[#667085] border border-gray-100 hover:border-[#F4A640] hover:text-[#F4A640] shadow-sm"
                }`}
              >
-               {cat}
+               {cat.label}
              </button>
            ))}
         </div>
@@ -148,8 +156,8 @@ function MenuContent() {
             <ShoppingBasket size={48} />
           </div>
           <div className="space-y-2">
-            <p className="text-xl md:text-2xl font-bold text-[#101828]">Aucun plat trouvé</p>
-            <p className="text-sm md:text-base text-[#667085] font-medium">Modifiez votre recherche ou explorez une autre catégorie.</p>
+            <p className="text-xl md:text-2xl font-bold text-[#101828]">Pa gen rezilta</p>
+            <p className="text-sm md:text-base text-[#667085] font-medium">Chanje rechèch la oswa eksplore yon lòt kategori.</p>
           </div>
         </div>
       )}
@@ -159,7 +167,7 @@ function MenuContent() {
 
 export default function MenuPage() {
   return (
-    <Suspense fallback={<div className="flex h-96 items-center justify-center">Chargement...</div>}>
+    <Suspense fallback={<div className="flex h-96 items-center justify-center">Ap chaje...</div>}>
       <MenuContent />
     </Suspense>
   );

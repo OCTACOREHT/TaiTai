@@ -36,8 +36,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
       <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center text-center px-6 gap-8`}>
         <div className="h-24 w-24 rounded-3xl bg-[#F4A640]/10 flex items-center justify-center text-5xl">🔒</div>
         <div className="space-y-3">
-          <h1 className="text-3xl font-black text-[#101828]">Connexion requise</h1>
-          <p className="text-[#667085] font-medium max-w-sm">Vous devez être connecté pour accéder au panier et passer commande.</p>
+          <h1 className="text-3xl font-black text-[#101828]">Konekte obligatwa</h1>
+          <p className="text-[#667085] font-medium max-w-sm">Ou dwe konekte pou antre nan panyen an epi kòmande.</p>
         </div>
         <AuthModal />
       </div>
@@ -45,9 +45,9 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   }
   
   const navLinks = [
-    { href: '/', label: 'Accueil', icon: Home },
-    { href: '/menu', label: 'Notre Menu', icon: UtensilsCrossed },
-    { href: '/suivi', label: 'Suivre ma commande', icon: MapPin },
+    { href: '/', label: 'Akèy', icon: Home },
+    { href: '/menu', label: 'Meni nou', icon: UtensilsCrossed },
+    { href: '/suivi', label: 'Swivi kòmand mwen', icon: MapPin },
   ];
 
   return (
@@ -139,16 +139,16 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
               </div>
               <p className="text-sm leading-relaxed text-[#475467]">
-                L'excellence de la cuisine créole revisitée. Des ingrédients frais, des recettes ancestrales et une livraison ultra-rapide.
+                Pi bon gou kizin kreyol la ak yon manyen modèn. Engredyan fre, resèt lontan ak livrezon rapid.
               </p>
             </div>
             
             <div>
               <h4 className="font-bold mb-6 text-[#101828]">Navigation</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
-                <li><Link href="/" className="hover:text-[#F4A640]">Accueil</Link></li>
-                <li><Link href="/menu" className="hover:text-[#F4A640]">Menu</Link></li>
-                <li><Link href="/suivi" className="hover:text-[#F4A640]">Suivi Commande</Link></li>
+                <li><Link href="/" className="hover:text-[#F4A640]">Akèy</Link></li>
+                <li><Link href="/menu" className="hover:text-[#F4A640]">Meni</Link></li>
+                <li><Link href="/suivi" className="hover:text-[#F4A640]">Swivi kòmand</Link></li>
               </ul>
             </div>
 
@@ -162,7 +162,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
 
             <div>
-              <h4 className="font-bold mb-6 text-[#101828]">Horaires</h4>
+              <h4 className="font-bold mb-6 text-[#101828]">Orè</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
                 <li>Lun - Ven: 11h - 22h</li>
                 <li>Sam - Dim: 12h - 23h</li>
@@ -171,10 +171,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
           
           <div className="mt-16 border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-[#98A2B3]">© 2026 TaiTai Restaurant. Fièrement Haïtien.</p>
+            <p className="text-xs text-[#98A2B3]">© 2026 TaiTai Restaurant. Fyète Ayisyen.</p>
             <div className="flex gap-6">
-              <span className="text-xs text-[#98A2B3] cursor-pointer hover:text-[#475467]">Mentions légales</span>
-              <span className="text-xs text-[#98A2B3] cursor-pointer hover:text-[#475467]">Confidentialité</span>
+              <span className="text-xs text-[#98A2B3] cursor-pointer hover:text-[#475467]">Enfòmasyon legal</span>
+              <span className="text-xs text-[#98A2B3] cursor-pointer hover:text-[#475467]">Konfidansyalite</span>
             </div>
           </div>
         </div>

@@ -19,19 +19,19 @@ export function CustomersTable({ customers }: { customers: CustomerRecord[] }) {
               isHeader
               className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
             >
-              Visites
+              Vizit
             </TableCell>
             <TableCell
               isHeader
               className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
             >
-              Depense totale
+              Depans an jeneral
             </TableCell>
             <TableCell
               isHeader
               className="py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
             >
-              Plat prefere
+              Plat pi renmen
             </TableCell>
             <TableCell
               isHeader

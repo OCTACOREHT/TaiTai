@@ -6,7 +6,7 @@ import Link from "next/link";
 import React from "react";
 
 const navItems = [
-  { href: "#hero", label: "Accueil" },
+  { href: "#hero", label: "Akèy" },
   { href: "#articles", label: "Articles" },
   { href: "#stages", label: "Stages" },
   { href: "#partenaires", label: "Partenaires" },
@@ -47,7 +47,7 @@ export default function PublicSiteShell({ children }: { children: React.ReactNod
               href={currentUser ? "/dashboard" : "/signin"}
               className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
             >
-              {currentUser ? "Acceder au CMS" : "Connexion"}
+              {currentUser ? "Antre nan CMS" : "Konekte"}
             </Link>
           </div>
         </div>
@@ -65,7 +65,7 @@ export default function PublicSiteShell({ children }: { children: React.ReactNod
             <p className="mt-2">{siteSettings.phone}</p>
           </div>
           <div>
-            <p className="font-semibold text-white">Adresse</p>
+            <p className="font-semibold text-white">Adrès</p>
             <p className="mt-3">{siteSettings.address}</p>
           </div>
         </div>

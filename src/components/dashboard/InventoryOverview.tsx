@@ -15,10 +15,10 @@ export function InventoryOverview({
       <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:px-6">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
-            Fournisseurs principaux
+            Founisè prensipal
           </h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Livraisons, contacts et fiabilite.
+            Livrezon, kontak ak fyabilite.
           </p>
         </div>
         <div className="space-y-4 p-5 sm:p-6">
@@ -50,10 +50,10 @@ export function InventoryOverview({
       <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:px-6">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
-            Matieres premieres
+            Matyè premyè
           </h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Articles a surveiller avant le prochain service.
+            Atik pou siveye anvan pwochen sèvis la.
           </p>
         </div>
         <div className="space-y-3 p-5 sm:p-6">
@@ -74,7 +74,7 @@ export function InventoryOverview({
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-xl bg-gray-50 px-3 py-3 dark:bg-gray-900">
                   <p className="text-xs uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
-                    Quantite
+                    Kantite
                   </p>
                   <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white/90">
                     {formatNumber(item.quantity)} {item.unit}

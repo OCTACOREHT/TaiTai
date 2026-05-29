@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (error || !data) {
-      throw new Error("Téléphone ou mot de passe incorrect.");
+      throw new Error("Telefòn oswa modpas pa kòrèk.");
     }
 
     setUser(data);

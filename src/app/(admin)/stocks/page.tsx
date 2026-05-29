@@ -71,17 +71,17 @@ export default function StocksPage() {
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600 shadow-theme-xs"
         >
           <PlusIcon className="h-5 w-5" />
-          Ajouter au Stock
+          Ajoute nan estòk
         </button>
       </div>
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-        <p className="text-sm text-brand-500">Back-office cuisine</p>
+        <p className="text-sm text-brand-500">Biwo kizin</p>
         <h1 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white/90">
-          Fournisseurs et matieres premieres
+          Founisè ak matyè premyè
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-          Ajoutez un fournisseur, creez un stock et gardez le niveau d'inventaire sous controle.
+          Ajoute yon founisè, kreye yon estòk epi kenbe nivo envantè a anba kontwòl.
         </p>
       </section>
 
@@ -89,14 +89,14 @@ export default function StocksPage() {
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="md">
         <div className="p-5">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white/90">Nouvel Ingredient</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white/90">Nouvo engredyan</h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Ajoutez une nouvelle matiere premiere a votre inventaire.
+            Ajoute yon nouvo matyè premyè nan envantè ou.
           </p>
 
           <form className="mt-5 space-y-3" onSubmit={handleAddStock}>
             <TextInput
-              placeholder="Nom du produit"
+              placeholder="Non pwodwi a"
               value={stockDraft.name}
               onChange={(event) => setStockDraft((current) => ({ ...current, name: event.target.value }))}
             />
@@ -104,14 +104,14 @@ export default function StocksPage() {
               <TextInput
                 type="number"
                 min={0}
-                placeholder="Quantite"
+                placeholder="Kantite"
                 value={stockDraft.quantity}
                 onChange={(event) =>
                   setStockDraft((current) => ({ ...current, quantity: event.target.value }))
                 }
               />
               <TextInput
-                placeholder="Unite (ex: kg, litres, sacs)"
+                placeholder="Inite (egz: kg, lit, sak)"
                 value={stockDraft.unit}
                 onChange={(event) => setStockDraft((current) => ({ ...current, unit: event.target.value }))}
               />
@@ -120,7 +120,7 @@ export default function StocksPage() {
               <TextInput
                 type="number"
                 min={0}
-                placeholder="Seuil de reapprovisionnement"
+                placeholder="Limit pou rekòmande"
                 value={stockDraft.reorderLevel}
                 onChange={(event) =>
                   setStockDraft((current) => ({ ...current, reorderLevel: event.target.value }))
@@ -159,13 +159,13 @@ export default function StocksPage() {
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
               >
-                Annuler
+                Anile
               </button>
               <button
                 type="submit"
                 className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-600"
               >
-                Ajouter le stock
+                Ajoute estòk la
               </button>
             </div>
           </form>

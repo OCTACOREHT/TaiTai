@@ -27,7 +27,7 @@ export function MenuGrid({ items: initialItems }: { items: MenuItem[] }) {
       .eq("id", id);
 
     if (error) {
-      alert("Erreur de mise à jour : " + error.message);
+      alert("Gen yon erè ki pase pandan mizajou a : " + error.message);
       // Rollback
       setItems(prev => prev.map(item => item.id === id ? { ...item, disponible: currentStatus } : item));
     }
@@ -77,7 +77,7 @@ export function MenuGrid({ items: initialItems }: { items: MenuItem[] }) {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-gray-500 dark:text-gray-400">
-                    Prix
+                    Pri
                   </p>
                   <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white/90">
                     {formatCurrency(item.price)}
@@ -95,7 +95,7 @@ export function MenuGrid({ items: initialItems }: { items: MenuItem[] }) {
 
               <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
                 <span className={`text-sm font-medium ${item.disponible ? 'text-green-600' : 'text-red-500'}`}>
-                  {item.disponible ? 'Disponible' : 'Indisponible'}
+                  {item.disponible ? 'Disponib' : 'Pa disponib'}
                 </span>
                 <button
                   onClick={() => toggleAvailability(item.id, item.disponible ?? true)}
@@ -105,7 +105,7 @@ export function MenuGrid({ items: initialItems }: { items: MenuItem[] }) {
                     : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-500/10'
                   }`}
                 >
-                  {item.disponible ? 'Désactiver' : 'Activer'}
+                  {item.disponible ? 'Pa disponib' : 'Disponib'}
                 </button>
               </div>
             </div>

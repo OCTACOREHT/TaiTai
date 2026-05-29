@@ -31,16 +31,16 @@ export default function MenuPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <PageBreadCrumb pageTitle="Menu" />
+        <PageBreadCrumb pageTitle="Meni" />
       </div>
 
       <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-        <p className="text-sm text-brand-500">Catalogue produits</p>
+        <p className="text-sm text-brand-500">Katalòg pwodwi</p>
         <h1 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white/90">
-          Gestion des plats et catégories
+          Jesyon plat ak kategori
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-          Connecté à Supabase. Activez ou désactivez les plats pour les afficher ou les masquer sur le site client.
+          Konekte ak Supabase. Aktive oswa dezaktive plat yo pou montre yo oswa kache yo sou sit kliyan an.
         </p>
       </section>
 

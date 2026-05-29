@@ -139,7 +139,7 @@ export function CmsArticleForm({
             />
           </div>
           <div className="space-y-2">
-            <FieldLabel>Categorie</FieldLabel>
+            <FieldLabel>Kategori</FieldLabel>
             <TextInput
               value={form.category}
               onChange={(event) => updateField("category", event.target.value)}
@@ -184,7 +184,7 @@ export function CmsArticleForm({
         </div>
 
         <div className="space-y-2">
-          <FieldLabel hint="Utilisez la barre pour mettre en gras, ajouter des liens, des titres et des listes.">
+          <FieldLabel hint="Sèvi ak ba a pou mete an gra, ajoute lyen, tit ak lis.">
             Corps de l'article
           </FieldLabel>
           <CmsRichTextEditor value={form.body} onChange={(value) => updateField("body", value)} />
@@ -217,21 +217,21 @@ export function CmsArticleForm({
             rows={3}
             value={form.seoDescription}
             onChange={(event) => updateField("seoDescription", event.target.value)}
-            placeholder="Description SEO"
+            placeholder="Deskripsyon SEO"
           />
         </div>
 
         <ImageField
-          label="Image de couverture"
+          label="Imaj kouvèti"
           value={form.coverImage}
           onChange={(value) => updateField("coverImage", value)}
-          hint="Ajoutez une URL ou importez une image locale."
+          hint="Ajoute yon URL oswa enpòte yon imaj lokal."
         />
 
         <ToggleInput
           checked={form.featured}
           onChange={(checked) => updateField("featured", checked)}
-          label="Mettre cet article en avant sur la page principale"
+          label="Mete atik sa a an avan sou paj prensipal la"
         />
       </SectionCard>
 
@@ -270,7 +270,7 @@ export function CmsStageForm({
     event.preventDefault();
 
     if (!form.title.trim() || !form.excerpt.trim() || !form.body.trim() || !form.contactEmail.trim()) {
-      setError("Completez le titre, le resume, la description et l'email de contact.");
+      setError("Ranpli tit la, rezime a, deskripsyon an ak imèl kontak la.");
       return;
     }
 
@@ -279,7 +279,7 @@ export function CmsStageForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <SectionCard title="Fiche de stage" description="Renseignez tous les elements visibles sur le site.">
+      <SectionCard title="Fich estaj" description="Ranpli tout eleman ki vizib sou sit la.">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-2">
             <FieldLabel>Titre</FieldLabel>
@@ -366,12 +366,12 @@ export function CmsStageForm({
         </div>
 
         <div className="space-y-2">
-          <FieldLabel>Description detaillee</FieldLabel>
+          <FieldLabel>Deskripsyon detaye</FieldLabel>
           <CmsRichTextEditor value={form.body} onChange={(value) => updateField("body", value)} />
         </div>
 
         <ImageField
-          label="Image de couverture"
+          label="Imaj kouvèti"
           value={form.coverImage}
           onChange={(value) => updateField("coverImage", value)}
         />
@@ -379,7 +379,7 @@ export function CmsStageForm({
         <ToggleInput
           checked={form.featured}
           onChange={(checked) => updateField("featured", checked)}
-          label="Mettre ce stage en avant sur la page principale"
+          label="Mete estaj sa a an avan sou paj prensipal la"
         />
       </SectionCard>
 
@@ -427,14 +427,14 @@ export function CmsPartnerForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <SectionCard title="Fiche partenaire" description="Logo, lien et niveau de visibilite.">
+      <SectionCard title="Fich patnè" description="Logo, lyen ak nivo vizibilite.">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-2">
             <FieldLabel>Nom</FieldLabel>
             <TextInput
               value={form.name}
               onChange={(event) => updateField("name", event.target.value)}
-              placeholder="Nom du partenaire"
+              placeholder="Non patnè a"
             />
           </div>
           <div className="space-y-2">
@@ -447,7 +447,7 @@ export function CmsPartnerForm({
             />
           </div>
           <div className="space-y-2">
-            <FieldLabel>Categorie</FieldLabel>
+            <FieldLabel>Kategori</FieldLabel>
             <TextInput
               value={form.category}
               onChange={(event) => updateField("category", event.target.value)}
@@ -469,12 +469,12 @@ export function CmsPartnerForm({
         </div>
 
         <div className="space-y-2">
-          <FieldLabel>Description</FieldLabel>
+          <FieldLabel>Deskripsyon</FieldLabel>
           <TextAreaInput
             rows={4}
             value={form.description}
             onChange={(event) => updateField("description", event.target.value)}
-            placeholder="Description du partenariat"
+            placeholder="Deskripsyon patenarya a"
           />
         </div>
 
@@ -533,14 +533,14 @@ export function CmsUserForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <SectionCard title="Compte editeur" description="Acces, role et visuel du profil.">
+      <SectionCard title="Kont editè" description="Aksè, wòl ak vizyèl pwofil la.">
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-2">
-            <FieldLabel>Nom complet</FieldLabel>
+            <FieldLabel>Non konplè</FieldLabel>
             <TextInput
               value={form.name}
               onChange={(event) => updateField("name", event.target.value)}
-              placeholder="Nom complet"
+              placeholder="Non konplè"
             />
           </div>
           <div className="space-y-2">
@@ -561,12 +561,12 @@ export function CmsUserForm({
             />
           </div>
           <div className="space-y-2">
-            <FieldLabel>Mot de passe</FieldLabel>
+            <FieldLabel>Modpas</FieldLabel>
             <TextInput
               type="text"
               value={form.password}
               onChange={(event) => updateField("password", event.target.value)}
-              placeholder="Mot de passe"
+              placeholder="Modpas"
             />
           </div>
           {allowAdminFields ? (

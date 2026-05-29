@@ -16,13 +16,13 @@ import {
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: <GridIcon /> },
-  { name: "Données", path: "/donnees", icon: <BoxIconLine /> },
-  { name: "Commandes", path: "/commandes", icon: <TableIcon /> },
-  { name: "Menu", path: "/menu-admin", icon: <BoxCubeIcon /> },
+  { name: "Done", path: "/donnees", icon: <BoxIconLine /> },
+  { name: "Komand", path: "/commandes", icon: <TableIcon /> },
+  { name: "Meni", path: "/menu-admin", icon: <BoxCubeIcon /> },
   { name: "Stocks", path: "/stocks", icon: <TableIcon /> },
-  { name: "Fournisseurs", path: "/fournisseurs", icon: <UserCircleIcon /> },
+  { name: "Founisè", path: "/fournisseurs", icon: <UserCircleIcon /> },
   { name: "Clients", path: "/clients", icon: <UserCircleIcon /> },
-  { name: "Site Public", path: "/", icon: <GridIcon /> },
+  { name: "Sit piblik", path: "/", icon: <GridIcon /> },
 ];
 
 const AppSidebar: React.FC = () => {

@@ -71,7 +71,7 @@ const defaultHomePage: HomePageSettings = {
   heroSubtitle: "Les articles visibles sur cette page sont charges depuis la base de donnees.",
   heroPrimaryCtaLabel: "Voir les articles",
   heroPrimaryCtaUrl: "#articles",
-  heroSecondaryCtaLabel: "Connexion CMS",
+  heroSecondaryCtaLabel: "Konekte CMS",
   heroSecondaryCtaUrl: "/signin",
   heroBackgroundImage: "/images/grid-image/image-01.png",
   aboutTitle: "Contenus centralises",
@@ -454,7 +454,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     if (!sessionUser || sessionUser.email.toLowerCase() !== email.trim().toLowerCase()) {
       return {
         success: false,
-        message: "Connexion invalide. Passez par l'ecran de connexion API.",
+        message: "Konekte pa valid. Pase pa ekran koneksyon API a.",
       };
     }
 

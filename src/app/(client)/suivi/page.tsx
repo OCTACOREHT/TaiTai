@@ -37,9 +37,9 @@ export default function SuiviPage() {
       .maybeSingle();
 
     if (fetchError) {
-      setError("Une erreur est survenue lors de la recherche.");
+      setError("Gen yon erè ki pase pandan rechèch la.");
     } else if (!data) {
-      setError("Commande introuvable. Vérifiez le numéro.");
+      setError("Nou pa jwenn komand lan. Verifye nimewo a.");
       setCommande(null);
     } else {
       setCommande(data);
@@ -73,19 +73,19 @@ export default function SuiviPage() {
   }, [commande?.id]);
 
   const steps = [
-    { label: "En attente", icon: Clock, desc: "Votre commande est bien reçue et en attente de confirmation." },
-    { label: "En préparation", icon: ChefHat, desc: "Nos chefs sont en train de préparer votre commande." },
-    { label: "Prêt", icon: Package, desc: "C'est prêt ! En cours d'emballage ou prêt pour le service." },
-    { label: "Livré", icon: CheckCircle2, desc: "Arrivé à destination. Bon appétit !" },
+    { status: "En attente", label: "Kòmand lan an atant", icon: Clock, desc: "Nou resevwa kòmand ou a, li ap tann konfimasyon." },
+    { status: "En préparation", label: "Kòmand lan ap prepare", icon: ChefHat, desc: "Chef nou yo ap prepare kòmand ou a." },
+    { status: "Prêt", label: "Pare", icon: Package, desc: "Li pare! Nou ap pake li oswa li pare pou sèvi." },
+    { status: "Livré", label: "Livre", icon: CheckCircle2, desc: "Li rive kote li prale a. Bon apeti!" },
   ];
 
-  const currentStepIndex = steps.findIndex(s => s.label === commande?.statut);
+  const currentStepIndex = steps.findIndex(s => s.status === commande?.statut);
 
   return (
     <div className="mx-auto max-w-3xl space-y-16 py-10">
       <div className="space-y-4 text-center">
-        <h1 className="text-5xl font-extrabold tracking-tight text-[#101828]">Suivi de commande</h1>
-        <p className="text-[#667085] text-lg font-medium">Gardez un œil sur votre festin en temps réel.</p>
+        <h1 className="text-5xl font-extrabold tracking-tight text-[#101828]">Swivi kòmand</h1>
+        <p className="text-[#667085] text-lg font-medium">Swivi manje ou an dirèk.</p>
       </div>
 
       <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl space-y-8">
@@ -94,7 +94,7 @@ export default function SuiviPage() {
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#98A2B3]" size={22} />
             <input 
               type="text"
-              placeholder="Entrez votre numéro (ex: TT-1234)"
+              placeholder="Antre nimewo ou (egz: TT-1234)"
               value={numero}
               onChange={e => setNumero(e.target.value)}
               className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-5 pl-14 pr-6 text-xl font-bold text-[#101828] focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all placeholder:text-gray-300 uppercase"
@@ -105,7 +105,7 @@ export default function SuiviPage() {
             disabled={loading}
             className="rounded-2xl bg-[#101828] px-10 py-5 font-bold text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-black/10 min-w-[180px]"
           >
-            {loading ? <Loader2 className="animate-spin mx-auto" size={24} /> : "Suivre"}
+            {loading ? <Loader2 className="animate-spin mx-auto" size={24} /> : "Swivi"}
           </button>
         </form>
 
@@ -121,7 +121,7 @@ export default function SuiviPage() {
           <div className="space-y-4 pt-4 border-t border-gray-50">
             <h4 className="text-sm font-black text-[#98A2B3] uppercase tracking-widest flex items-center gap-2">
               <History size={16} />
-              Commandes récentes
+              Kòmand resan
             </h4>
             <div className="grid gap-3">
               {history.map((h) => (
@@ -156,12 +156,12 @@ export default function SuiviPage() {
 
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-gray-50 pb-8">
               <div className="text-center md:text-left space-y-1">
-                <p className="text-xs font-black text-[#98A2B3] uppercase tracking-[0.2em]">Identifiant</p>
+                <p className="text-xs font-black text-[#98A2B3] uppercase tracking-[0.2em]">Idantifyan</p>
                 <h3 className="text-3xl font-black text-[#101828]">{commande.numero_commande}</h3>
               </div>
               <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100">
                 <div className="text-center md:text-right space-y-1">
-                  <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total Commande</p>
+                  <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total</p>
                   <h3 className="text-2xl font-black text-[#F4A640]">{commande.total} HTG</h3>
                 </div>
               </div>
@@ -177,7 +177,7 @@ export default function SuiviPage() {
                   const Icon = step.icon;
                   
                   return (
-                    <div key={step.label} className={`relative flex gap-8 items-start transition-all duration-500 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
+                    <div key={step.status} className={`relative flex gap-8 items-start transition-all duration-500 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
                       <div className={`z-10 flex h-20 w-20 items-center justify-center rounded-[2.5rem] border-4 transition-all duration-500 shadow-xl ${
                         isDone || isCurrent 
                         ? "border-[#F4A640]/20 bg-[#F4A640] text-white rotate-[360deg]" 
@@ -204,8 +204,8 @@ export default function SuiviPage() {
                 <MapPin size={32} />
              </div>
              <div className="text-center md:text-left space-y-1">
-                <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Lieu de rendez-vous</p>
-                <p className="text-xl font-bold text-[#101828] leading-tight">{commande.adresse_livraison || "Consommation sur place (Salle)"}</p>
+                <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Kote pou resevwa</p>
+                <p className="text-xl font-bold text-[#101828] leading-tight">{commande.adresse_livraison || "Manje sou plas (sal)"}</p>
              </div>
           </div>
           
@@ -213,7 +213,7 @@ export default function SuiviPage() {
             onClick={() => setCommande(null)}
             className="w-full py-4 text-sm font-bold text-[#98A2B3] hover:text-[#101828] transition"
           >
-            ← Retourner à la recherche
+            ← Tounen nan rechèch la
           </button>
         </div>
       )}

@@ -53,8 +53,8 @@ export default function ConfirmationPage() {
   if (!commande) {
     return (
       <div className="py-20 text-center space-y-4">
-        <h1 className="text-2xl font-bold">Commande introuvable</h1>
-        <button onClick={() => router.push("/")} className="text-[#F4A640] hover:underline">Retour à l'accueil</button>
+        <h1 className="text-2xl font-bold">Nou pa jwenn komand lan</h1>
+        <button onClick={() => router.push("/")} className="text-[#F4A640] hover:underline">Tounen akèy</button>
       </div>
     );
   }
@@ -66,8 +66,8 @@ export default function ConfirmationPage() {
           <CheckCircle2 size={48} strokeWidth={2.5} />
         </div>
         <div className="space-y-3">
-          <h1 className="text-5xl font-black text-[#101828]">Merci, {commande.client_nom} !</h1>
-          <p className="text-[#667085] text-xl font-medium">Votre commande <span className="text-[#101828] font-black">{commande.numero_commande}</span> est en route.</p>
+          <h1 className="text-5xl font-black text-[#101828]">Mèsi, {commande.client_nom}!</h1>
+          <p className="text-[#667085] text-xl font-medium">Kòmand ou <span className="text-[#101828] font-black">{commande.numero_commande}</span> sou wout.</p>
         </div>
       </div>
 
@@ -78,14 +78,14 @@ export default function ConfirmationPage() {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-gray-50 pb-10">
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Statut actuel</p>
+            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Eta aktyèl</p>
             <div className="flex items-center gap-3 text-3xl font-black text-[#F4A640]">
               <Package size={28} />
               {commande.statut}
             </div>
           </div>
           <div className="text-center md:text-right space-y-1 bg-gray-50 px-8 py-5 rounded-2xl border border-gray-100">
-            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total réglé</p>
+            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total</p>
             <p className="text-3xl font-black text-[#101828]">{commande.total} HTG</p>
           </div>
         </div>
@@ -93,20 +93,20 @@ export default function ConfirmationPage() {
         <div className="grid gap-8 md:grid-cols-2">
           <div className="space-y-5">
             <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
-              <Navigation size={18} className="text-[#F4A640]" /> Mode de service
+              <Navigation size={18} className="text-[#F4A640]" /> Mòd sèvis
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
               <p className="font-bold text-lg text-[#101828]">{commande.canal}</p>
-              {commande.table_numero && <p className="text-[#667085] mt-1 font-medium italic">Numéro de table: {commande.table_numero}</p>}
+              {commande.table_numero && <p className="text-[#667085] mt-1 font-medium italic">Nimewo tab: {commande.table_numero}</p>}
             </div>
           </div>
           
           <div className="space-y-5">
             <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
-              <MapPin size={18} className="text-[#F4A640]" /> Destination
+              <MapPin size={18} className="text-[#F4A640]" /> Adrès livrezon
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
-              <p className="text-[#667085] font-medium leading-relaxed italic">{commande.adresse_livraison || "Consommation sur place"}</p>
+              <p className="text-[#667085] font-medium leading-relaxed italic">{commande.adresse_livraison || "Manje sou plas"}</p>
             </div>
           </div>
         </div>
@@ -119,21 +119,21 @@ export default function ConfirmationPage() {
             className="flex items-center justify-center gap-3 rounded-2xl bg-[#25D366] px-12 py-6 font-black text-white transition-all hover:bg-[#128C7E] hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#25D366]/20"
           >
             <MessageCircle size={24} />
-            Envoyer sur WhatsApp
+            Voye sou WhatsApp
           </button>
         )}
         <button 
           onClick={() => router.push("/suivi")}
           className="rounded-2xl bg-[#101828] px-12 py-6 font-black text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10"
         >
-          Suivre ma commande
+          Swivi kòmand mwen
         </button>
         <button 
           onClick={() => router.push("/")}
           className="flex items-center justify-center gap-3 rounded-2xl bg-white border border-gray-200 px-12 py-6 font-black text-[#101828] transition-all hover:bg-gray-50 active:scale-95 shadow-lg shadow-black/5"
         >
           <ArrowLeft size={20} strokeWidth={3} />
-          Retour au menu
+          Retounen nan meni
         </button>
       </div>
     </div>

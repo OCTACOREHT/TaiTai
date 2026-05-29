@@ -55,39 +55,39 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
-      <PageBreadCrumb pageTitle="Clients" />
+      <PageBreadCrumb pageTitle="Kliyan" />
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-        <p className="text-sm text-brand-500">Relation client</p>
+        <p className="text-sm text-brand-500">Relasyon kliyan</p>
         <h1 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white/90">
-          Fiches clients et profils VIP
+          Fich kliyan ak pwofil VIP
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-          Ajoutez un client, mettez en avant ses habitudes et suivez sa valeur pour le restaurant.
+          Ajoute yon kliyan, mete abitid li an avan epi swiv valè li pou restoran an.
         </p>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <SectionCard
-          title="Liste clients"
-          description="Historique rapide et badges prioritaires."
+          title="Lis kliyan"
+          description="Istwa rapid ak badj priyorite."
         >
           <CustomersTable customers={customers} />
         </SectionCard>
 
         <SectionCard
-          title="Ajouter un client"
-          description="Creation instantanee d'une nouvelle fiche."
+          title="Ajoute yon kliyan"
+          description="Kreyasyon rapid pou yon nouvo fich."
         >
           <form className="space-y-4" onSubmit={handleAddClient}>
             <TextInput
-              placeholder="Nom du client"
+              placeholder="Non kliyan an"
               value={draft.name}
               onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
             />
             <TextInput
               type="email"
-              placeholder="Email du client"
+              placeholder="Imèl kliyan an"
               value={draft.email}
               onChange={(event) => setDraft((current) => ({ ...current, email: event.target.value }))}
             />
@@ -123,7 +123,7 @@ export default function ClientsPage() {
               type="submit"
               className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600"
             >
-              Ajouter le client
+              Ajoute kliyan an
             </button>
           </form>
         </SectionCard>
