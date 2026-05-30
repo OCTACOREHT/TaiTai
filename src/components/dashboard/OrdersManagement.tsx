@@ -1,13 +1,11 @@
 "use client";
 
-import { SectionCard } from "@/components/common/CmsShared";
 import {
-  formatCurrency,
   getCommandes,
   type OrderStatus,
   type RestaurantOrder,
 } from "@/lib/data";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OrderReceiptPreview } from "./OrderReceiptPreview";
 import { OrdersTable } from "./OrdersTable";
 import { supabase } from "@/lib/supabase-client";
@@ -15,7 +13,13 @@ import { supabase } from "@/lib/supabase-client";
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-const filters: Array<"Tous" | OrderStatus> = ["Tous", "En attente", "En préparation", "Prêt", "Livré"];
+const filters: Array<"Tous" | OrderStatus> = [
+  "Tous",
+  "En attente",
+  "En préparation",
+  "Prêt",
+  "Livré",
+];
 
 export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantOrder[] }) {
   const [orders, setOrders] = useState<RestaurantOrder[]>(initialOrders);
@@ -24,7 +28,6 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
   const [loading, setLoading] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  // Initial fetch
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -41,17 +44,16 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     load();
   }, []);
 
-  // Realtime subscription
   useEffect(() => {
     const channel = supabase
-      .channel('cms-orders-realtime')
+      .channel("cms-orders-realtime")
       .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'commandes' },
+        "postgres_changes",
+        { event: "*", schema: "public", table: "commandes" },
         async () => {
           const data = await getCommandes();
           setOrders(data);
-        }
+        },
       )
       .subscribe();
 
@@ -76,27 +78,34 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
   };
 
   const handleStatusChange = async (orderId: string, nextStatus: OrderStatus) => {
-    // Optimistic UI
-    setOrders((current) => current.map(o => o.id === orderId ? { ...o, status: nextStatus } : o));
+    setOrders((current) =>
+      current.map((order) => (order.id === orderId ? { ...order, status: nextStatus } : order)),
+    );
 
-    // DB Update
-    const { error } = await supabase
-      .from("commandes")
-      .update({ statut: nextStatus })
-      .eq("id", orderId);
+    const response = await fetch("/api/admin/orders/status", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, status: nextStatus }),
+    });
 
-    if (error) {
-      alert("Erreur lors de la mise à jour : " + error.message);
+    const payload = await response.json();
+
+    if (!response.ok) {
+      alert("Erreur lors de la mise a jour : " + (payload.error || "Statut non modifie."));
       const data = await getCommandes();
       setOrders(data);
+      return;
+    }
+
+    if (payload.emailError) {
+      alert("Statut modifie, mais l'email n'a pas pu etre envoye : " + payload.emailError);
     }
   };
 
   const handleSelectOrder = (order: RestaurantOrder) => {
     setSelectedOrderId(order.id);
-    // On mobile, scroll to the receipt
     if (window.innerWidth < 1280) {
-      receiptRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      receiptRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -136,7 +145,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
               <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
                 Suivi des commandes en direct
               </h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">
+              <p className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">
                 Les nouvelles commandes apparaissent automatiquement ici.
               </p>
             </div>
@@ -161,7 +170,9 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
 
           <div className="p-5 sm:p-6">
             {loading && orders.length === 0 ? (
-               <div className="py-20 text-center text-gray-500 font-medium">Chargement des commandes...</div>
+              <div className="py-20 text-center font-medium text-gray-500">
+                Chargement des commandes...
+              </div>
             ) : (
               <OrdersTable
                 orders={filteredOrders}
@@ -177,8 +188,8 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
           </div>
         </section>
 
-        <div ref={receiptRef} className="xl:sticky xl:top-24 h-fit">
-           <OrderReceiptPreview order={selectedOrder} />
+        <div ref={receiptRef} className="h-fit xl:sticky xl:top-24">
+          <OrderReceiptPreview order={selectedOrder} />
         </div>
       </div>
     </div>

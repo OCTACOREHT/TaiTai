@@ -65,15 +65,15 @@ export default function AuthModal() {
     setSuccess("");
 
     if (mode === "signup" && !nom.trim()) {
-      setError("Veuillez entrer votre nom complet.");
+      setError("Tanpri antre non konplè ou.");
       return;
     }
     if (mode === "signup" && password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError("Modpas yo pa menm.");
       return;
     }
     if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères.");
+      setError("Modpas la dwe gen omwen 6 karaktè.");
       return;
     }
 
@@ -87,7 +87,7 @@ export default function AuthModal() {
         closeModal(); // Auto-login is handled in signUp directly now
       }
     } catch (err: unknown) {
-      const msg = (err as { message?: string })?.message || "Une erreur est survenue.";
+      const msg = (err as { message?: string })?.message || "Gen yon erè ki pase.";
       setError(msg);
       setLoading(false);
     }
@@ -112,14 +112,14 @@ export default function AuthModal() {
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
             <div className="absolute right-0 top-full z-50 mt-3 w-64 rounded-3xl border border-gray-100 bg-white p-4 shadow-2xl">
-              <p className="mb-1 text-xs font-black uppercase tracking-widest text-[#98A2B3]">Connecté en tant que</p>
+              <p className="mb-1 text-xs font-black uppercase tracking-widest text-[#98A2B3]">Konekte kòm</p>
               <p className="truncate text-sm font-bold text-[#101828] mb-1">{user.nom}</p>
               <p className="text-xs text-[#667085] mb-4">{user.telephone}</p>
               <button
                 onClick={async () => { await signOut(); setShowUserMenu(false); }}
                 className="w-full rounded-2xl bg-red-50 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100"
               >
-                Se déconnecter
+                Dekonekte
               </button>
             </div>
           </>
@@ -137,7 +137,7 @@ export default function AuthModal() {
         className="flex items-center gap-2 rounded-2xl bg-[#F4A640] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[#F4A640]/30 transition hover:bg-[#101828] hover:scale-105 active:scale-95"
       >
         <LogIn size={16} strokeWidth={2.5} />
-        <span>Connexion</span>
+        <span>Konekte</span>
       </button>
 
       {/* Modal rendered via Portal directly on body */}
@@ -169,12 +169,12 @@ export default function AuthModal() {
                   <span className="text-3xl">🍽️</span>
                 </div>
                 <h2 className="text-2xl font-black text-[#101828]">
-                  {mode === "login" ? "Bienvenue !" : "Créer un compte"}
+                  {mode === "login" ? "Byenveni !" : "Kreye yon kont"}
                 </h2>
                 <p className="mt-1 text-sm text-[#667085]">
                   {mode === "login"
-                    ? "Connectez-vous pour passer commande"
-                    : "Rejoignez TaiTai pour commander"}
+                    ? "Konekte pou pase kòmann"
+                    : "Antre nan TaiTai pou kòmande"}
                 </p>
               </div>
 
@@ -189,7 +189,7 @@ export default function AuthModal() {
                       : "text-[#667085] hover:text-[#101828]"
                   }`}
                 >
-                  Connexion
+                  Koneksyon
                 </button>
                 <button
                   type="button"
@@ -200,7 +200,7 @@ export default function AuthModal() {
                       : "text-[#667085] hover:text-[#101828]"
                   }`}
                 >
-                  Inscription
+                  Enskripsyon
                 </button>
               </div>
 
@@ -212,7 +212,7 @@ export default function AuthModal() {
                     <input
                       type="text"
                       required
-                      placeholder="Nom complet (ex: Jean Dupont)"
+                      placeholder="Non konplè (egzanp: Jean Dupont)"
                       value={nom}
                       onChange={(e) => setNom(e.target.value)}
                       className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
@@ -225,7 +225,7 @@ export default function AuthModal() {
                   <input
                     type="email"
                     required
-                    placeholder="Adresse email (ex: contact@gmail.com)"
+                    placeholder="Adrès imel (egzanp: contact@gmail.com)"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
@@ -238,7 +238,7 @@ export default function AuthModal() {
                     <input
                       type="tel"
                       required
-                      placeholder="Téléphone (+509...)"
+                      placeholder="Telefòn (+509...)"
                       value={telephone}
                       onChange={(e) => setTelephone(e.target.value)}
                       className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
@@ -251,7 +251,7 @@ export default function AuthModal() {
                   <input
                     type="password"
                     required
-                    placeholder="Mot de passe"
+                    placeholder="Modpas"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
@@ -264,7 +264,7 @@ export default function AuthModal() {
                     <input
                       type="password"
                       required
-                      placeholder="Confirmer le mot de passe"
+                      placeholder="Konfime modpas la"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
@@ -293,7 +293,7 @@ export default function AuthModal() {
                       <Loader2 size={20} className="animate-spin" />
                     ) : (
                       <>
-                        {mode === "login" ? "Se connecter" : "Créer mon compte"}
+                        {mode === "login" ? "Konekte" : "Kreye kont mwen"}
                         <ChevronRight size={18} strokeWidth={3} />
                       </>
                     )}

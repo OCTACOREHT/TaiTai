@@ -3,22 +3,54 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { Commande } from "@/types/restaurant";
+import { useAuth } from "@/context/AuthContext";
 import { Search, Package, CheckCircle2, Clock, ChefHat, MapPin, Loader2, Navigation, History, ArrowRight } from "lucide-react";
 
+type OrderSummary = {
+  id: string;
+  numero: string;
+  date: string;
+  total: number;
+};
+
 export default function SuiviPage() {
+  const { user } = useAuth();
   const [numero, setNumero] = useState("");
   const [commande, setCommande] = useState<Commande | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<OrderSummary[]>([]);
 
   useEffect(() => {
-    const savedHistory = JSON.parse(localStorage.getItem("taitai-orders-history") || "[]");
-    setHistory(savedHistory);
-  }, []);
+    if (!user) return;
+
+    const fetchUserOrders = async () => {
+      const { data, error } = await supabase
+        .from("commandes")
+        .select("id, numero_commande, created_at, total")
+        .eq("client_user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setHistory(
+          data.map((order) => ({
+            id: order.id,
+            numero: order.numero_commande,
+            date: order.created_at,
+            total: order.total,
+          })),
+        );
+      }
+    };
+
+    fetchUserOrders();
+  }, [user]);
 
   const handleSearch = async (e?: React.FormEvent, manualNumero?: string) => {
     e?.preventDefault();
+    if (!user) return;
+
     let searchNum = (manualNumero || numero).trim().toUpperCase();
     if (!searchNum) return;
 
@@ -34,12 +66,13 @@ export default function SuiviPage() {
       .from("commandes")
       .select("*")
       .eq("numero_commande", searchNum)
+      .eq("client_user_id", user?.id)
       .maybeSingle();
 
     if (fetchError) {
-      setError("Une erreur est survenue lors de la recherche.");
+      setError("Gen yon erè ki pase pandan rechèch la.");
     } else if (!data) {
-      setError("Commande introuvable. Vérifiez le numéro.");
+      setError("Nou pa jwenn kòmann sa a. Verifye nimewo a.");
       setCommande(null);
     } else {
       setCommande(data);
@@ -73,19 +106,19 @@ export default function SuiviPage() {
   }, [commande?.id]);
 
   const steps = [
-    { label: "En attente", icon: Clock, desc: "Votre commande est bien reçue et en attente de confirmation." },
-    { label: "En préparation", icon: ChefHat, desc: "Nos chefs sont en train de préparer votre commande." },
-    { label: "Prêt", icon: Package, desc: "C'est prêt ! En cours d'emballage ou prêt pour le service." },
-    { label: "Livré", icon: CheckCircle2, desc: "Arrivé à destination. Bon appétit !" },
+    { value: "En attente", label: "Ap tann", icon: Clock, desc: "Nou resevwa kòmann ou. Li ap tann konfimasyon." },
+    { value: "En préparation", label: "Ap prepare", icon: ChefHat, desc: "Ekip kwizin nan ap prepare kòmann ou." },
+    { value: "Prêt", label: "Pare", icon: Package, desc: "Kòmann nan pare. Nou ap anbale li oswa li pare pou sèvis." },
+    { value: "Livré", label: "Livre", icon: CheckCircle2, desc: "Kòmann nan rive. Bon apeti !" },
   ];
 
-  const currentStepIndex = steps.findIndex(s => s.label === commande?.statut);
+  const currentStepIndex = steps.findIndex(s => s.value === commande?.statut);
 
   return (
     <div className="mx-auto max-w-3xl space-y-16 py-10">
       <div className="space-y-4 text-center">
-        <h1 className="text-5xl font-extrabold tracking-tight text-[#101828]">Suivi de commande</h1>
-        <p className="text-[#667085] text-lg font-medium">Gardez un œil sur votre festin en temps réel.</p>
+        <h1 className="text-5xl font-extrabold tracking-tight text-[#101828]">Swivi kòmann</h1>
+        <p className="text-[#667085] text-lg font-medium">Swiv kòmann ou an tan reyèl.</p>
       </div>
 
       <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl space-y-8">
@@ -94,7 +127,7 @@ export default function SuiviPage() {
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#98A2B3]" size={22} />
             <input 
               type="text"
-              placeholder="Entrez votre numéro (ex: TT-1234)"
+              placeholder="Antre nimewo ou (egzanp: TT-1234)"
               value={numero}
               onChange={e => setNumero(e.target.value)}
               className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-5 pl-14 pr-6 text-xl font-bold text-[#101828] focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all placeholder:text-gray-300 uppercase"
@@ -105,7 +138,7 @@ export default function SuiviPage() {
             disabled={loading}
             className="rounded-2xl bg-[#101828] px-10 py-5 font-bold text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-black/10 min-w-[180px]"
           >
-            {loading ? <Loader2 className="animate-spin mx-auto" size={24} /> : "Suivre"}
+            {loading ? <Loader2 className="animate-spin mx-auto" size={24} /> : "Swiv"}
           </button>
         </form>
 
@@ -121,7 +154,7 @@ export default function SuiviPage() {
           <div className="space-y-4 pt-4 border-t border-gray-50">
             <h4 className="text-sm font-black text-[#98A2B3] uppercase tracking-widest flex items-center gap-2">
               <History size={16} />
-              Commandes récentes
+              Kòmann resan
             </h4>
             <div className="grid gap-3">
               {history.map((h) => (
@@ -156,12 +189,12 @@ export default function SuiviPage() {
 
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-gray-50 pb-8">
               <div className="text-center md:text-left space-y-1">
-                <p className="text-xs font-black text-[#98A2B3] uppercase tracking-[0.2em]">Identifiant</p>
+                <p className="text-xs font-black text-[#98A2B3] uppercase tracking-[0.2em]">Idantifyan</p>
                 <h3 className="text-3xl font-black text-[#101828]">{commande.numero_commande}</h3>
               </div>
               <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100">
                 <div className="text-center md:text-right space-y-1">
-                  <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total Commande</p>
+                  <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total kòmann</p>
                   <h3 className="text-2xl font-black text-[#F4A640]">{commande.total} HTG</h3>
                 </div>
               </div>
@@ -204,8 +237,8 @@ export default function SuiviPage() {
                 <MapPin size={32} />
              </div>
              <div className="text-center md:text-left space-y-1">
-                <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Lieu de rendez-vous</p>
-                <p className="text-xl font-bold text-[#101828] leading-tight">{commande.adresse_livraison || "Consommation sur place (Salle)"}</p>
+                <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Kote pou resevwa</p>
+                <p className="text-xl font-bold text-[#101828] leading-tight">{commande.adresse_livraison || "Sou plas (sal)"}</p>
              </div>
           </div>
           
@@ -213,7 +246,7 @@ export default function SuiviPage() {
             onClick={() => setCommande(null)}
             className="w-full py-4 text-sm font-bold text-[#98A2B3] hover:text-[#101828] transition"
           >
-            ← Retourner à la recherche
+            ← Retounen nan rechèch la
           </button>
         </div>
       )}

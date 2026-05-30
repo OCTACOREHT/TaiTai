@@ -1,16 +1,16 @@
 "use client";
 
-import { Outfit } from 'next/font/google';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { ShoppingCart, Home, UtensilsCrossed, MapPin } from 'lucide-react';
-import { CartProvider, useCart } from '@/context/CartContext';
-import { useAuth } from '@/context/AuthContext';
-import { cn } from '@/components/common/CmsShared';
-import AuthModal from '@/components/auth/AuthModal';
+import { Outfit } from "next/font/google";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { ShoppingCart, Home, UtensilsCrossed, MapPin } from "lucide-react";
+import { CartProvider, useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/components/common/CmsShared";
+import AuthModal from "@/components/auth/AuthModal";
 
-const outfit = Outfit({ subsets: ['latin'] });
+const outfit = Outfit({ subsets: ["latin"] });
 
 export default function ClientLayout({
   children,
@@ -29,51 +29,51 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
 
-  // Guard: if on /panier and not logged in, show lock screen
-  const isProtected = pathname === '/panier';
+  const isProtected = pathname === "/panier" || pathname === "/suivi";
+  const protectedMessage =
+    pathname === "/suivi"
+      ? "Ou dwe konekte pou swiv kòmann ou yo."
+      : "Ou dwe konekte pou antre nan panyen an epi pase kòmann.";
   if (isProtected && !loading && !user) {
     return (
-      <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center text-center px-6 gap-8`}>
-        <div className="h-24 w-24 rounded-3xl bg-[#F4A640]/10 flex items-center justify-center text-5xl">🔒</div>
+      <div className={`${outfit.className} flex min-h-screen flex-col items-center justify-center gap-8 bg-[#F9FAFB] px-6 text-center`}>
+        <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-[#F4A640]/10 text-5xl">🔒</div>
         <div className="space-y-3">
-          <h1 className="text-3xl font-black text-[#101828]">Connexion requise</h1>
-          <p className="text-[#667085] font-medium max-w-sm">Vous devez être connecté pour accéder au panier et passer commande.</p>
+          <h1 className="text-3xl font-black text-[#101828]">Koneksyon obligatwa</h1>
+          <p className="max-w-sm font-medium text-[#667085]">{protectedMessage}</p>
+          <p className="hidden">
+            Ou dwe konekte pou antre nan panyen an epi pase kòmann.
+          </p>
         </div>
         <AuthModal />
       </div>
     );
   }
-  
+
   const navLinks = [
-    { href: '/', label: 'Accueil', icon: Home },
-    { href: '/menu', label: 'Notre Menu', icon: UtensilsCrossed },
-    { href: '/suivi', label: 'Suivre ma commande', icon: MapPin },
+    { href: "/", label: "Akèy", icon: Home },
+    { href: "/menu", label: "Meni nou", icon: UtensilsCrossed },
+    { href: "/suivi", label: "Swiv kòmann mwen", icon: MapPin },
   ];
 
   return (
-    <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] text-[#101828] selection:bg-[#F4A640] selection:text-white pb-20 md:pb-0`}>
-      {/* Header */}
+    <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] pb-20 text-[#101828] selection:bg-[#F4A640] selection:text-white md:pb-0`}>
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center group">
+          <Link href="/" className="group flex items-center">
             <div className="relative h-8 w-32 transition-transform group-hover:scale-105">
-              <Image 
-                src="/images/logo/tailogo.png" 
-                alt="TaiTai" 
-                fill 
-                className="object-contain object-left"
-              />
+              <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain object-left" />
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-10">
+          <nav className="hidden items-center gap-10 md:flex">
             {navLinks.map((link) => (
-              <Link 
+              <Link
                 key={link.href}
-                href={link.href} 
+                href={link.href}
                 className={cn(
                   "text-sm font-semibold transition hover:text-[#F4A640]",
-                  pathname === link.href ? "text-[#F4A640]" : "text-[#475467]"
+                  pathname === link.href ? "text-[#F4A640]" : "text-[#475467]",
                 )}
               >
                 {link.label}
@@ -83,9 +83,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-3">
             <AuthModal />
-            <Link 
+            <Link
               href="/panier"
               className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#475467] shadow-sm transition hover:border-[#F4A640] hover:text-[#F4A640]"
+              title="Panyen"
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
@@ -98,83 +99,76 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8 md:py-12">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12">
         {children}
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-around border-t border-gray-100 bg-white/90 backdrop-blur-xl px-4 md:hidden shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-around border-t border-gray-100 bg-white/90 px-4 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl md:hidden">
         {navLinks.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
           return (
-            <Link 
+            <Link
               key={link.href}
               href={link.href}
               className={cn(
                 "flex flex-col items-center gap-1 transition-all duration-300",
-                isActive ? "text-[#F4A640] scale-110" : "text-[#98A2B3] hover:text-[#475467]"
+                isActive ? "scale-110 text-[#F4A640]" : "text-[#98A2B3] hover:text-[#475467]",
               )}
             >
-              <div className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-2xl transition-all",
-                isActive ? "bg-[#F4A640]/10" : ""
-              )}>
+              <div className={cn("flex h-10 w-10 items-center justify-center rounded-2xl transition-all", isActive ? "bg-[#F4A640]/10" : "")}>
                 <Icon size={isActive ? 22 : 20} strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest">{link.label.split(' ')[0]}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest">{link.label.split(" ")[0]}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Footer (Hidden on very small screens or made simpler) */}
-      <footer className="border-t border-gray-200 bg-white py-16 hidden md:block">
+      <footer className="hidden border-t border-gray-200 bg-white py-16 md:block">
         <div className="mx-auto max-w-7xl px-6">
           <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-6">
-              <div className="flex items-center">
-                <div className="relative h-8 w-32">
-                  <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain object-left" />
-                </div>
+              <div className="relative h-8 w-32">
+                <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain object-left" />
               </div>
               <p className="text-sm leading-relaxed text-[#475467]">
-                L'excellence de la cuisine créole revisitée. Des ingrédients frais, des recettes ancestrales et une livraison ultra-rapide.
+                Pi bon gou kizin kreyòl la, ak engredyan fre, resèt lakay, epi livrezon rapid.
               </p>
             </div>
-            
+
             <div>
-              <h4 className="font-bold mb-6 text-[#101828]">Navigation</h4>
+              <h4 className="mb-6 font-bold text-[#101828]">Navigasyon</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
-                <li><Link href="/" className="hover:text-[#F4A640]">Accueil</Link></li>
-                <li><Link href="/menu" className="hover:text-[#F4A640]">Menu</Link></li>
-                <li><Link href="/suivi" className="hover:text-[#F4A640]">Suivi Commande</Link></li>
+                <li><Link href="/" className="hover:text-[#F4A640]">Akèy</Link></li>
+                <li><Link href="/menu" className="hover:text-[#F4A640]">Meni</Link></li>
+                <li><Link href="/suivi" className="hover:text-[#F4A640]">Swivi kòmann</Link></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-bold mb-6 text-[#101828]">Contact</h4>
+              <h4 className="mb-6 font-bold text-[#101828]">Kontak</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
-                <li>Port-au-Prince, Haïti</li>
+                <li>Port-au-Prince, Ayiti</li>
                 <li>+509 0000-0000</li>
                 <li>contact@taitai.ht</li>
               </ul>
             </div>
 
             <div>
-              <h4 className="font-bold mb-6 text-[#101828]">Horaires</h4>
+              <h4 className="mb-6 font-bold text-[#101828]">Orè</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
-                <li>Lun - Ven: 11h - 22h</li>
-                <li>Sam - Dim: 12h - 23h</li>
+                <li>Lendi - Vandredi: 11h - 22h</li>
+                <li>Samdi - Dimanch: 12h - 23h</li>
               </ul>
             </div>
           </div>
-          
-          <div className="mt-16 border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-[#98A2B3]">© 2026 TaiTai Restaurant. Fièrement Haïtien.</p>
+
+          <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 md:flex-row">
+            <p className="text-xs text-[#98A2B3]">© 2026 TaiTai Restaurant. Fyète Ayiti.</p>
             <div className="flex gap-6">
-              <span className="text-xs text-[#98A2B3] cursor-pointer hover:text-[#475467]">Mentions légales</span>
-              <span className="text-xs text-[#98A2B3] cursor-pointer hover:text-[#475467]">Confidentialité</span>
+              <span className="cursor-pointer text-xs text-[#98A2B3] hover:text-[#475467]">Enfòmasyon legal</span>
+              <span className="cursor-pointer text-xs text-[#98A2B3] hover:text-[#475467]">Konfidansyalite</span>
             </div>
           </div>
         </div>

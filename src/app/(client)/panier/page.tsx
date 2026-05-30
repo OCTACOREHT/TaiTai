@@ -48,6 +48,12 @@ const ZONES_LIVRAISON = [
   { zone: "Thomassin",        frais: 875,  label: "Thomassin — 750-1000 HTG" },
 ];
 
+const canalLabels: Record<"Salle" | "Livraison" | "A emporter", string> = {
+  Livraison: "Livrezon",
+  "A emporter": "Pou pote ale",
+  Salle: "Sou plas",
+};
+
 export default function PanierPage() {
   const router = useRouter();
   const { cart, updateQuantity, removeItem, clearCart } = useCart();
@@ -102,12 +108,12 @@ export default function PanierPage() {
 
     if (error || !data) {
       setAppliedPromo(null);
-      setPromoMessage("Code promo invalide.");
+      setPromoMessage("Kod promo a pa valab.");
       return;
     }
 
     setAppliedPromo(data as OrderPromotion);
-    setPromoMessage("Code promo applique.");
+    setPromoMessage("Kod promo a aplike.");
   };
 
   const buildWhatsAppMessage = (numeroCommande: string) => {
@@ -118,28 +124,28 @@ export default function PanierPage() {
 
     let livraison = "";
     if (formData.canal === "Livraison") {
-      livraison = `📍 *Zone:* ${formData.zone_livraison}${selectedZone ? ` (${selectedZone.frais} HTG)` : ""}\n📌 *Adresse:* ${formData.adresse_livraison}\n`;
+      livraison = `📍 *Zon:* ${formData.zone_livraison}${selectedZone ? ` (${selectedZone.frais} HTG)` : ""}\n📌 *Adrès:* ${formData.adresse_livraison}\n`;
     } else if (formData.canal === "Salle") {
-      livraison = `🪑 *Table:* ${formData.table_numero}\n`;
+      livraison = `🪑 *Tab:* ${formData.table_numero}\n`;
     }
 
     const message =
-      `🍽️ *NOUVELLE COMMANDE TAITAI* 🍽️\n` +
+      `🍽️ *NOUVO KÒMANN TAITAI* 🍽️\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `📋 *N° Commande:* ${numeroCommande}\n` +
-      `👤 *Client:* ${formData.client_nom}\n` +
-      `📞 *Tél:* ${formData.client_tel}\n` +
-      `${canalEmoji} *Canal:* ${formData.canal}\n` +
+      `📋 *Nimewo kòmann:* ${numeroCommande}\n` +
+      `👤 *Kliyan:* ${formData.client_nom}\n` +
+      `📞 *Telefòn:* ${formData.client_tel}\n` +
+      `${canalEmoji} *Fason:* ${canalLabels[formData.canal]}\n` +
       livraison +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `🛒 *ARTICLES:*\n${lignesArticles}\n` +
+      `🛒 *ATIK:*\n${lignesArticles}\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `💰 Sous-total: ${sousTotal} HTG\n` +
-      (fraisLivraison > 0 ? `🚚 Livraison: ${fraisLivraison} HTG\n` : "") +
+      `💰 Sou-total: ${sousTotal} HTG\n` +
+      (fraisLivraison > 0 ? `🚚 Livrezon: ${fraisLivraison} HTG\n` : "") +
       `💳 *TOTAL: ${total} HTG*\n` +
-      (formData.notes ? `📝 *Notes:* ${formData.notes}\n` : "") +
+      (formData.notes ? `📝 *Nòt:* ${formData.notes}\n` : "") +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `_Envoyé via TaiTai App_`;
+      `_Voye depi aplikasyon TaiTai_`;
 
     return encodeURIComponent(message);
   };
@@ -149,7 +155,7 @@ export default function PanierPage() {
     if (cart.length === 0) return;
 
     if (formData.canal === "Livraison" && !formData.zone_livraison) {
-      alert("Veuillez sélectionner votre zone de livraison.");
+      alert("Tanpri chwazi zon livrezon ou.");
       return;
     }
 
@@ -163,7 +169,7 @@ export default function PanierPage() {
       .in("id", menuItemIds);
 
     if (stockError) {
-      alert("Impossible de verifier le stock: " + stockError.message);
+      alert("Nou pa ka verifye stok la: " + stockError.message);
       setLoading(false);
       return;
     }
@@ -176,9 +182,9 @@ export default function PanierPage() {
 
     if (unavailableItems.length > 0) {
       alert(
-        "Stock insuffisant pour: " +
+        "Stok la pa sifi pou: " +
           unavailableItems.map((item) => item.nom).join(", ") +
-          ". Veuillez ajuster votre panier.",
+          ". Tanpri ajiste panyen ou.",
       );
       setLoading(false);
       return;
@@ -206,7 +212,7 @@ export default function PanierPage() {
       .single();
 
     if (cmdError) {
-      alert("Erreur lors de la commande: " + cmdError.message);
+      alert("Erè pandan kòmann nan: " + cmdError.message);
       setLoading(false);
       return;
     }
@@ -224,7 +230,7 @@ export default function PanierPage() {
     const { error: itemsError } = await supabase.from("commande_items").insert(itemsToInsert);
 
     if (itemsError) {
-      alert("Erreur lors de l'enregistrement des plats: " + itemsError.message);
+      alert("Erè pandan anrejistreman plat yo: " + itemsError.message);
       setLoading(false);
       return;
     }
@@ -263,14 +269,14 @@ export default function PanierPage() {
           <ShoppingCart size={56} />
         </div>
         <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-[#101828]">Votre panier est vide</h1>
-          <p className="text-[#667085] text-lg font-medium">Laissez-vous tenter par nos spécialités !</p>
+          <h1 className="text-4xl font-bold text-[#101828]">Panyen ou vid</h1>
+          <p className="text-[#667085] text-lg font-medium">Chwazi youn nan espesyalite nou yo !</p>
         </div>
         <button
           onClick={() => router.push("/menu")}
           className="rounded-2xl bg-[#F4A640] px-10 py-5 font-bold text-white shadow-lg shadow-[#F4A640]/20 transition hover:scale-105 active:scale-95"
         >
-          Consulter le menu
+          Gade meni an
         </button>
       </div>
     );
@@ -281,8 +287,8 @@ export default function PanierPage() {
       {/* ── Récapitulatif des articles ─────────────────── */}
       <div className="space-y-10">
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold text-[#101828]">Récapitulatif</h1>
-          <p className="text-[#667085] font-medium">Vérifiez vos articles avant de valider.</p>
+          <h1 className="text-4xl font-bold text-[#101828]">Rezime</h1>
+          <p className="text-[#667085] font-medium">Verifye atik ou yo avan ou valide.</p>
         </div>
 
         <div className="space-y-5">
@@ -344,7 +350,7 @@ export default function PanierPage() {
           <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
             <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
               <Tag size={14} />
-              Code promo
+              Kod promo
             </label>
             <div className="flex gap-2">
               <input
@@ -359,7 +365,7 @@ export default function PanierPage() {
                 onClick={applyPromoCode}
                 className="rounded-xl bg-[#F4A640] px-4 text-sm font-black text-white transition hover:bg-[#db8923]"
               >
-                Appliquer
+                Aplike
               </button>
             </div>
             {promoMessage ? (
@@ -369,12 +375,12 @@ export default function PanierPage() {
             ) : null}
           </div>
           <div className="flex justify-between text-gray-400 font-medium">
-            <span>Sous-total</span>
+            <span>Sou-total</span>
             <span>{sousTotal} HTG</span>
           </div>
           {discountTotal > 0 && (
             <div className="flex justify-between font-medium text-green-300">
-              <span>Reduction {appliedPromo?.code}</span>
+              <span>Rabè {appliedPromo?.code}</span>
               <span>-{discountTotal} HTG</span>
             </div>
           )}
@@ -382,21 +388,21 @@ export default function PanierPage() {
             <div className="flex justify-between text-gray-400 font-medium">
               <span className="flex items-center gap-2">
                 <MapPin size={15} />
-                Frais de livraison{selectedZone ? ` (${selectedZone.zone})` : ""}
+                Frè livrezon{selectedZone ? ` (${selectedZone.zone})` : ""}
               </span>
               <span className={selectedZone ? "text-[#F4A640]" : "text-gray-500"}>
-                {selectedZone ? `${selectedZone.frais} HTG` : "— Choisir une zone"}
+                {selectedZone ? `${selectedZone.frais} HTG` : "Chwazi yon zon"}
               </span>
             </div>
           )}
           <div className="h-px bg-white/10" />
           <div className="flex justify-between text-2xl font-black">
-            <span>Total à payer</span>
+            <span>Total pou peye</span>
             <span className="text-[#F4A640]">{total} HTG</span>
           </div>
           {selectedZone?.zone && ["Tabarre", "Clercine", "Thomassin"].includes(selectedZone.zone) && (
             <p className="text-xs text-gray-400 italic">
-              * Le frais exact pour cette zone sera confirmé par le livreur (750–1000 HTG).
+              * Frè egzak pou zon sa a ap konfime pa livrè a (750-1000 HTG).
             </p>
           )}
         </div>
@@ -405,15 +411,15 @@ export default function PanierPage() {
       {/* ── Formulaire de commande ─────────────────────── */}
       <div className="space-y-10">
         <div className="space-y-2">
-          <h2 className="text-4xl font-bold text-[#101828]">Validation</h2>
-          <p className="text-[#667085] font-medium">Comment souhaitez-vous être servi ?</p>
+          <h2 className="text-4xl font-bold text-[#101828]">Validasyon</h2>
+          <p className="text-[#667085] font-medium">Ki jan ou vle resevwa kòmann nan ?</p>
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-100 bg-white p-10 space-y-8 shadow-xl">
           {/* Canal */}
           <div className="space-y-4">
             <label className="block text-sm font-black uppercase tracking-widest text-[#98A2B3]">
-              Canal de commande
+              Fason pou resevwa
             </label>
             <div className="grid grid-cols-3 gap-3">
               {(["Livraison", "A emporter", "Salle"] as const).map((type) => (
@@ -427,7 +433,7 @@ export default function PanierPage() {
                       : "bg-gray-50 text-[#667085] border border-transparent hover:border-gray-200"
                   }`}
                 >
-                  {type}
+                  {canalLabels[type]}
                 </button>
               ))}
             </div>
@@ -438,7 +444,7 @@ export default function PanierPage() {
             <div className="space-y-4 rounded-3xl bg-orange-50/50 p-6 border border-orange-100">
               <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
                 <MapPin size={16} className="text-[#F4A640]" />
-                Zone de livraison
+                Zon livrezon
               </label>
               <div className="relative">
                 <select
@@ -447,7 +453,7 @@ export default function PanierPage() {
                   onChange={(e) => setFormData({ ...formData, zone_livraison: e.target.value })}
                   className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
                 >
-                  <option value="">Sélectionner votre zone...</option>
+                  <option value="">Chwazi zon ou...</option>
                   {ZONES_LIVRAISON.map((z) => (
                     <option key={z.zone} value={z.zone}>{z.label}</option>
                   ))}
@@ -456,7 +462,7 @@ export default function PanierPage() {
               </div>
               {selectedZone && (
                 <p className="text-sm font-bold text-[#F4A640]">
-                  🚚 Frais de livraison : {selectedZone.frais} HTG
+                  Frè livrezon : {selectedZone.frais} HTG
                 </p>
               )}
             </div>
@@ -466,18 +472,18 @@ export default function PanierPage() {
           <div className="space-y-6">
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Nom complet</label>
+                <label className="text-sm font-bold text-[#101828]">Non konplè</label>
                 <input
                   required
                   type="text"
-                  placeholder="Ex: Jean Dupont"
+                  placeholder="Egzanp: Jean Dupont"
                   value={formData.client_nom}
                   onChange={(e) => setFormData({ ...formData, client_nom: e.target.value })}
                   className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Téléphone</label>
+                <label className="text-sm font-bold text-[#101828]">Telefòn</label>
                 <input
                   required
                   type="tel"
@@ -491,10 +497,10 @@ export default function PanierPage() {
 
             {formData.canal === "Livraison" && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Adresse précise</label>
+                <label className="text-sm font-bold text-[#101828]">Adrès presi</label>
                 <textarea
                   required
-                  placeholder="Rue, quartier, repères précis..."
+                  placeholder="Ri, katye, referans presi..."
                   value={formData.adresse_livraison}
                   onChange={(e) => setFormData({ ...formData, adresse_livraison: e.target.value })}
                   className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium min-h-[100px]"
@@ -504,11 +510,11 @@ export default function PanierPage() {
 
             {formData.canal === "Salle" && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Numéro de table</label>
+                <label className="text-sm font-bold text-[#101828]">Nimewo tab</label>
                 <input
                   required
                   type="text"
-                  placeholder="Ex: Table 12"
+                  placeholder="Egzanp: Tab 12"
                   value={formData.table_numero}
                   onChange={(e) => setFormData({ ...formData, table_numero: e.target.value })}
                   className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
@@ -517,10 +523,10 @@ export default function PanierPage() {
             )}
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-[#101828]">Instructions (Optionnel)</label>
+              <label className="text-sm font-bold text-[#101828]">Enstriksyon (opsyonèl)</label>
               <input
                 type="text"
-                placeholder="Ex: Sans oignons, sauce à part..."
+                placeholder="Egzanp: San zonyon, sòs apa..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
@@ -535,11 +541,11 @@ export default function PanierPage() {
             className="w-full flex items-center justify-center gap-3 rounded-2xl bg-[#F4A640] py-6 text-xl font-black text-white transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#F4A640]/20 hover:shadow-none"
           >
             {loading ? (
-              "Confirmation en cours..."
+              "Konfimasyon ap fèt..."
             ) : (
               <>
                 <MessageCircle size={24} strokeWidth={2.5} />
-                Commander via WhatsApp ({total} HTG)
+                Kòmande sou WhatsApp ({total} HTG)
                 <ArrowRight size={22} strokeWidth={3} />
               </>
             )}
@@ -547,7 +553,7 @@ export default function PanierPage() {
 
           <div className="flex items-center gap-3 justify-center text-[#98A2B3] text-xs font-bold uppercase tracking-tighter">
             <Info size={14} />
-            <span>Votre commande sera confirmée par WhatsApp</span>
+            <span>Kòmann ou ap konfime sou WhatsApp</span>
           </div>
         </form>
       </div>
