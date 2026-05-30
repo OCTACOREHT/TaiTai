@@ -25,7 +25,7 @@ export default function ProfilePage() {
       ) : null}
       <CmsUserForm
         initialValue={currentUser}
-        submitLabel="Anrejistre kont mwen"
+        submitLabel="Enregistrer mon compte"
         allowAdminFields={false}
         onSubmit={async (value) => {
           const result = await saveUser(value);

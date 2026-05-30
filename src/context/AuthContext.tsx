@@ -64,8 +64,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (error || !data) {
-      throw new Error("Telefòn oswa modpas pa kòrèk.");
+      throw new Error("Téléphone ou mot de passe incorrect.");
     }
+
+    await supabase
+      .from("clients")
+      .update({ last_login_at: new Date().toISOString() })
+      .eq("id", data.id);
 
     setUser(data);
     localStorage.setItem("taitai_user_id", data.id);
@@ -90,7 +95,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         nom,
         telephone,
         email,
-        mot_de_passe_hash: hash
+        mot_de_passe_hash: hash,
+        last_login_at: new Date().toISOString(),
       })
       .select("id, nom, telephone, email")
       .single();

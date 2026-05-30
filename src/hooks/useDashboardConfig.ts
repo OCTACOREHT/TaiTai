@@ -30,7 +30,7 @@ export const useDashboardConfig = () => {
         });
 
         if (!response.ok) {
-          throw new Error("Ap chaje enposib");
+          throw new Error("Chargement impossible");
         }
 
         const payload = await response.json();

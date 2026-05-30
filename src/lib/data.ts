@@ -3,7 +3,6 @@ import { supabase } from "./supabase-client";
 export type DashboardMetricKind = "currency" | "number";
 export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "Livré";
 export type OrderChannel = "Salle" | "Livraison" | "A emporter";
-export type PaymentMethod = "Cash" | "Carte" | "MonCash" | "Unibank" | "Sogebank";
 export type StockStatus = "Normal" | "Faible" | "Critique";
 
 export interface SalesPoint {
@@ -58,6 +57,7 @@ export interface MenuItem {
   featured: boolean;
   image?: string;
   disponible?: boolean;
+  stockQuantity: number;
 }
 
 export interface RestaurantOrder {
@@ -68,10 +68,8 @@ export interface RestaurantOrder {
   total: number;
   status: OrderStatus;
   channel: OrderChannel;
-  paymentMethod: PaymentMethod;
   placedAt: string;
   date: string;
-  paymentProofUrl?: string;
   items: any[];
 }
 
@@ -97,7 +95,6 @@ export interface Supplier {
 
 export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "Livré"];
 export const orderChannelOptions: OrderChannel[] = ["Salle", "Livraison", "A emporter"];
-export const paymentMethodOptions: PaymentMethod[] = ["Cash", "Carte", "MonCash", "Unibank", "Sogebank"];
 export const stockStatusOptions: StockStatus[] = ["Normal", "Faible", "Critique"];
 export const customerSegmentOptions: CustomerSegment[] = ["Nouveau", "Régulier", "VIP", "Inactif"];
 
@@ -121,7 +118,10 @@ export function formatMetricValue(value: number, kind: DashboardMetricKind) {
 
 // Supabase fetching functions
 export async function getMenuItems(): Promise<MenuItem[]> {
-  const { data, error } = await supabase.from("menu_items").select("*");
+  const { data, error } = await supabase
+    .from("menu_items")
+    .select("*")
+    .is("deleted_at", null);
   if (error) throw error;
   
   return (data || []).map(item => ({
@@ -135,7 +135,8 @@ export async function getMenuItems(): Promise<MenuItem[]> {
     prepTime: `${item.temps_prep} min`,
     featured: item.best_seller,
     image: item.image_url,
-    disponible: item.disponible
+    disponible: item.disponible,
+    stockQuantity: item.stock_quantity ?? 0,
   }));
 }
 
@@ -155,10 +156,8 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     total: cmd.total,
     status: cmd.statut as OrderStatus,
     channel: cmd.canal as OrderChannel,
-    paymentMethod: cmd.methode_paiement as PaymentMethod || "Cash",
     placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
     date: cmd.created_at,
-    paymentProofUrl: cmd.preuve_paiement_url,
     items: cmd.commande_items.map((item: any) => ({
       name: item.nom_plat,
       quantity: item.quantite,
@@ -217,10 +216,10 @@ export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
 
 // Keep mock data for metrics and others to avoid breaks
 export const dashboardMetrics: DashboardMetric[] = [
-  { id: "revenue", label: "Total revni", value: 0, note: "Reyèl Supabase", kind: "currency" },
-  { id: "orders", label: "Komand jodi a", value: 0, note: "An dirèk", kind: "number" },
-  { id: "customers", label: "Nouvo kliyan", value: 0, note: "+0% vs yè", kind: "number" },
-  { id: "averageTicket", label: "Panyen mwayen", value: 0, note: "Kalkile", kind: "currency" },
+  { id: "revenue", label: "Revenu total", value: 0, note: "Réel Supabase", kind: "currency" },
+  { id: "orders", label: "Commandes du jour", value: 0, note: "En direct", kind: "number" },
+  { id: "customers", label: "Nouveaux clients", value: 0, note: "+0% vs hier", kind: "number" },
+  { id: "averageTicket", label: "Panier moyen", value: 0, note: "Calculé", kind: "currency" },
 ];
 
 export const salesTrend: SalesPoint[] = [

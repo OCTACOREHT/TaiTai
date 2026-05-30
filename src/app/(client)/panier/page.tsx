@@ -7,10 +7,30 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import {
   Trash2, Plus, Minus, ArrowRight, ShoppingCart,
-  Info, MapPin, ChevronDown, MessageCircle
+  Info, MapPin, ChevronDown, MessageCircle, Tag
 } from "lucide-react";
 
 const WHATSAPP_NUMBER = "50948095613";
+
+type OrderPromotion = {
+  id: string;
+  title: string;
+  code: string | null;
+  scope: "order";
+  discount_type: "percent" | "fixed";
+  discount_value: number;
+  active: boolean;
+};
+
+const getDiscountAmount = (base: number, promotion: OrderPromotion | null) => {
+  if (!promotion) return 0;
+  const discount =
+    promotion.discount_type === "percent"
+      ? Math.round((base * promotion.discount_value) / 100)
+      : promotion.discount_value;
+
+  return Math.min(base, Math.max(0, discount));
+};
 
 // Zones de livraison avec frais (en HTG)
 const ZONES_LIVRAISON = [
@@ -33,6 +53,9 @@ export default function PanierPage() {
   const { cart, updateQuantity, removeItem, clearCart } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<OrderPromotion | null>(null);
+  const [promoMessage, setPromoMessage] = useState("");
 
   const [formData, setFormData] = useState({
     client_nom: "",
@@ -57,7 +80,35 @@ export default function PanierPage() {
   const selectedZone = ZONES_LIVRAISON.find(z => z.zone === formData.zone_livraison);
   const fraisLivraison = formData.canal === "Livraison" && selectedZone ? selectedZone.frais : 0;
   const sousTotal = cart.reduce((acc, item) => acc + item.prix * item.quantity, 0);
-  const total = sousTotal + fraisLivraison;
+  const discountTotal = getDiscountAmount(sousTotal, appliedPromo);
+  const total = Math.max(0, sousTotal - discountTotal) + fraisLivraison;
+
+  const applyPromoCode = async () => {
+    const code = promoCode.trim().toUpperCase();
+    setPromoMessage("");
+
+    if (!code) {
+      setAppliedPromo(null);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("promotions")
+      .select("*")
+      .eq("active", true)
+      .eq("scope", "order")
+      .ilike("code", code)
+      .maybeSingle();
+
+    if (error || !data) {
+      setAppliedPromo(null);
+      setPromoMessage("Code promo invalide.");
+      return;
+    }
+
+    setAppliedPromo(data as OrderPromotion);
+    setPromoMessage("Code promo applique.");
+  };
 
   const buildWhatsAppMessage = (numeroCommande: string) => {
     const canalEmoji = formData.canal === "Livraison" ? "🛵" : formData.canal === "Salle" ? "🪑" : "🥡";
@@ -67,15 +118,15 @@ export default function PanierPage() {
 
     let livraison = "";
     if (formData.canal === "Livraison") {
-      livraison = `📍 *Zone:* ${formData.zone_livraison}${selectedZone ? ` (${selectedZone.frais} HTG)` : ""}\n📌 *Adrès:* ${formData.adresse_livraison}\n`;
+      livraison = `📍 *Zone:* ${formData.zone_livraison}${selectedZone ? ` (${selectedZone.frais} HTG)` : ""}\n📌 *Adresse:* ${formData.adresse_livraison}\n`;
     } else if (formData.canal === "Salle") {
       livraison = `🪑 *Table:* ${formData.table_numero}\n`;
     }
 
     const message =
-      `🍽️ *NOUVO KOMAND TAITAI* 🍽️\n` +
+      `🍽️ *NOUVELLE COMMANDE TAITAI* 🍽️\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `📋 *Nimewo komand:* ${numeroCommande}\n` +
+      `📋 *N° Commande:* ${numeroCommande}\n` +
       `👤 *Client:* ${formData.client_nom}\n` +
       `📞 *Tél:* ${formData.client_tel}\n` +
       `${canalEmoji} *Canal:* ${formData.canal}\n` +
@@ -83,12 +134,12 @@ export default function PanierPage() {
       `━━━━━━━━━━━━━━━━━━\n` +
       `🛒 *ARTICLES:*\n${lignesArticles}\n` +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `💰 Sou-total: ${sousTotal} HTG\n` +
-      (fraisLivraison > 0 ? `🚚 Livrezon: ${fraisLivraison} HTG\n` : "") +
+      `💰 Sous-total: ${sousTotal} HTG\n` +
+      (fraisLivraison > 0 ? `🚚 Livraison: ${fraisLivraison} HTG\n` : "") +
       `💳 *TOTAL: ${total} HTG*\n` +
       (formData.notes ? `📝 *Notes:* ${formData.notes}\n` : "") +
       `━━━━━━━━━━━━━━━━━━\n` +
-      `_Voye ak TaiTai App_`;
+      `_Envoyé via TaiTai App_`;
 
     return encodeURIComponent(message);
   };
@@ -98,14 +149,42 @@ export default function PanierPage() {
     if (cart.length === 0) return;
 
     if (formData.canal === "Livraison" && !formData.zone_livraison) {
-      alert("Tanpri chwazi zòn livrezon ou.");
+      alert("Veuillez sélectionner votre zone de livraison.");
       return;
     }
 
     setLoading(true);
     const numero_commande = "TT-" + Date.now().toString().slice(-5);
 
-    // 1. Save in Supabase
+    const menuItemIds = cart.map((item) => item.id);
+    const { data: stockRows, error: stockError } = await supabase
+      .from("menu_items")
+      .select("id, nom, stock_quantity")
+      .in("id", menuItemIds);
+
+    if (stockError) {
+      alert("Impossible de verifier le stock: " + stockError.message);
+      setLoading(false);
+      return;
+    }
+
+    const stockById = new Map((stockRows || []).map((item) => [item.id, item]));
+    const unavailableItems = cart.filter((item) => {
+      const stock = stockById.get(item.id)?.stock_quantity ?? 0;
+      return stock < item.quantity;
+    });
+
+    if (unavailableItems.length > 0) {
+      alert(
+        "Stock insuffisant pour: " +
+          unavailableItems.map((item) => item.nom).join(", ") +
+          ". Veuillez ajuster votre panier.",
+      );
+      setLoading(false);
+      return;
+    }
+
+    // 1. Sauvegarder dans Supabase
     const { data: commande, error: cmdError } = await supabase
       .from("commandes")
       .insert({
@@ -127,12 +206,12 @@ export default function PanierPage() {
       .single();
 
     if (cmdError) {
-      alert("Gen yon erè ki pase pandan kòmand lan: " + cmdError.message);
+      alert("Erreur lors de la commande: " + cmdError.message);
       setLoading(false);
       return;
     }
 
-    // 2. Save items
+    // 2. Sauvegarder les articles
     const itemsToInsert = cart.map(item => ({
       commande_id: commande.id,
       menu_item_id: item.id,
@@ -142,9 +221,25 @@ export default function PanierPage() {
       sous_total: item.prix * item.quantity,
     }));
 
-    await supabase.from("commande_items").insert(itemsToInsert);
+    const { error: itemsError } = await supabase.from("commande_items").insert(itemsToInsert);
 
-    // 3. Local history
+    if (itemsError) {
+      alert("Erreur lors de l'enregistrement des plats: " + itemsError.message);
+      setLoading(false);
+      return;
+    }
+
+    await Promise.all(
+      cart.map((item) => {
+        const currentStock = stockById.get(item.id)?.stock_quantity ?? 0;
+        return supabase
+          .from("menu_items")
+          .update({ stock_quantity: Math.max(0, currentStock - item.quantity) })
+          .eq("id", item.id);
+      }),
+    );
+
+    // 3. Historique local
     const orderHistory = JSON.parse(localStorage.getItem("taitai-orders-history") || "[]");
     orderHistory.unshift({
       id: commande.id,
@@ -156,7 +251,7 @@ export default function PanierPage() {
 
     clearCart();
 
-    // 4. Redirect to WhatsApp with the prefilled text
+    // 4. Rediriger directement vers WhatsApp (ouvre l'app avec le texte pré-rempli)
     const waMsg = buildWhatsAppMessage(numero_commande);
     window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`;
   };
@@ -168,14 +263,14 @@ export default function PanierPage() {
           <ShoppingCart size={56} />
         </div>
         <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-[#101828]">Panyen ou vid</h1>
-          <p className="text-[#667085] text-lg font-medium">Kite espesyalite nou yo tante ou!</p>
+          <h1 className="text-4xl font-bold text-[#101828]">Votre panier est vide</h1>
+          <p className="text-[#667085] text-lg font-medium">Laissez-vous tenter par nos spécialités !</p>
         </div>
         <button
           onClick={() => router.push("/menu")}
           className="rounded-2xl bg-[#F4A640] px-10 py-5 font-bold text-white shadow-lg shadow-[#F4A640]/20 transition hover:scale-105 active:scale-95"
         >
-          Gade meni a
+          Consulter le menu
         </button>
       </div>
     );
@@ -186,8 +281,8 @@ export default function PanierPage() {
       {/* ── Récapitulatif des articles ─────────────────── */}
       <div className="space-y-10">
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold text-[#101828]">Rezime kòmand lan</h1>
-          <p className="text-[#667085] font-medium">Verifye atik ou yo anvan ou valide.</p>
+          <h1 className="text-4xl font-bold text-[#101828]">Récapitulatif</h1>
+          <p className="text-[#667085] font-medium">Vérifiez vos articles avant de valider.</p>
         </div>
 
         <div className="space-y-5">
@@ -209,7 +304,15 @@ export default function PanierPage() {
               </div>
               <div className="flex-grow space-y-2">
                 <h3 className="text-lg font-bold text-[#101828]">{item.nom}</h3>
-                <p className="text-sm font-black text-[#F4A640]">{item.prix} HTG</p>
+                <p className="text-sm font-black text-[#F4A640]">
+                  {item.prix} HTG
+                  {"original_prix" in item && item.original_prix ? (
+                    <span className="ml-2 text-xs text-gray-400 line-through">{item.original_prix} HTG</span>
+                  ) : null}
+                </p>
+                {"promotion_title" in item && item.promotion_title ? (
+                  <p className="text-xs font-bold text-red-600">{item.promotion_title}</p>
+                ) : null}
               </div>
               <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-100">
                 <button
@@ -238,29 +341,62 @@ export default function PanierPage() {
 
         {/* Totaux */}
         <div className="rounded-3xl bg-[#101828] p-8 space-y-5 text-white shadow-xl">
+          <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
+              <Tag size={14} />
+              Code promo
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={promoCode}
+                onChange={(event) => setPromoCode(event.target.value.toUpperCase())}
+                placeholder="TAITAI10"
+                className="h-11 min-w-0 flex-1 rounded-xl border border-white/10 bg-white px-4 text-sm font-bold uppercase text-[#101828] outline-none focus:ring-4 focus:ring-[#F4A640]/20"
+              />
+              <button
+                type="button"
+                onClick={applyPromoCode}
+                className="rounded-xl bg-[#F4A640] px-4 text-sm font-black text-white transition hover:bg-[#db8923]"
+              >
+                Appliquer
+              </button>
+            </div>
+            {promoMessage ? (
+              <p className={`text-xs font-bold ${appliedPromo ? "text-green-300" : "text-red-300"}`}>
+                {promoMessage}
+              </p>
+            ) : null}
+          </div>
           <div className="flex justify-between text-gray-400 font-medium">
-            <span>Sou-total</span>
+            <span>Sous-total</span>
             <span>{sousTotal} HTG</span>
           </div>
+          {discountTotal > 0 && (
+            <div className="flex justify-between font-medium text-green-300">
+              <span>Reduction {appliedPromo?.code}</span>
+              <span>-{discountTotal} HTG</span>
+            </div>
+          )}
           {formData.canal === "Livraison" && (
             <div className="flex justify-between text-gray-400 font-medium">
               <span className="flex items-center gap-2">
                 <MapPin size={15} />
-                Frè livrezon{selectedZone ? ` (${selectedZone.zone})` : ""}
+                Frais de livraison{selectedZone ? ` (${selectedZone.zone})` : ""}
               </span>
               <span className={selectedZone ? "text-[#F4A640]" : "text-gray-500"}>
-                {selectedZone ? `${selectedZone.frais} HTG` : "— Chwazi yon zòn"}
+                {selectedZone ? `${selectedZone.frais} HTG` : "— Choisir une zone"}
               </span>
             </div>
           )}
           <div className="h-px bg-white/10" />
           <div className="flex justify-between text-2xl font-black">
-            <span>Total</span>
+            <span>Total à payer</span>
             <span className="text-[#F4A640]">{total} HTG</span>
           </div>
           {selectedZone?.zone && ["Tabarre", "Clercine", "Thomassin"].includes(selectedZone.zone) && (
             <p className="text-xs text-gray-400 italic">
-              * Frè egzak pou zòn sa a ap konfime pa livreur la (750-1000 HTG).
+              * Le frais exact pour cette zone sera confirmé par le livreur (750–1000 HTG).
             </p>
           )}
         </div>
@@ -269,15 +405,15 @@ export default function PanierPage() {
       {/* ── Formulaire de commande ─────────────────────── */}
       <div className="space-y-10">
         <div className="space-y-2">
-          <h2 className="text-4xl font-bold text-[#101828]">Validasyon</h2>
-          <p className="text-[#667085] font-medium">Kijan ou vle nou sèvi ou?</p>
+          <h2 className="text-4xl font-bold text-[#101828]">Validation</h2>
+          <p className="text-[#667085] font-medium">Comment souhaitez-vous être servi ?</p>
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-100 bg-white p-10 space-y-8 shadow-xl">
           {/* Canal */}
           <div className="space-y-4">
             <label className="block text-sm font-black uppercase tracking-widest text-[#98A2B3]">
-              Mòd komand
+              Canal de commande
             </label>
             <div className="grid grid-cols-3 gap-3">
               {(["Livraison", "A emporter", "Salle"] as const).map((type) => (
@@ -291,7 +427,7 @@ export default function PanierPage() {
                       : "bg-gray-50 text-[#667085] border border-transparent hover:border-gray-200"
                   }`}
                 >
-                  {type === "Livraison" ? "Livrezon" : type === "A emporter" ? "Pou pote ale" : "Sou plas"}
+                  {type}
                 </button>
               ))}
             </div>
@@ -302,7 +438,7 @@ export default function PanierPage() {
             <div className="space-y-4 rounded-3xl bg-orange-50/50 p-6 border border-orange-100">
               <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
                 <MapPin size={16} className="text-[#F4A640]" />
-                Zòn livrezon
+                Zone de livraison
               </label>
               <div className="relative">
                 <select
@@ -311,7 +447,7 @@ export default function PanierPage() {
                   onChange={(e) => setFormData({ ...formData, zone_livraison: e.target.value })}
                   className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
                 >
-                  <option value="">Chwazi zòn ou...</option>
+                  <option value="">Sélectionner votre zone...</option>
                   {ZONES_LIVRAISON.map((z) => (
                     <option key={z.zone} value={z.zone}>{z.label}</option>
                   ))}
@@ -320,7 +456,7 @@ export default function PanierPage() {
               </div>
               {selectedZone && (
                 <p className="text-sm font-bold text-[#F4A640]">
-                  🚚 Frè livrezon : {selectedZone.frais} HTG
+                  🚚 Frais de livraison : {selectedZone.frais} HTG
                 </p>
               )}
             </div>
@@ -330,7 +466,7 @@ export default function PanierPage() {
           <div className="space-y-6">
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Non konplè</label>
+                <label className="text-sm font-bold text-[#101828]">Nom complet</label>
                 <input
                   required
                   type="text"
@@ -341,7 +477,7 @@ export default function PanierPage() {
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Telefòn</label>
+                <label className="text-sm font-bold text-[#101828]">Téléphone</label>
                 <input
                   required
                   type="tel"
@@ -355,10 +491,10 @@ export default function PanierPage() {
 
             {formData.canal === "Livraison" && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Adrès egzak</label>
+                <label className="text-sm font-bold text-[#101828]">Adresse précise</label>
                 <textarea
                   required
-                  placeholder="Ri, katye, referans egzak..."
+                  placeholder="Rue, quartier, repères précis..."
                   value={formData.adresse_livraison}
                   onChange={(e) => setFormData({ ...formData, adresse_livraison: e.target.value })}
                   className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium min-h-[100px]"
@@ -368,7 +504,7 @@ export default function PanierPage() {
 
             {formData.canal === "Salle" && (
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Nimewo tab</label>
+                <label className="text-sm font-bold text-[#101828]">Numéro de table</label>
                 <input
                   required
                   type="text"
@@ -381,10 +517,10 @@ export default function PanierPage() {
             )}
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-[#101828]">Enstriksyon (opsyonèl)</label>
+              <label className="text-sm font-bold text-[#101828]">Instructions (Optionnel)</label>
               <input
                 type="text"
-                placeholder="Egz: San zonyon, sòs apa..."
+                placeholder="Ex: Sans oignons, sauce à part..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
@@ -392,18 +528,18 @@ export default function PanierPage() {
             </div>
           </div>
 
-          {/* Submit button */}
+          {/* Bouton commander */}
           <button
             type="submit"
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 rounded-2xl bg-[#F4A640] py-6 text-xl font-black text-white transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#F4A640]/20 hover:shadow-none"
           >
             {loading ? (
-              "Ap chaje..."
+              "Confirmation en cours..."
             ) : (
               <>
                 <MessageCircle size={24} strokeWidth={2.5} />
-                Kòmande sou WhatsApp ({total} HTG)
+                Commander via WhatsApp ({total} HTG)
                 <ArrowRight size={22} strokeWidth={3} />
               </>
             )}
@@ -411,7 +547,7 @@ export default function PanierPage() {
 
           <div className="flex items-center gap-3 justify-center text-[#98A2B3] text-xs font-bold uppercase tracking-tighter">
             <Info size={14} />
-            <span>Komand ou ap konfime sou WhatsApp</span>
+            <span>Votre commande sera confirmée par WhatsApp</span>
           </div>
         </form>
       </div>

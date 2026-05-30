@@ -1,13 +1,13 @@
 import { CmsDataSnapshot } from "@/types/cms";
 
 const articleOneBody = `
-  <p>Pwogram editoryal TaiTai CMS rasanble piblikasyon restoran an, kominote a ak òf rekritman yo nan yon sèl espas. Objektif la se pibliye pi vit, ak yon rendu pwòp epi yon swivi klè.</p>
+  <p>Le programme editorial TaiTai CMS centralise les publications du restaurant, de la communaute et des offres de recrutement dans un seul espace. L'objectif est de publier plus vite, avec un rendu propre et un suivi clair.</p>
   <h2>Ce que couvre le nouveau dispositif</h2>
-  <p>Chak atik ka pase an bouyon, ale pou revizyon oswa pibliye. Otè yo gen yon espas senp pou òganize tèks yo, ajoute lyen, mete pasaj an valè epi prepare yon kouvèti.</p>
+  <p>Chaque article peut etre mis en brouillon, envoye en revue ou publie. Les auteurs disposent d'un espace simple pour structurer leurs textes, ajouter des liens, mettre des passages en valeur et preparer une couverture.</p>
   <ul>
     <li>Calendrier editorial commun</li>
     <li>Validation plus rapide avant publication</li>
-    <li>Swivi vizit ak klik sou lyen yo</li>
+    <li>Suivi des vues et des clics sur les liens</li>
   </ul>
   <p>Le site public affiche ensuite le contenu sur une interface coherent avec la marque TaiTai.</p>
 `;
@@ -15,7 +15,7 @@ const articleOneBody = `
 const articleTwoBody = `
   <p>Le club lance une campagne de recrutement pour renforcer son equipe communication, sa cellule partenariats et son accompagnement terrain. Les stages sont visibles directement sur la partie publique du site.</p>
   <blockquote>Un seul back-office pour publier, corriger et suivre les performances.</blockquote>
-  <p>Chak fich estaj ka gen deskripsyon, dire, mòd travay ak kontak dirèk. Swivi a pèmèt idantifye òf ki bay plis enterè yo.</p>
+  <p>Chaque fiche de stage peut inclure un descriptif, une duree, un mode de travail et un contact direct. Le suivi permet ensuite d'identifier les offres qui generent le plus d'interet.</p>
 `;
 
 const articleThreeBody = `
@@ -26,7 +26,7 @@ const articleThreeBody = `
     <li>Mettre en avant les partenaires du club</li>
     <li>Rendre les appels a candidature visibles sur mobile</li>
   </ol>
-  <p>Sistèm nan pèmèt tou kenbe tras aksyon enpòtan nan tablo swivi yo.</p>
+  <p>Le systeme permet aussi de garder une trace des actions importantes dans les tableaux de suivi.</p>
 `;
 
 const stageOneBody = `
@@ -99,7 +99,7 @@ export const seedCmsData: CmsDataSnapshot = {
       status: "published",
       seoTitle: "Nouveau CMS editorial TaiTai",
       seoDescription:
-        "Dekouvri nouvo òganizasyon editoryal sit TaiTai a ak tablo swivi li.",
+        "Decouvrez la nouvelle organisation editoriale du site TaiTai et son tableau de bord de suivi.",
       createdAt: "2026-03-08T08:00:00.000Z",
       updatedAt: "2026-03-15T14:10:00.000Z",
       publishedAt: "2026-03-15T14:10:00.000Z",
@@ -295,7 +295,7 @@ export const seedCmsData: CmsDataSnapshot = {
     heroBadge: "CMS editorial FC Toro",
     heroTitle: "Pilotez articles, stages et partenaires depuis une seule interface.",
     heroSubtitle:
-      "Tablo kontwòl la jere piblikasyon, paj akèy la, kont otè yo ak swivi pèfòmans yo, pandan li kenbe yon prezantasyon klè ak modèn.",
+      "Le tableau de bord gere la publication, la page d'accueil, les comptes auteurs et le suivi des performances, tout en gardant une presentation claire et moderne.",
     heroPrimaryCtaLabel: "Voir les stages",
     heroPrimaryCtaUrl: "#stages",
     heroSecondaryCtaLabel: "Lire les actualites",
@@ -303,19 +303,19 @@ export const seedCmsData: CmsDataSnapshot = {
     heroBackgroundImage: "/images/grid-image/image-05.png",
     aboutTitle: "Un CMS pense pour une equipe editoriale complete",
     aboutBody:
-      "Ajoute otè, pibliye atik rich, aktive òf estaj, jere patnè yo epi ajiste paj prensipal la san manyen kòd.",
+      "Ajoutez des auteurs, publiez des articles riches, activez des offres de stage, gerez les partenaires et ajustez la page principale sans toucher au code.",
     articleSectionTitle: "Actualites publiees",
     articleSectionIntro:
       "Retrouvez les informations du club, les annonces et les contenus strategiques mis en avant.",
     stageSectionTitle: "Stages ouverts",
     stageSectionIntro:
-      "Fich klè, yon apèl pou aksyon ki vizib ak tablo swivi pou konnen sa ki mache byen.",
+      "Des fiches claires, un appel a l'action visible et des tableaux de suivi pour savoir ce qui performe.",
     partnerSectionTitle: "Partenaires du club",
     partnerSectionIntro:
       "Mettez en avant vos sponsors, leur logo et leur lien dans une section facile a mettre a jour.",
     metrics: [
       { label: "Articles actifs", value: "18", note: "templates inclus" },
-      { label: "Estaj swiv", value: "07", note: "plizyè fòma" },
+      { label: "Stages suivis", value: "07", note: "multi-formats" },
       { label: "Partenaires visibles", value: "12", note: "sections editables" },
     ],
     featuredArticleIds: ["article-cms-launch", "article-stages-open"],
@@ -330,13 +330,13 @@ export const seedCmsData: CmsDataSnapshot = {
     phone: "+509 0000 0000",
     address: "Port-au-Prince, Haiti",
     footerText:
-      "FC Toro CMS rasanble piblikasyon, swivi ak prezantasyon sit ofisyèl la.",
+      "FC Toro CMS centralise la publication, le suivi et la presentation du site officiel.",
     partnerPageTitle: "Partenaires",
     partnerPageIntro:
       "Une page dediee pour valoriser les organisations qui accompagnent la croissance du club.",
     articlePageTitle: "Articles et actualites",
     articlePageIntro:
-      "Piblikasyon ofisyèl klib la, mete an paj epi swiv depi CMS la.",
+      "Les publications officielles du club, mises en page et suivies depuis le CMS.",
     stagePageTitle: "Stages et opportunites",
     stagePageIntro:
       "Consultez les stages ouverts et prenez contact avec les responsables du programme.",

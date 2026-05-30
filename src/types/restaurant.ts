@@ -6,9 +6,11 @@ export interface MenuItem {
   categorie: string;
   image_url: string | null;
   disponible: boolean;
+  stock_quantity: number;
   temps_prep: number;
   best_seller: boolean;
   created_at: string;
+  deleted_at?: string | null;
 }
 
 export interface Commande {
@@ -21,8 +23,6 @@ export interface Commande {
   adresse_livraison: string | null;
   notes: string | null;
   statut: 'En attente' | 'En préparation' | 'Prêt' | 'Livré';
-  methode_paiement: 'Cash' | 'Carte' | 'MonCash' | 'Unibank' | 'Sogebank' | null;
-  preuve_paiement_url: string | null;
   total: number;
   created_at: string;
 }
@@ -39,4 +39,6 @@ export interface CommandeItem {
 
 export interface CartItem extends MenuItem {
   quantity: number;
+  original_prix?: number;
+  promotion_title?: string;
 }

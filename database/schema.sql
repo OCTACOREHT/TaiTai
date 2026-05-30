@@ -68,9 +68,11 @@ CREATE TABLE public.menu_items (
   categorie TEXT NOT NULL,
   image_url TEXT,
   disponible BOOLEAN DEFAULT true,
+  stock_quantity INTEGER NOT NULL DEFAULT 10,
   temps_prep INTEGER DEFAULT 15,
   best_seller BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
 );
 
 -- Table commandes
@@ -100,14 +102,36 @@ CREATE TABLE public.commande_items (
   sous_total INTEGER NOT NULL
 );
 
+-- Table promotions
+CREATE TABLE public.promotions (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  code TEXT,
+  scope TEXT NOT NULL CHECK (scope IN ('item','order')),
+  menu_item_id UUID REFERENCES public.menu_items(id) ON DELETE CASCADE,
+  discount_type TEXT NOT NULL CHECK (discount_type IN ('percent','fixed')),
+  discount_value INTEGER NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT true,
+  starts_at TIMESTAMPTZ,
+  ends_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- [5] SECURITY (RLS Policies)
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commandes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commande_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.promotions ENABLE ROW LEVEL SECURITY;
 
 -- Menu : lecture publique
 CREATE POLICY "menu_public_read" ON public.menu_items
   FOR SELECT USING (true);
+CREATE POLICY "menu_admin_insert" ON public.menu_items
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "menu_admin_update" ON public.menu_items
+  FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "menu_admin_delete" ON public.menu_items
+  FOR DELETE USING (true);
 
 -- Commandes : insert public, lecture par numero
 CREATE POLICY "commandes_public_insert" ON public.commandes
@@ -120,6 +144,16 @@ CREATE POLICY "items_public_insert" ON public.commande_items
   FOR INSERT WITH CHECK (true);
 CREATE POLICY "items_public_select" ON public.commande_items
   FOR SELECT USING (true);
+
+-- Promotions : lecture publique, gestion admin
+CREATE POLICY "promotions_public_read" ON public.promotions
+  FOR SELECT USING (true);
+CREATE POLICY "promotions_admin_insert" ON public.promotions
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "promotions_admin_update" ON public.promotions
+  FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "promotions_admin_delete" ON public.promotions
+  FOR DELETE USING (true);
 
 -- [6] REALTIME
 -- Note: If publication doesn't exist, this might need manual setup in Supabase, 

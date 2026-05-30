@@ -7,8 +7,6 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
-  BoxIconLine,
-  CalenderIcon,
   GridIcon,
   TableIcon,
   UserCircleIcon,
@@ -16,13 +14,12 @@ import {
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: <GridIcon /> },
-  { name: "Done", path: "/donnees", icon: <BoxIconLine /> },
-  { name: "Komand", path: "/commandes", icon: <TableIcon /> },
-  { name: "Meni", path: "/menu-admin", icon: <BoxCubeIcon /> },
+  { name: "Commandes", path: "/commandes", icon: <TableIcon /> },
+  { name: "Menu", path: "/menu-admin", icon: <BoxCubeIcon /> },
+  { name: "Promotions", path: "/promotions", icon: <TableIcon /> },
   { name: "Stocks", path: "/stocks", icon: <TableIcon /> },
-  { name: "Founisè", path: "/fournisseurs", icon: <UserCircleIcon /> },
   { name: "Clients", path: "/clients", icon: <UserCircleIcon /> },
-  { name: "Sit piblik", path: "/", icon: <GridIcon /> },
+  { name: "Site Public", path: "/", icon: <GridIcon /> },
 ];
 
 const AppSidebar: React.FC = () => {

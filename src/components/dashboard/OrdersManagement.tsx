@@ -16,13 +16,6 @@ const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
 const filters: Array<"Tous" | OrderStatus> = ["Tous", "En attente", "En préparation", "Prêt", "Livré"];
-const filterLabels: Record<"Tous" | OrderStatus, string> = {
-  Tous: "Tout",
-  "En attente": "Kòmand lan an atant",
-  "En préparation": "Kòmand lan ap prepare",
-  "Prêt": "Pare",
-  "Livré": "Livre",
-};
 
 export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantOrder[] }) {
   const [orders, setOrders] = useState<RestaurantOrder[]>(initialOrders);
@@ -93,7 +86,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
       .eq("id", orderId);
 
     if (error) {
-      alert("Gen yon erè ki pase pandan mizajou a : " + error.message);
+      alert("Erreur lors de la mise à jour : " + error.message);
       const data = await getCommandes();
       setOrders(data);
     }
@@ -111,25 +104,25 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Kòmand lan an atant</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">En attente</p>
           <p className="mt-2 text-2xl font-semibold text-warning-600 dark:text-warning-400">
             {counts.pending}
           </p>
         </div>
         <div className="rounded-2xl border border-orange-100 bg-orange-50/50 p-5 shadow-theme-xs dark:border-orange-900/20 dark:bg-orange-900/10">
-          <p className="text-sm text-orange-600 dark:text-orange-400">Kòmand lan ap prepare</p>
+          <p className="text-sm text-orange-600 dark:text-orange-400">En préparation</p>
           <p className="mt-2 text-2xl font-semibold text-orange-700 dark:text-orange-300">
             {counts.cooking}
           </p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Pare pou sèvis</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Prêts pour service</p>
           <p className="mt-2 text-2xl font-semibold text-brand-600 dark:text-brand-400">
             {counts.ready}
           </p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Deja livre</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Déjà livrés</p>
           <p className="mt-2 text-2xl font-semibold text-success-600 dark:text-success-400">
             {counts.delivered}
           </p>
@@ -141,10 +134,10 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
           <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
-                Swivi kòmand an dirèk
+                Suivi des commandes en direct
               </h3>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 font-medium">
-                Nouvo komand yo parèt otomatikman isit la.
+                Les nouvelles commandes apparaissent automatiquement ici.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -160,7 +153,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
                       : "border-gray-200 text-gray-600 hover:bg-gray-50",
                   )}
                 >
-                  {filterLabels[filter]}
+                  {filter}
                 </button>
               ))}
             </div>
@@ -168,7 +161,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
 
           <div className="p-5 sm:p-6">
             {loading && orders.length === 0 ? (
-               <div className="py-20 text-center text-gray-500 font-medium">Ap chaje...</div>
+               <div className="py-20 text-center text-gray-500 font-medium">Chargement des commandes...</div>
             ) : (
               <OrdersTable
                 orders={filteredOrders}

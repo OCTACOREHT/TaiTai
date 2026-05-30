@@ -21,7 +21,7 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
     return (
       <section className="rounded-2xl border border-dashed border-gray-300 bg-white p-6 shadow-theme-xs dark:border-gray-700 dark:bg-white/[0.03]">
         <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-          Chwazi yon komand pou afiche resi li.
+          Selectionnez une commande pour afficher son recu.
         </p>
       </section>
     );
@@ -55,7 +55,7 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
         <div className="my-6 border-b border-gray-400 border-dotted" />
 
         <div className="text-center space-y-1">
-          <h2 className="text-2xl font-bold tracking-[0.2em] uppercase">*** RESI ***</h2>
+          <h2 className="text-2xl font-bold tracking-[0.2em] uppercase">*** RECU ***</h2>
           <div className="flex justify-between text-[11px] pt-6 uppercase font-bold text-gray-700">
             <span>TABLE: {order.table}</span>
             <span>{dateStr} - {timeStr}</span>
@@ -87,50 +87,21 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
         {/* Totals */}
         <div className="space-y-3 text-[12px]">
           <div className="flex justify-between font-bold text-gray-700">
-            <span>SOU-TOTAL</span>
+            <span>SOUS-TOTAL</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between text-2xl font-black pt-1 uppercase text-black">
              <span className="tracking-tighter">TOTAL</span>
              <span>{formatCurrency(order.total)}</span>
           </div>
-          <div className="flex justify-between pt-4 opacity-100 uppercase font-bold text-gray-700">
-            <span>MODE: {order.paymentMethod}</span>
-            <span>{formatCurrency(order.total)}</span>
-          </div>
-          <div className="flex justify-between opacity-100 font-bold text-gray-700">
-            <span>RANJE (CHANJ)</span>
-            <span>0 HTG</span>
-          </div>
         </div>
-
-        {/* Payment Proof Image */}
-        {order.paymentProofUrl && (
-          <div className="mt-8 space-y-4">
-            <div className="border-b border-gray-400 border-dotted" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-center text-gray-500">Prèv peman</p>
-            <a 
-              href={order.paymentProofUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="block relative aspect-video w-full overflow-hidden rounded-xl border-2 border-gray-100 bg-gray-50 transition hover:border-brand-500"
-            >
-              <img 
-                src={order.paymentProofUrl} 
-                alt="Prèv peman" 
-                className="h-full w-full object-contain"
-              />
-            </a>
-            <p className="text-[9px] text-center opacity-50 italic uppercase font-bold">Klike pou agrandi</p>
-          </div>
-        )}
 
         <div className="my-8 border-b border-gray-400 border-dotted" />
 
         {/* Footer */}
         <div className="flex flex-col items-center space-y-6 pb-2">
           <p className="text-[12px] font-black text-center tracking-[0.05em] uppercase text-black">
-            MESI POU KONFYANS OU!
+            MERCI DE VOTRE CONFIANCE !
           </p>
           <Barcode orderId={order.id} />
         </div>
@@ -148,7 +119,7 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
           <path d="M17 9V5C17 3.89543 16.1046 3 15 3H9C7.89543 3 7 3.89543 7 5V9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M17 13H7V21H17V13Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        Enprime resi a
+        Imprimer le recu
       </button>
 
       <style jsx global>{`

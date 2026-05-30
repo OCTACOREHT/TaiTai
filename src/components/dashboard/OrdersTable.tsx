@@ -13,19 +13,6 @@ interface OrdersTableProps {
   onStatusChange?: (orderId: string, status: OrderStatus) => void;
 }
 
-const orderStatusLabels: Partial<Record<OrderStatus, string>> = {
-  "En attente": "Kòmand lan an atant",
-  "En préparation": "Kòmand lan ap prepare",
-  "Prêt": "Pare",
-  "Livré": "Livre",
-};
-
-const channelLabels: Record<string, string> = {
-  Livraison: "Livrezon",
-  Salle: "Sou plas",
-  "A emporter": "Pou pote ale",
-};
-
 export function OrdersTable({
   orders,
   selectedOrderId,
@@ -38,11 +25,11 @@ export function OrdersTable({
       <Table>
         <TableHeader className="border-y border-gray-100 dark:border-gray-800">
           <TableRow>
-            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">ID / Lè</TableCell>
-            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Client & Adrès livrezon</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">ID / Heure</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Client & Destination</TableCell>
             <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Service</TableCell>
             <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Total</TableCell>
-            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Eta</TableCell>
+            <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">Statut</TableCell>
             <TableCell isHeader className="py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Actions</TableCell>
           </TableRow>
         </TableHeader>
@@ -78,14 +65,13 @@ export function OrdersTable({
                     order.channel === 'Livraison' ? "bg-blue-50 text-blue-600" : 
                     order.channel === 'Salle' ? "bg-purple-50 text-purple-600" : "bg-orange-50 text-orange-600"
                  )}>
-                    {channelLabels[order.channel] ?? order.channel}
+                    {order.channel}
                  </div>
               </TableCell>
               
               <TableCell className="py-5">
                 <div className="flex flex-col gap-1">
                   <span className="font-black text-gray-900 dark:text-white/90">{formatCurrency(order.total)}</span>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">{order.paymentMethod}</span>
                 </div>
               </TableCell>
               
@@ -107,7 +93,7 @@ export function OrdersTable({
                     >
                       {orderStatusOptions.map((status) => (
                         <option key={status} value={status}>
-                          {orderStatusLabels[status] ?? status}
+                          {status}
                         </option>
                       ))}
                     </select>
@@ -127,7 +113,7 @@ export function OrdersTable({
                     {order.status === 'En préparation' && <ChefHat size={14} />}
                     {order.status === 'Prêt' && <Package size={14} />}
                     {order.status === 'Livré' && <CheckCircle2 size={14} />}
-                    {orderStatusLabels[order.status] ?? order.status}
+                    {order.status}
                   </div>
                 )}
               </TableCell>
@@ -138,14 +124,14 @@ export function OrdersTable({
                     onClick={() => onReceiptClick?.(order)}
                     className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-xl transition hover:bg-gray-50 active:scale-95 shadow-sm"
                   >
-                    Detay
+                    Détails
                   </button>
 
                   <button
                     type="button"
                     onClick={() => onPrintClick?.(order)}
                     className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#101828] text-white transition hover:bg-brand-600 active:scale-95 shadow-lg shadow-black/10"
-                    title="Enprime resi a"
+                    title="Imprimer le reçu"
                   >
                     <PrinterIcon size={18} strokeWidth={2.5} />
                   </button>

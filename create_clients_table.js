@@ -12,7 +12,9 @@ async function run() {
         id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
         nom         text NOT NULL,
         telephone   text NOT NULL UNIQUE,
+        email       text,
         mot_de_passe_hash text NOT NULL,
+        last_login_at timestamptz,
         created_at  timestamptz DEFAULT now()
       );
     `);
@@ -27,6 +29,10 @@ async function run() {
     await pool.query(`
       DROP POLICY IF EXISTS "clients_insert" ON public.clients;
       CREATE POLICY "clients_insert" ON public.clients FOR INSERT WITH CHECK (true);
+    `);
+    await pool.query(`
+      DROP POLICY IF EXISTS "clients_update" ON public.clients;
+      CREATE POLICY "clients_update" ON public.clients FOR UPDATE USING (true) WITH CHECK (true);
     `);
     console.log('✅ RLS configuré');
   } catch (e) {

@@ -35,9 +35,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [cart]);
 
   const addToCart = (item: any) => {
+    if ((item.stock_quantity ?? Infinity) <= 0) {
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
+        if (existing.quantity >= (item.stock_quantity ?? Infinity)) {
+          return prev;
+        }
         return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
       }
       return [...prev, { ...item, quantity: 1 }];
@@ -47,7 +54,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const updateQuantity = (id: string, delta: number) => {
     setCart(prev => prev.map(item => {
       if (item.id === id) {
-        return { ...item, quantity: Math.max(1, item.quantity + delta) };
+        return {
+          ...item,
+          quantity: Math.min(item.stock_quantity ?? Infinity, Math.max(1, item.quantity + delta)),
+        };
       }
       return item;
     }));

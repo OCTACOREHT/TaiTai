@@ -14,7 +14,7 @@ const toneMap: Record<string, string> = {
     "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300",
   Critique:
     "border-error-200 bg-error-50 text-error-700 dark:border-error-900/40 dark:bg-error-900/10 dark:text-error-300",
-  "Nou rekòmande":
+  "A recommander":
     "border-warning-200 bg-warning-50 text-warning-700 dark:border-warning-900/40 dark:bg-warning-900/10 dark:text-warning-300",
   Stable:
     "border-success-200 bg-success-50 text-success-700 dark:border-success-900/40 dark:bg-success-900/10 dark:text-success-300",
@@ -31,21 +31,6 @@ const toneMap: Record<string, string> = {
 const cn = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(" ");
 
-const labelMap: Record<string, string> = {
-  "En attente": "Kòmand lan an atant",
-  "En préparation": "Kòmand lan ap prepare",
-  Pret: "Pare",
-  "Prêt": "Pare",
-  Livre: "Livre",
-  "Livré": "Livre",
-  Fidele: "Fidèl",
-  Critique: "Kritik",
-  "A recommander": "Nou rekòmande",
-  Livraison: "Livrezon",
-  Reservation: "Rezèvasyon",
-  Equipe: "Ekip",
-};
-
 export function StatusPill({ value }: { value: string }) {
   return (
     <span
@@ -55,7 +40,7 @@ export function StatusPill({ value }: { value: string }) {
           "border-gray-200 bg-gray-100 text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300",
       )}
     >
-      {labelMap[value] ?? value}
+      {value}
     </span>
   );
 }
