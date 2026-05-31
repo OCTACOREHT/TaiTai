@@ -138,11 +138,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
 
             <div>
-<<<<<<< HEAD
               <h4 className="mb-6 font-bold text-[#101828]">Navigasyon</h4>
-=======
-              <h4 className="font-bold mb-6 text-[#101828]">Navigasyon</h4>
->>>>>>> 54e5c8a (Translate footer labels to Haitian Creole)
               <ul className="space-y-4 text-sm text-[#475467]">
                 <li><Link href="/" className="hover:text-[#F4A640]">Akèy</Link></li>
                 <li><Link href="/menu" className="hover:text-[#F4A640]">Meni</Link></li>
@@ -151,11 +147,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
 
             <div>
-<<<<<<< HEAD
               <h4 className="mb-6 font-bold text-[#101828]">Kontak</h4>
-=======
-              <h4 className="font-bold mb-6 text-[#101828]">kontak</h4>
->>>>>>> 54e5c8a (Translate footer labels to Haitian Creole)
               <ul className="space-y-4 text-sm text-[#475467]">
                 <li>Port-au-Prince, Ayiti</li>
                 <li>+509 0000-0000</li>
