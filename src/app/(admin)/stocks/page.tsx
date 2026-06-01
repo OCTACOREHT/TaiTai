@@ -2,6 +2,7 @@
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { cn } from "@/components/common/CmsShared";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { supabase } from "@/lib/supabase-client";
 import { AlertTriangle, CheckCircle2, Loader2, Package, RefreshCcw, Save } from "lucide-react";
 import type { ReactNode } from "react";
@@ -25,9 +26,10 @@ export default function StocksPage() {
   const [items, setItems] = useState<StockDish[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set());
 
-  const loadStocks = async () => {
-    setLoading(true);
+  const loadStocks = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from("menu_items")
       .select("id, nom, categorie, prix, image_url, stock_quantity, temps_prep, best_seller")
@@ -39,15 +41,23 @@ export default function StocksPage() {
     if (error) {
       alert("Erreur lors du chargement du stock : " + error.message);
     } else {
-      setItems((data || []).map((item) => ({ ...item, stock_quantity: item.stock_quantity ?? 0 })));
+      const nextItems = (data || []).map((item) => ({ ...item, stock_quantity: item.stock_quantity ?? 0 }));
+      setItems((current) => {
+        if (showLoading || dirtyIds.size === 0) return nextItems;
+
+        const dirtyById = new Map(current.filter((item) => dirtyIds.has(item.id)).map((item) => [item.id, item]));
+        return nextItems.map((item) => dirtyById.get(item.id) || item);
+      });
     }
 
-    setLoading(false);
+    if (showLoading) setLoading(false);
   };
 
   useEffect(() => {
     loadStocks();
   }, []);
+
+  useAutoRefresh(() => loadStocks(false), { enabled: savingId === null });
 
   const metrics = useMemo(() => {
     const totalStock = items.reduce((sum, item) => sum + item.stock_quantity, 0);
@@ -63,6 +73,7 @@ export default function StocksPage() {
   }, [items]);
 
   const changeLocalStock = (id: string, nextStock: number) => {
+    setDirtyIds((current) => new Set(current).add(id));
     setItems((current) =>
       current.map((item) =>
         item.id === id ? { ...item, stock_quantity: Math.max(0, nextStock) } : item,
@@ -81,6 +92,12 @@ export default function StocksPage() {
 
     if (error) {
       alert("Erreur lors de la mise a jour du stock : " + error.message);
+    } else {
+      setDirtyIds((current) => {
+        const next = new Set(current);
+        next.delete(item.id);
+        return next;
+      });
     }
   };
 
@@ -90,7 +107,7 @@ export default function StocksPage() {
         <PageBreadCrumb pageTitle="Stocks" />
         <button
           type="button"
-          onClick={loadStocks}
+          onClick={() => loadStocks()}
           className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
         >
           <RefreshCcw className="h-4 w-4" />

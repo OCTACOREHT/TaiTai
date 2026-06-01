@@ -67,6 +67,31 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
 
         <div className="my-6 border-b border-gray-400 border-dotted" />
 
+        <div className="space-y-2 text-[11px] uppercase font-bold text-gray-700">
+          <div className="flex justify-between">
+            <span>Paiement</span>
+            <span>{order.paymentMethod || "Non precise"}</span>
+          </div>
+          {order.paymentStatus && (
+            <div className="flex justify-between">
+              <span>Verification</span>
+              <span>{order.paymentStatus}</span>
+            </div>
+          )}
+          {order.paymentProofUrl && (
+            <a
+              href={order.paymentProofUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="block rounded-lg border border-gray-300 px-3 py-2 text-center text-[11px] font-black text-black no-print"
+            >
+              Voir le justificatif
+            </a>
+          )}
+        </div>
+
+        <div className="my-6 border-b border-gray-400 border-dotted" />
+
         {/* Order Items */}
         <div className="space-y-4 text-[12px]">
           {order.items.map((item) => (

@@ -18,13 +18,16 @@ export interface Commande {
   numero_commande: string;
   client_nom: string;
   client_tel: string | null;
-  canal: 'Salle' | 'Livraison' | 'A emporter';
+  canal: "Livraison";
   table_numero: string | null;
   adresse_livraison: string | null;
   notes: string | null;
-  statut: 'En attente' | 'En préparation' | 'Prêt' | 'Livré';
+  statut: string;
   total: number;
   created_at: string;
+  payment_method?: "Sur place" | "MonCash" | "Zelle" | null;
+  payment_proof_url?: string | null;
+  payment_status?: "A verifier" | "Valide" | "Refuse" | null;
 }
 
 export interface CommandeItem {

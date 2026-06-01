@@ -13,6 +13,7 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -22,7 +23,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const savedCart = localStorage.getItem('taitai-cart');
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const parsedCart = JSON.parse(savedCart);
+        const validCart = Array.isArray(parsedCart)
+          ? parsedCart.filter((item) => typeof item.id === "string" && uuidPattern.test(item.id))
+          : [];
+
+        if (validCart.length !== parsedCart.length) {
+          localStorage.setItem("taitai-cart", JSON.stringify(validCart));
+        }
+
+        setCart(validCart);
       } catch (e) {
         console.error("Failed to parse cart", e);
       }

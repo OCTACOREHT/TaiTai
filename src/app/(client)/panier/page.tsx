@@ -1,16 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import {
-  Trash2, Plus, Minus, ArrowRight, ShoppingCart,
-  Info, MapPin, ChevronDown, MessageCircle, Tag
+  ArrowRight,
+  CheckCircle2,
+  ChevronDown,
+  CreditCard,
+  Info,
+  MapPin,
+  Minus,
+  Plus,
+  ShoppingCart,
+  Tag,
+  Trash2,
+  UploadCloud,
 } from "lucide-react";
 
-const WHATSAPP_NUMBER = "50948095613";
+type PaymentMethod = "Sur place" | "MonCash" | "Zelle";
 
 type OrderPromotion = {
   id: string;
@@ -22,6 +32,41 @@ type OrderPromotion = {
   active: boolean;
 };
 
+const ZONES_LIVRAISON = [
+  { zone: "PV", frais: 300, label: "PV - 300 HTG" },
+  { zone: "Puits B", frais: 300, label: "Puits B - 300 HTG" },
+  { zone: "Routes Freres", frais: 300, label: "Routes Freres - 300 HTG" },
+  { zone: "Delmas", frais: 350, label: "Delmas - 350 HTG" },
+  { zone: "Limite Turgeau", frais: 400, label: "Limite Turgeau - 400 HTG" },
+  { zone: "Centre Ville", frais: 500, label: "Centre Ville - 500 HTG" },
+  { zone: "Rte Aeroport", frais: 500, label: "Rte Aeroport - 500 HTG" },
+  { zone: "Cazeau", frais: 500, label: "Cazeau - 500 HTG" },
+  { zone: "Gerald Bataille", frais: 500, label: "Gerald Bataille - 500 HTG" },
+  { zone: "Tabarre", frais: 875, label: "Tabarre - 750-1000 HTG" },
+  { zone: "Clercine", frais: 875, label: "Clercine - 750-1000 HTG" },
+  { zone: "Thomassin", frais: 875, label: "Thomassin - 750-1000 HTG" },
+];
+
+const DEPARTMENTS = [
+  "Ouest",
+  "Artibonite",
+  "Centre",
+  "Grand'Anse",
+  "Nippes",
+  "Nord",
+  "Nord-Est",
+  "Nord-Ouest",
+  "Sud",
+  "Sud-Est",
+];
+
+const paymentLabels: Record<PaymentMethod, string> = {
+  "Sur place": "Peman sou plas",
+  MonCash: "MonCash",
+  Zelle: "Zelle",
+};
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 const getDiscountAmount = (base: number, promotion: OrderPromotion | null) => {
   if (!promotion) return 0;
   const discount =
@@ -32,28 +77,6 @@ const getDiscountAmount = (base: number, promotion: OrderPromotion | null) => {
   return Math.min(base, Math.max(0, discount));
 };
 
-// Zones de livraison avec frais (en HTG)
-const ZONES_LIVRAISON = [
-  { zone: "PV",               frais: 300,  label: "PV — 300 HTG" },
-  { zone: "Puits B",          frais: 300,  label: "Puits B — 300 HTG" },
-  { zone: "Routes Frères",    frais: 300,  label: "Routes Frères — 300 HTG" },
-  { zone: "Delmas",           frais: 350,  label: "Delmas — 350 HTG" },
-  { zone: "Limite Turgeau",   frais: 400,  label: "Limite Turgeau — 400 HTG" },
-  { zone: "Centre Ville",     frais: 500,  label: "Centre Ville — 500 HTG" },
-  { zone: "Rte Aéroport",     frais: 500,  label: "Rte Aéroport — 500 HTG" },
-  { zone: "Cazeau",           frais: 500,  label: "Cazeau — 500 HTG" },
-  { zone: "Gérald Bataille",  frais: 500,  label: "Gérald Bataille — 500 HTG" },
-  { zone: "Tabarre",          frais: 875,  label: "Tabarre — 750-1000 HTG" },
-  { zone: "Clercine",         frais: 875,  label: "Clercine — 750-1000 HTG" },
-  { zone: "Thomassin",        frais: 875,  label: "Thomassin — 750-1000 HTG" },
-];
-
-const canalLabels: Record<"Salle" | "Livraison" | "A emporter", string> = {
-  Livraison: "Livrezon",
-  "A emporter": "Pou pote ale",
-  Salle: "Sou plas",
-};
-
 export default function PanierPage() {
   const router = useRouter();
   const { cart, updateQuantity, removeItem, clearCart } = useCart();
@@ -62,20 +85,21 @@ export default function PanierPage() {
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<OrderPromotion | null>(null);
   const [promoMessage, setPromoMessage] = useState("");
+  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
     client_nom: "",
     client_tel: "",
-    canal: "Livraison" as "Salle" | "Livraison" | "A emporter",
+    departement: "Ouest",
     zone_livraison: "",
     adresse_livraison: "",
-    table_numero: "",
     notes: "",
+    payment_method: "Sur place" as PaymentMethod,
   });
 
   useEffect(() => {
     if (user) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         client_nom: prev.client_nom || user.nom,
         client_tel: prev.client_tel || user.telephone,
@@ -83,11 +107,13 @@ export default function PanierPage() {
     }
   }, [user]);
 
-  const selectedZone = ZONES_LIVRAISON.find(z => z.zone === formData.zone_livraison);
-  const fraisLivraison = formData.canal === "Livraison" && selectedZone ? selectedZone.frais : 0;
+  const livraisonDisponible = formData.departement === "Ouest";
+  const selectedZone = ZONES_LIVRAISON.find((z) => z.zone === formData.zone_livraison);
+  const fraisLivraison = livraisonDisponible && selectedZone ? selectedZone.frais : 0;
   const sousTotal = cart.reduce((acc, item) => acc + item.prix * item.quantity, 0);
   const discountTotal = getDiscountAmount(sousTotal, appliedPromo);
   const total = Math.max(0, sousTotal - discountTotal) + fraisLivraison;
+  const proofRequired = formData.payment_method === "MonCash" || formData.payment_method === "Zelle";
 
   const applyPromoCode = async () => {
     const code = promoCode.trim().toUpperCase();
@@ -116,150 +142,144 @@ export default function PanierPage() {
     setPromoMessage("Kod promo a aplike.");
   };
 
-  const buildWhatsAppMessage = (numeroCommande: string) => {
-    const canalEmoji = formData.canal === "Livraison" ? "🛵" : formData.canal === "Salle" ? "🪑" : "🥡";
-    const lignesArticles = cart
-      .map(item => `  • ${item.nom} x${item.quantity} — ${item.prix * item.quantity} HTG`)
-      .join("\n");
+  const uploadPaymentProof = async () => {
+    if (!paymentProofFile) return null;
 
-    let livraison = "";
-    if (formData.canal === "Livraison") {
-      livraison = `📍 *Zon:* ${formData.zone_livraison}${selectedZone ? ` (${selectedZone.frais} HTG)` : ""}\n📌 *Adrès:* ${formData.adresse_livraison}\n`;
-    } else if (formData.canal === "Salle") {
-      livraison = `🪑 *Tab:* ${formData.table_numero}\n`;
+    const payload = new FormData();
+    payload.append("proof", paymentProofFile);
+
+    const response = await fetch("/api/uploads/payment-proof", {
+      method: "POST",
+      body: payload,
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Nou pa ka voye justificatif la.");
     }
 
-    const message =
-      `🍽️ *NOUVO KÒMANN TAITAI* 🍽️\n` +
-      `━━━━━━━━━━━━━━━━━━\n` +
-      `📋 *Nimewo kòmann:* ${numeroCommande}\n` +
-      `👤 *Kliyan:* ${formData.client_nom}\n` +
-      `📞 *Telefòn:* ${formData.client_tel}\n` +
-      `${canalEmoji} *Fason:* ${canalLabels[formData.canal]}\n` +
-      livraison +
-      `━━━━━━━━━━━━━━━━━━\n` +
-      `🛒 *ATIK:*\n${lignesArticles}\n` +
-      `━━━━━━━━━━━━━━━━━━\n` +
-      `💰 Sou-total: ${sousTotal} HTG\n` +
-      (fraisLivraison > 0 ? `🚚 Livrezon: ${fraisLivraison} HTG\n` : "") +
-      `💳 *TOTAL: ${total} HTG*\n` +
-      (formData.notes ? `📝 *Nòt:* ${formData.notes}\n` : "") +
-      `━━━━━━━━━━━━━━━━━━\n` +
-      `_Voye depi aplikasyon TaiTai_`;
-
-    return encodeURIComponent(message);
+    return result.url as string;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) return;
 
-    if (formData.canal === "Livraison" && !formData.zone_livraison) {
+    if (!livraisonDisponible) {
+      alert("Livrezon pa disponib nan zon sa a.");
+      return;
+    }
+
+    if (!formData.zone_livraison) {
       alert("Tanpri chwazi zon livrezon ou.");
+      return;
+    }
+
+    if (proofRequired && !paymentProofFile) {
+      alert("Tanpri ajoute justificatif peman an pou MonCash/Zelle.");
       return;
     }
 
     setLoading(true);
     const numero_commande = "TT-" + Date.now().toString().slice(-5);
 
-    const menuItemIds = cart.map((item) => item.id);
-    const { data: stockRows, error: stockError } = await supabase
-      .from("menu_items")
-      .select("id, nom, stock_quantity")
-      .in("id", menuItemIds);
+    try {
+      const invalidCartItems = cart.filter((item) => !uuidPattern.test(item.id));
+      if (invalidCartItems.length > 0) {
+        invalidCartItems.forEach((item) => removeItem(item.id));
+        throw new Error("Gen ansyen atik nan panyen an. Nou retire yo, tanpri ajoute plat yo ankò.");
+      }
 
-    if (stockError) {
-      alert("Nou pa ka verifye stok la: " + stockError.message);
-      setLoading(false);
-      return;
-    }
+      const menuItemIds = cart.map((item) => item.id);
+      const { data: stockRows, error: stockError } = await supabase
+        .from("menu_items")
+        .select("id, nom, stock_quantity")
+        .in("id", menuItemIds);
 
-    const stockById = new Map((stockRows || []).map((item) => [item.id, item]));
-    const unavailableItems = cart.filter((item) => {
-      const stock = stockById.get(item.id)?.stock_quantity ?? 0;
-      return stock < item.quantity;
-    });
+      if (stockError) throw new Error("Nou pa ka verifye stok la: " + stockError.message);
 
-    if (unavailableItems.length > 0) {
-      alert(
-        "Stok la pa sifi pou: " +
-          unavailableItems.map((item) => item.nom).join(", ") +
-          ". Tanpri ajiste panyen ou.",
+      const stockById = new Map((stockRows || []).map((item) => [item.id, item]));
+      const unavailableItems = cart.filter((item) => {
+        const stock = stockById.get(item.id)?.stock_quantity ?? 0;
+        return stock < item.quantity;
+      });
+
+      if (unavailableItems.length > 0) {
+        throw new Error(
+          "Stok la pa sifi pou: " +
+            unavailableItems.map((item) => item.nom).join(", ") +
+            ". Tanpri ajiste panyen ou.",
+        );
+      }
+
+      const paymentProofUrl = proofRequired ? await uploadPaymentProof() : null;
+      const adresseComplete = [
+        formData.departement,
+        formData.zone_livraison,
+        formData.adresse_livraison,
+      ]
+        .filter(Boolean)
+        .join(" - ");
+
+      const { data: commande, error: cmdError } = await supabase
+        .from("commandes")
+        .insert({
+          numero_commande,
+          client_nom: formData.client_nom,
+          client_tel: formData.client_tel,
+          client_user_id: user?.id ?? null,
+          canal: "Livraison",
+          adresse_livraison: adresseComplete,
+          table_numero: null,
+          notes: formData.notes,
+          total,
+          statut: "En attente",
+          payment_method: formData.payment_method,
+          payment_proof_url: paymentProofUrl,
+          payment_status: proofRequired ? "A verifier" : "Valide",
+        })
+        .select()
+        .single();
+
+      if (cmdError) throw new Error("Ere pandan komann nan: " + cmdError.message);
+
+      const itemsToInsert = cart.map((item) => ({
+        commande_id: commande.id,
+        menu_item_id: item.id,
+        nom_plat: item.nom,
+        prix_unitaire: item.prix,
+        quantite: item.quantity,
+        sous_total: item.prix * item.quantity,
+      }));
+
+      const { error: itemsError } = await supabase.from("commande_items").insert(itemsToInsert);
+      if (itemsError) throw new Error("Ere pandan anrejistreman plat yo: " + itemsError.message);
+
+      await Promise.all(
+        cart.map((item) => {
+          const currentStock = stockById.get(item.id)?.stock_quantity ?? 0;
+          return supabase
+            .from("menu_items")
+            .update({ stock_quantity: Math.max(0, currentStock - item.quantity) })
+            .eq("id", item.id);
+        }),
       );
-      setLoading(false);
-      return;
-    }
 
-    // 1. Sauvegarder dans Supabase
-    const { data: commande, error: cmdError } = await supabase
-      .from("commandes")
-      .insert({
-        numero_commande,
-        client_nom: formData.client_nom,
-        client_tel: formData.client_tel,
-        client_user_id: user?.id ?? null,
-        canal: formData.canal,
-        adresse_livraison:
-          formData.canal === "Livraison"
-            ? `${formData.zone_livraison} — ${formData.adresse_livraison}`
-            : null,
-        table_numero: formData.canal === "Salle" ? formData.table_numero : null,
-        notes: formData.notes,
+      const orderHistory = JSON.parse(localStorage.getItem("taitai-orders-history") || "[]");
+      orderHistory.unshift({
+        id: commande.id,
+        numero: commande.numero_commande,
+        date: new Date().toISOString(),
         total,
-        statut: "En attente",
-      })
-      .select()
-      .single();
+      });
+      localStorage.setItem("taitai-orders-history", JSON.stringify(orderHistory.slice(0, 5)));
 
-    if (cmdError) {
-      alert("Erè pandan kòmann nan: " + cmdError.message);
+      clearCart();
+      router.push(`/confirmation/${commande.id}`);
+    } catch (err) {
+      alert((err as Error).message);
       setLoading(false);
-      return;
     }
-
-    // 2. Sauvegarder les articles
-    const itemsToInsert = cart.map(item => ({
-      commande_id: commande.id,
-      menu_item_id: item.id,
-      nom_plat: item.nom,
-      prix_unitaire: item.prix,
-      quantite: item.quantity,
-      sous_total: item.prix * item.quantity,
-    }));
-
-    const { error: itemsError } = await supabase.from("commande_items").insert(itemsToInsert);
-
-    if (itemsError) {
-      alert("Erè pandan anrejistreman plat yo: " + itemsError.message);
-      setLoading(false);
-      return;
-    }
-
-    await Promise.all(
-      cart.map((item) => {
-        const currentStock = stockById.get(item.id)?.stock_quantity ?? 0;
-        return supabase
-          .from("menu_items")
-          .update({ stock_quantity: Math.max(0, currentStock - item.quantity) })
-          .eq("id", item.id);
-      }),
-    );
-
-    // 3. Historique local
-    const orderHistory = JSON.parse(localStorage.getItem("taitai-orders-history") || "[]");
-    orderHistory.unshift({
-      id: commande.id,
-      numero: commande.numero_commande,
-      date: new Date().toISOString(),
-      total,
-    });
-    localStorage.setItem("taitai-orders-history", JSON.stringify(orderHistory.slice(0, 5)));
-
-    clearCart();
-
-    // 4. Rediriger directement vers WhatsApp (ouvre l'app avec le texte pré-rempli)
-    const waMsg = buildWhatsAppMessage(numero_commande);
-    window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`;
   };
 
   if (cart.length === 0) {
@@ -284,7 +304,6 @@ export default function PanierPage() {
 
   return (
     <div className="grid gap-16 lg:grid-cols-2">
-      {/* ── Récapitulatif des articles ─────────────────── */}
       <div className="space-y-10">
         <div className="space-y-2">
           <h1 className="text-4xl font-bold text-[#101828]">Rezime</h1>
@@ -345,7 +364,6 @@ export default function PanierPage() {
           ))}
         </div>
 
-        {/* Totaux */}
         <div className="rounded-3xl bg-[#101828] p-8 space-y-5 text-white shadow-xl">
           <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
             <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
@@ -380,21 +398,19 @@ export default function PanierPage() {
           </div>
           {discountTotal > 0 && (
             <div className="flex justify-between font-medium text-green-300">
-              <span>Rabè {appliedPromo?.code}</span>
+              <span>Rabe {appliedPromo?.code}</span>
               <span>-{discountTotal} HTG</span>
             </div>
           )}
-          {formData.canal === "Livraison" && (
-            <div className="flex justify-between text-gray-400 font-medium">
-              <span className="flex items-center gap-2">
-                <MapPin size={15} />
-                Frè livrezon{selectedZone ? ` (${selectedZone.zone})` : ""}
-              </span>
-              <span className={selectedZone ? "text-[#F4A640]" : "text-gray-500"}>
-                {selectedZone ? `${selectedZone.frais} HTG` : "Chwazi yon zon"}
-              </span>
-            </div>
-          )}
+          <div className="flex justify-between text-gray-400 font-medium">
+            <span className="flex items-center gap-2">
+              <MapPin size={15} />
+              Fre livrezon{selectedZone ? ` (${selectedZone.zone})` : ""}
+            </span>
+            <span className={selectedZone ? "text-[#F4A640]" : "text-gray-500"}>
+              {selectedZone ? `${selectedZone.frais} HTG` : "Chwazi yon zon"}
+            </span>
+          </div>
           <div className="h-px bg-white/10" />
           <div className="flex justify-between text-2xl font-black">
             <span>Total pou peye</span>
@@ -402,77 +418,77 @@ export default function PanierPage() {
           </div>
           {selectedZone?.zone && ["Tabarre", "Clercine", "Thomassin"].includes(selectedZone.zone) && (
             <p className="text-xs text-gray-400 italic">
-              * Frè egzak pou zon sa a ap konfime pa livrè a (750-1000 HTG).
+              * Fre egzak pou zon sa a ap konfime pa livre a (750-1000 HTG).
             </p>
           )}
         </div>
       </div>
 
-      {/* ── Formulaire de commande ─────────────────────── */}
       <div className="space-y-10">
         <div className="space-y-2">
           <h2 className="text-4xl font-bold text-[#101828]">Validasyon</h2>
-          <p className="text-[#667085] font-medium">Ki jan ou vle resevwa kòmann nan ?</p>
+          <p className="text-[#667085] font-medium">Livrezon disponib selman nan depatman Ouest.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-100 bg-white p-10 space-y-8 shadow-xl">
-          {/* Canal */}
-          <div className="space-y-4">
-            <label className="block text-sm font-black uppercase tracking-widest text-[#98A2B3]">
-              Fason pou resevwa
+          <div className="rounded-3xl bg-orange-50/50 p-6 border border-orange-100 space-y-4">
+            <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
+              <MapPin size={16} className="text-[#F4A640]" />
+              Adres livrezon
             </label>
-            <div className="grid grid-cols-3 gap-3">
-              {(["Livraison", "A emporter", "Salle"] as const).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, canal: type, zone_livraison: "" })}
-                  className={`rounded-2xl py-4 text-sm font-bold transition-all ${
-                    formData.canal === type
-                      ? "bg-[#101828] text-white shadow-lg"
-                      : "bg-gray-50 text-[#667085] border border-transparent hover:border-gray-200"
-                  }`}
-                >
-                  {canalLabels[type]}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          {/* Zone de livraison */}
-          {formData.canal === "Livraison" && (
-            <div className="space-y-4 rounded-3xl bg-orange-50/50 p-6 border border-orange-100">
-              <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
-                <MapPin size={16} className="text-[#F4A640]" />
-                Zon livrezon
-              </label>
+            <div className="grid gap-4">
+              <div className="relative">
+                <select
+                  required
+                  value={formData.departement}
+                  onChange={(e) =>
+                    setFormData({ ...formData, departement: e.target.value, zone_livraison: "" })
+                  }
+                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
+                >
+                  {DEPARTMENTS.map((department) => (
+                    <option key={department} value={department}>
+                      {department}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+              </div>
+            </div>
+
+            {!livraisonDisponible ? (
+              <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-black text-red-600">
+                Livrezon indisponib nan zon sa a. TaiTai livre pou kounye a selman nan Ouest.
+              </div>
+            ) : (
               <div className="relative">
                 <select
                   required
                   value={formData.zone_livraison}
                   onChange={(e) => setFormData({ ...formData, zone_livraison: e.target.value })}
-                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 transition-all"
+                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
                 >
                   <option value="">Chwazi zon ou...</option>
                   {ZONES_LIVRAISON.map((z) => (
-                    <option key={z.zone} value={z.zone}>{z.label}</option>
+                    <option key={z.zone} value={z.zone}>
+                      {z.label}
+                    </option>
                   ))}
                 </select>
                 <ChevronDown size={18} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
               </div>
-              {selectedZone && (
-                <p className="text-sm font-bold text-[#F4A640]">
-                  Frè livrezon : {selectedZone.frais} HTG
-                </p>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* Infos client */}
+            {selectedZone && (
+              <p className="text-sm font-bold text-[#F4A640]">Fre livrezon : {selectedZone.frais} HTG</p>
+            )}
+          </div>
+
           <div className="space-y-6">
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Non konplè</label>
+                <label className="text-sm font-bold text-[#101828]">Non konple</label>
                 <input
                   required
                   type="text"
@@ -483,7 +499,7 @@ export default function PanierPage() {
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Telefòn</label>
+                <label className="text-sm font-bold text-[#101828]">Telefon</label>
                 <input
                   required
                   type="tel"
@@ -495,38 +511,22 @@ export default function PanierPage() {
               </div>
             </div>
 
-            {formData.canal === "Livraison" && (
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Adrès presi</label>
-                <textarea
-                  required
-                  placeholder="Ri, katye, referans presi..."
-                  value={formData.adresse_livraison}
-                  onChange={(e) => setFormData({ ...formData, adresse_livraison: e.target.value })}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium min-h-[100px]"
-                />
-              </div>
-            )}
-
-            {formData.canal === "Salle" && (
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-[#101828]">Nimewo tab</label>
-                <input
-                  required
-                  type="text"
-                  placeholder="Egzanp: Tab 12"
-                  value={formData.table_numero}
-                  onChange={(e) => setFormData({ ...formData, table_numero: e.target.value })}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
-                />
-              </div>
-            )}
+            <div className="space-y-3">
+              <label className="text-sm font-bold text-[#101828]">Adres presi</label>
+              <textarea
+                required
+                placeholder="Ri, katye, referans presi..."
+                value={formData.adresse_livraison}
+                onChange={(e) => setFormData({ ...formData, adresse_livraison: e.target.value })}
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium min-h-[100px]"
+              />
+            </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-bold text-[#101828]">Enstriksyon (opsyonèl)</label>
+              <label className="text-sm font-bold text-[#101828]">Enstriksyon (opsyonel)</label>
               <input
                 type="text"
-                placeholder="Egzanp: San zonyon, sòs apa..."
+                placeholder="Egzanp: San zonyon, sos apa..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
@@ -534,18 +534,66 @@ export default function PanierPage() {
             </div>
           </div>
 
-          {/* Bouton commander */}
+          <div className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50 p-6">
+            <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
+              <CreditCard size={16} className="text-[#F4A640]" />
+              Mwayen peman
+            </label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {(["Sur place", "MonCash", "Zelle"] as PaymentMethod[]).map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => {
+                    setFormData({ ...formData, payment_method: method });
+                    if (method === "Sur place") setPaymentProofFile(null);
+                  }}
+                  className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${
+                    formData.payment_method === method
+                      ? "border-[#101828] bg-[#101828] text-white shadow-lg"
+                      : "border-gray-200 bg-white text-[#667085] hover:border-[#F4A640]"
+                  }`}
+                >
+                  {paymentLabels[method]}
+                </button>
+              ))}
+            </div>
+
+            {proofRequired ? (
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 bg-white px-5 py-6 text-center transition hover:border-[#F4A640]">
+                {paymentProofFile ? (
+                  <CheckCircle2 className="text-green-600" size={28} />
+                ) : (
+                  <UploadCloud className="text-[#F4A640]" size={30} />
+                )}
+                <span className="text-sm font-black text-[#101828]">
+                  {paymentProofFile ? paymentProofFile.name : "Ajoute justificatif peman an"}
+                </span>
+                <span className="text-xs font-bold text-[#667085]">Image oswa PDF, 8 MB maksimom.</span>
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  className="hidden"
+                  onChange={(e) => setPaymentProofFile(e.target.files?.[0] ?? null)}
+                />
+              </label>
+            ) : (
+              <p className="rounded-2xl bg-white px-5 py-4 text-sm font-bold text-[#667085]">
+                Ou ap peye le livre a rive. Pa bezwen justificatif.
+              </p>
+            )}
+          </div>
+
           <button
             type="submit"
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 rounded-2xl bg-[#F4A640] py-6 text-xl font-black text-white transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-xl shadow-[#F4A640]/20 hover:shadow-none"
+            disabled={loading || !livraisonDisponible}
+            className="w-full flex items-center justify-center gap-3 rounded-2xl bg-[#F4A640] py-6 text-xl font-black text-white transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 shadow-xl shadow-[#F4A640]/20 hover:shadow-none"
           >
             {loading ? (
-              "Konfimasyon ap fèt..."
+              "Konfimasyon ap fet..."
             ) : (
               <>
-                <MessageCircle size={24} strokeWidth={2.5} />
-                Kòmande sou WhatsApp ({total} HTG)
+                Konfime komann nan ({total} HTG)
                 <ArrowRight size={22} strokeWidth={3} />
               </>
             )}
@@ -553,7 +601,7 @@ export default function PanierPage() {
 
           <div className="flex items-center gap-3 justify-center text-[#98A2B3] text-xs font-bold uppercase tracking-tighter">
             <Info size={14} />
-            <span>Kòmann ou ap konfime sou WhatsApp</span>
+            <span>Komann nan ap pase sou sit la. Admin nan ap verifye justificatif MonCash/Zelle.</span>
           </div>
         </form>
       </div>

@@ -3,13 +3,14 @@
 import {
   FieldLabel,
   SelectInput,
-  SectionCard,
   TextAreaInput,
   TextInput,
   ToggleInput,
 } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { MenuGrid } from "@/components/dashboard/MenuGrid";
+import { Modal } from "@/components/ui/modal";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { MenuItem, getMenuItems } from "@/lib/data";
 import { supabase } from "@/lib/supabase-client";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
@@ -35,21 +36,25 @@ export default function MenuPage() {
   const [draft, setDraft] = useState(emptyDraft);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const loadItems = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
+      const data = await getMenuItems();
+      setItems(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const data = await getMenuItems();
-        setItems(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    loadItems();
   }, []);
+
+  useAutoRefresh(() => loadItems(false), { enabled: !saving && !isAddModalOpen });
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -73,6 +78,13 @@ export default function MenuPage() {
   const clearImage = () => {
     setImageFile(null);
     setImagePreview("");
+  };
+
+  const closeAddModal = () => {
+    if (saving) return;
+    setIsAddModalOpen(false);
+    setDraft(emptyDraft);
+    clearImage();
   };
 
   const uploadImage = async () => {
@@ -159,12 +171,21 @@ export default function MenuPage() {
     setItems((current) => [nextItem, ...current]);
     setDraft(emptyDraft);
     clearImage();
+    setIsAddModalOpen(false);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Menu" />
+        <button
+          type="button"
+          onClick={() => setIsAddModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Ajouter un plat
+        </button>
       </div>
 
       <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
@@ -177,10 +198,17 @@ export default function MenuPage() {
         </p>
       </section>
 
-      <SectionCard
-        title="Ajouter un plat"
-        description="Le plat sera disponible sur le site client si l'option Disponible est active."
-      >
+      <Modal isOpen={isAddModalOpen} onClose={closeAddModal} size="xl" className="max-h-[92vh] overflow-y-auto p-6">
+        <div className="mb-6 pr-12">
+          <p className="text-sm font-medium text-brand-500">Nouveau plat</p>
+          <h2 className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white/90">
+            Ajouter un plat
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+            Le plat sera disponible sur le site client si l'option Disponible est active.
+          </p>
+        </div>
+
         <form onSubmit={handleAddDish} className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
@@ -314,7 +342,7 @@ export default function MenuPage() {
             </button>
           </div>
         </form>
-      </SectionCard>
+      </Modal>
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">

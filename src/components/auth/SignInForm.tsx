@@ -1,6 +1,8 @@
 "use client";
 
+import { canAccessAdminPath, getDefaultAdminPath } from "@/lib/admin-access";
 import { setAdminSession } from "@/lib/admin-auth";
+import { getStoredTeamUsers } from "@/lib/admin-team";
 import React, { useEffect, useState } from "react";
 
 export default function SignInForm() {
@@ -12,9 +14,7 @@ export default function SignInForm() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    if (typeof window === "undefined") return;
 
     const next = new URLSearchParams(window.location.search).get("next");
     setNextPath(next || "/dashboard");
@@ -25,34 +25,39 @@ export default function SignInForm() {
     setError("");
     setSubmitting(true);
 
-    // Validation des identifiants demandés par l'utilisateur
-    if (email === "taitai@gmail.com" && password === "1234") {
-      setAdminSession(
-        {
-          token: "taitai-session-active",
-          user: {
-            id: "owner-01",
-            name: "TaiTai Admin",
-            email: email,
-            password: "",
-            role: "super_admin",
-            title: "Propriétaire",
-            avatar: "/images/user/owner.jpg",
-            bio: "Gestionnaire principal TaiTai",
-            active: true,
-            lastLoginAt: new Date().toISOString(),
-          },
-        },
-        remember,
-      );
+    const normalizedEmail = email.trim().toLowerCase();
+    const ownerUser = {
+      id: "owner-01",
+      name: "TaiTai Admin",
+      email: normalizedEmail,
+      password: "",
+      role: "super_admin" as const,
+      title: "Proprietaire",
+      avatar: "/images/user/owner.jpg",
+      bio: "Gestionnaire principal TaiTai",
+      active: true,
+      lastLoginAt: new Date().toISOString(),
+    };
+    const teamUser = getStoredTeamUsers().find(
+      (user) => user.active && user.email.toLowerCase() === normalizedEmail && user.password === password,
+    );
+    const authenticatedUser =
+      normalizedEmail === "taitai@gmail.com" && password === "1234" ? ownerUser : teamUser || null;
 
-      window.location.href = nextPath;
-    } else {
-      setTimeout(() => {
-        setError("Identifiants incorrects. Veuillez réessayer.");
-        setSubmitting(false);
-      }, 600);
+    if (authenticatedUser) {
+      const destination = canAccessAdminPath(nextPath, authenticatedUser.role)
+        ? nextPath
+        : getDefaultAdminPath(authenticatedUser.role);
+
+      setAdminSession({ token: "taitai-session-active", user: authenticatedUser }, remember);
+      window.location.href = destination;
+      return;
     }
+
+    setTimeout(() => {
+      setError("Identifiants incorrects. Veuillez reessayer.");
+      setSubmitting(false);
+    }, 600);
   };
 
   return (
@@ -60,10 +65,10 @@ export default function SignInForm() {
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
         <div className="mb-5 sm:mb-8">
           <h1 className="mb-2 text-title-sm font-semibold text-gray-800 dark:text-white/90 sm:text-title-md">
-            Acces demo TaiTai
+            Acces admin TaiTai
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Cette connexion ouvre directement l'interface front-end du SaaS restaurant.
+            Connectez-vous avec le compte principal ou un compte equipe.
           </p>
         </div>
 
@@ -76,7 +81,7 @@ export default function SignInForm() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               type="email"
-              placeholder="demo@taitai.app"
+              placeholder="taitai@gmail.com"
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-900 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
             />
           </div>
@@ -89,7 +94,7 @@ export default function SignInForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               type="password"
-              placeholder="Mot de passe libre"
+              placeholder="Mot de passe"
               className="h-11 w-full rounded-lg border border-gray-300 bg-white px-4 text-sm text-gray-900 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90"
             />
           </div>
@@ -125,10 +130,6 @@ export default function SignInForm() {
             {submitting ? "Ouverture..." : "Entrer dans le dashboard"}
           </button>
         </form>
-
-        <p className="mt-5 text-sm text-gray-500 dark:text-gray-400">
-          Aucun back-end n'est requis ici, l'interface fonctionne en mode demonstration.
-        </p>
       </div>
     </div>
   );

@@ -5,17 +5,19 @@ const db = require("@/server/db");
 
 export const runtime = "nodejs";
 
-const allowedStatuses = new Set(["En attente", "En préparation", "Prêt", "Livré"]);
+const allowedStatuses = new Set(["En attente", "En préparation", "Prêt", "Livré", "Annulee"]);
 
 const statusMessages = {
-  "En attente": "Votre commande a bien été reçue et attend confirmation.",
-  "En préparation": "Votre commande est maintenant en préparation.",
-  "Prêt": "Votre commande est prête.",
-  "Livré": "Votre commande a été livrée. Merci pour votre confiance.",
+  "En attente": "Votre commande a bien ete recue et attend confirmation.",
+  "En préparation": "Votre commande est maintenant en preparation.",
+  "Prêt": "Votre commande est prete.",
+  "Livré": "Votre commande a ete livree. Merci pour votre confiance.",
+  Annulee:
+    "Votre commande a ete annulee apres verification. Si vous pensez qu'il s'agit d'une erreur, contactez TaiTai.",
 };
 
 function buildEmailHtml({ clientName, orderNumber, status }) {
-  const message = statusMessages[status] || "Le statut de votre commande a changé.";
+  const message = statusMessages[status] || "Le statut de votre commande a changÃ©.";
 
   return `
     <!DOCTYPE html>
@@ -38,7 +40,7 @@ function buildEmailHtml({ clientName, orderNumber, status }) {
                     <p style="margin:0 0 18px 0;font-size:15px;line-height:1.7;color:#475467;">Bonjour ${clientName || ""},</p>
                     <p style="margin:0;font-size:16px;line-height:1.8;color:#344054;">${message}</p>
                     <div style="margin-top:28px;padding:18px 20px;background:#fff7ed;border-radius:16px;color:#9a3412;font-size:14px;line-height:1.6;">
-                      Vous pouvez aussi suivre votre commande depuis la page de suivi TaiTai avec le numéro <strong>${orderNumber}</strong>.
+                      Vous pouvez aussi suivre votre commande depuis la page de suivi TaiTai avec le numÃ©ro <strong>${orderNumber}</strong>.
                     </div>
                   </td>
                 </tr>
@@ -52,6 +54,8 @@ function buildEmailHtml({ clientName, orderNumber, status }) {
 }
 
 export async function PATCH(request) {
+  let client;
+
   try {
     const { orderId, status } = await request.json();
 
@@ -59,10 +63,53 @@ export async function PATCH(request) {
       return NextResponse.json({ error: "Commande ou statut invalide." }, { status: 400 });
     }
 
-    const { rows } = await db.query(
+    client = await db.connect();
+    await client.query("BEGIN");
+
+    const { rows: existingRows } = await client.query(
+      `
+        SELECT id, statut
+        FROM public.commandes
+        WHERE id = $1
+        FOR UPDATE
+      `,
+      [orderId],
+    );
+
+    const existingOrder = existingRows[0];
+
+    if (!existingOrder) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
+    }
+
+    if (status === "Annulee" && existingOrder.statut !== "Annulee") {
+      await client.query(
+        `
+          UPDATE public.menu_items AS menu
+          SET stock_quantity = menu.stock_quantity + items.total_quantity
+          FROM (
+            SELECT menu_item_id, SUM(quantite)::integer AS total_quantity
+            FROM public.commande_items
+            WHERE commande_id = $1
+              AND menu_item_id IS NOT NULL
+            GROUP BY menu_item_id
+          ) AS items
+          WHERE menu.id = items.menu_item_id
+        `,
+        [orderId],
+      );
+    }
+
+    const { rows } = await client.query(
       `
         UPDATE public.commandes
-        SET statut = $2
+        SET statut = $2,
+            payment_status = CASE
+              WHEN $2 = 'Annulee' THEN 'Refuse'
+              WHEN $2 = 'En préparation' THEN 'Valide'
+              ELSE payment_status
+            END
         WHERE id = $1
         RETURNING id, numero_commande, client_nom, client_user_id
       `,
@@ -71,9 +118,9 @@ export async function PATCH(request) {
 
     const order = rows[0];
 
-    if (!order) {
-      return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
-    }
+    await client.query("COMMIT");
+    client.release();
+    client = null;
 
     let email = null;
 
@@ -113,10 +160,23 @@ export async function PATCH(request) {
 
     return NextResponse.json({ ok: true, emailSent: false });
   } catch (err) {
+    if (client) {
+      try {
+        await client.query("ROLLBACK");
+      } catch (rollbackErr) {
+        console.error("[PATCH /api/admin/orders/status rollback]", rollbackErr.message);
+      }
+    }
+
     console.error("[PATCH /api/admin/orders/status]", err.message);
     return NextResponse.json(
-      { error: "Impossible de mettre à jour le statut." },
+      { error: "Impossible de mettre Ã  jour le statut." },
       { status: 500 },
     );
+  } finally {
+    if (client) {
+      client.release();
+    }
   }
 }
+

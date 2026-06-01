@@ -4,7 +4,7 @@ import { Outfit } from "next/font/google";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, Home, UtensilsCrossed, MapPin } from "lucide-react";
+import { ShoppingCart, Home, UtensilsCrossed, MapPin, History, Phone } from "lucide-react";
 import { CartProvider, useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/components/common/CmsShared";
@@ -29,9 +29,9 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const pathname = usePathname();
 
-  const isProtected = pathname === "/panier" || pathname === "/suivi";
+  const isProtected = pathname === "/panier" || pathname === "/suivi" || pathname === "/historique";
   const protectedMessage =
-    pathname === "/suivi"
+    pathname === "/suivi" || pathname === "/historique"
       ? "Ou dwe konekte pou swiv kòmann ou yo."
       : "Ou dwe konekte pou antre nan panyen an epi pase kòmann.";
   if (isProtected && !loading && !user) {
@@ -54,6 +54,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Akèy", icon: Home },
     { href: "/menu", label: "Meni nou", icon: UtensilsCrossed },
     { href: "/suivi", label: "Swiv kòmann mwen", icon: MapPin },
+    { href: "/historique", label: "Istorik", icon: History },
+    { href: "/contact", label: "Kontak", icon: Phone },
   ];
 
   return (
@@ -142,6 +144,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
               <ul className="space-y-4 text-sm text-[#475467]">
                 <li><Link href="/" className="hover:text-[#F4A640]">Akèy</Link></li>
                 <li><Link href="/menu" className="hover:text-[#F4A640]">Meni</Link></li>
+                <li><Link href="/historique" className="hover:text-[#F4A640]">Istorik</Link></li>
+                <li><Link href="/contact" className="hover:text-[#F4A640]">Kontak</Link></li>
                 <li><Link href="/suivi" className="hover:text-[#F4A640]">Swivi kòmann</Link></li>
               </ul>
             </div>

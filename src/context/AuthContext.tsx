@@ -8,13 +8,24 @@ export interface ClientUser {
   nom: string;
   telephone: string;
   email?: string;
+  adresse?: string | null;
+  ville?: string | null;
+  departement?: string | null;
 }
 
 interface AuthContextProps {
   user: ClientUser | null;
   loading: boolean;
   signIn: (email: string, mot_de_passe: string) => Promise<void>;
-  signUp: (nom: string, telephone: string, email: string, mot_de_passe: string) => Promise<void>;
+  signUp: (
+    nom: string,
+    telephone: string,
+    email: string,
+    mot_de_passe: string,
+    adresse: string,
+    ville: string,
+    departement: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -50,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const { data, error } = await supabase
           .from("clients")
-          .select("id, nom, telephone, email")
+          .select("id, nom, telephone, email, adresse, ville, departement")
           .eq("id", storedId)
           .single();
         
@@ -99,7 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const hash = await hashPassword(mot_de_passe);
     const { data, error } = await supabase
       .from("clients")
-      .select("id, nom, telephone, email")
+      .select("id, nom, telephone, email, adresse, ville, departement")
       .eq("email", email)
       .eq("mot_de_passe_hash", hash)
       .single();
@@ -118,7 +129,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(SESSION_LAST_ACTIVITY_KEY, String(Date.now()));
   };
 
-  const signUp = async (nom: string, telephone: string, email: string, mot_de_passe: string) => {
+  const signUp = async (
+    nom: string,
+    telephone: string,
+    email: string,
+    mot_de_passe: string,
+    adresse: string,
+    ville: string,
+    departement: string,
+  ) => {
     // Vérifier si le téléphone existe déjà
     const { data: existing } = await supabase
       .from("clients")
@@ -137,10 +156,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         nom,
         telephone,
         email,
+        adresse,
+        ville,
+        departement,
         mot_de_passe_hash: hash,
         last_login_at: new Date().toISOString(),
       })
-      .select("id, nom, telephone, email")
+      .select("id, nom, telephone, email, adresse, ville, departement")
       .single();
 
     if (error || !data) {

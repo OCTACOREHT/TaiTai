@@ -1,4 +1,4 @@
--- TaiTai Restaurant SaaS Database Schema
+﻿-- TaiTai Restaurant SaaS Database Schema
 -- Optimized for Next.js / Supabase
 
 -- [1] EXTENSIONS
@@ -81,12 +81,16 @@ CREATE TABLE public.commandes (
   numero_commande TEXT UNIQUE NOT NULL,
   client_nom TEXT NOT NULL,
   client_tel TEXT,
-  canal TEXT NOT NULL CHECK (canal IN ('Salle','Livraison','A emporter')),
+  canal TEXT NOT NULL DEFAULT 'Livraison' CHECK (canal IN ('Livraison')),
   table_numero TEXT,
   adresse_livraison TEXT,
   notes TEXT,
   statut TEXT DEFAULT 'En attente' 
-    CHECK (statut IN ('En attente','Prêt','Livré')),
+    CHECK (statut IN ('En attente','En préparation','Prêt','Livré','Annulee')),
+  client_user_id UUID,
+  payment_method TEXT DEFAULT 'Sur place' CHECK (payment_method IN ('Sur place','MonCash','Zelle')),
+  payment_proof_url TEXT,
+  payment_status TEXT DEFAULT 'Valide' CHECK (payment_status IN ('A verifier','Valide','Refuse')),
   total INTEGER NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -162,9 +166,10 @@ CREATE POLICY "promotions_admin_delete" ON public.promotions
 
 -- [7] SEED DATA
 INSERT INTO public.menu_items (nom, description, prix, categorie, temps_prep, best_seller, image_url) VALUES
-('Poulet grille TaiTai','Poulet mariné 24h, épis maison, légumes rôtis.',1450,'Grillades',18,true,'https://images.unsplash.com/photo-1598103442097-8b74394b95c7?w=400'),
-('Bowl riz creole','Riz djondjon, bœuf effiloché, sauce citron piklé.',1350,'Signature',12,true,'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400'),
-('Burger creole','Steak maison, pikliz doux, cheddar fumé.',1290,'Burgers',14,true,'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'),
-('Pates fruits de mer','Sauce crème épicée, crevettes, calamars, citron vert.',1890,'Pâtes',16,false,'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400'),
-('Cheesecake coco','Base sablée, crème coco, caramel salé.',1000,'Desserts',8,false,'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400'),
+('Poulet grille TaiTai','Poulet marinÃ© 24h, Ã©pis maison, lÃ©gumes rÃ´tis.',1450,'Grillades',18,true,'https://images.unsplash.com/photo-1598103442097-8b74394b95c7?w=400'),
+('Bowl riz creole','Riz djondjon, bÅ“uf effilochÃ©, sauce citron piklÃ©.',1350,'Signature',12,true,'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400'),
+('Burger creole','Steak maison, pikliz doux, cheddar fumÃ©.',1290,'Burgers',14,true,'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'),
+('Pates fruits de mer','Sauce crÃ¨me Ã©picÃ©e, crevettes, calamars, citron vert.',1890,'PÃ¢tes',16,false,'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400'),
+('Cheesecake coco','Base sablÃ©e, crÃ¨me coco, caramel salÃ©.',1000,'Desserts',8,false,'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400'),
 ('Jus passion maison','Infusion passion, orange, citron vert.',550,'Boissons',4,true,'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400');
+

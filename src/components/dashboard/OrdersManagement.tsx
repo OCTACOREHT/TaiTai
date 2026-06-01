@@ -5,6 +5,7 @@ import {
   type OrderStatus,
   type RestaurantOrder,
 } from "@/lib/data";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { useEffect, useRef, useState } from "react";
 import { OrderReceiptPreview } from "./OrderReceiptPreview";
 import { OrdersTable } from "./OrdersTable";
@@ -19,6 +20,7 @@ const filters: Array<"Tous" | OrderStatus> = [
   "En préparation",
   "Prêt",
   "Livré",
+  "Annulee",
 ];
 
 export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantOrder[] }) {
@@ -28,21 +30,24 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
   const [loading, setLoading] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    async function load() {
-      setLoading(true);
-      try {
-        const data = await getCommandes();
-        setOrders(data);
-        if (data.length > 0 && !selectedOrderId) setSelectedOrderId(data[0].id);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+  const loadOrders = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
+      const data = await getCommandes();
+      setOrders(data);
+      if (data.length > 0 && !selectedOrderId) setSelectedOrderId(data[0].id);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      if (showLoading) setLoading(false);
     }
-    load();
+  };
+
+  useEffect(() => {
+    loadOrders();
   }, []);
+
+  useAutoRefresh(() => loadOrders(false));
 
   useEffect(() => {
     const channel = supabase
@@ -75,6 +80,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     cooking: orders.filter((order) => order.status === "En préparation").length,
     ready: orders.filter((order) => order.status === "Prêt").length,
     delivered: orders.filter((order) => order.status === "Livré").length,
+    canceled: orders.filter((order) => order.status === "Annulee").length,
   };
 
   const handleStatusChange = async (orderId: string, nextStatus: OrderStatus) => {
@@ -111,7 +117,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-sm text-gray-500 dark:text-gray-400">En attente</p>
           <p className="mt-2 text-2xl font-semibold text-warning-600 dark:text-warning-400">
@@ -134,6 +140,12 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
           <p className="text-sm text-gray-500 dark:text-gray-400">Déjà livrés</p>
           <p className="mt-2 text-2xl font-semibold text-success-600 dark:text-success-400">
             {counts.delivered}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-red-100 bg-red-50 p-5 shadow-theme-xs dark:border-red-900/20 dark:bg-red-900/10">
+          <p className="text-sm text-red-600 dark:text-red-400">Annulees</p>
+          <p className="mt-2 text-2xl font-semibold text-red-700 dark:text-red-300">
+            {counts.canceled}
           </p>
         </div>
       </div>

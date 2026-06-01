@@ -2,6 +2,7 @@
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SelectInput, TextInput } from "@/components/common/CmsShared";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { supabase } from "@/lib/supabase-client";
 import { Loader2, PlusIcon, Tag, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
@@ -50,8 +51,8 @@ export default function PromotionsPage() {
     [menuItems],
   );
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     const [menuResult, promoResult] = await Promise.all([
       supabase
         .from("menu_items")
@@ -77,12 +78,14 @@ export default function PromotionsPage() {
       setPromotions((promoResult.data || []) as Promotion[]);
     }
 
-    setLoading(false);
+    if (showLoading) setLoading(false);
   };
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useAutoRefresh(() => loadData(false), { enabled: !saving });
 
   const createPromotion = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

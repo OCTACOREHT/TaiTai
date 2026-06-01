@@ -1,8 +1,8 @@
-import { supabase } from "./supabase-client";
+﻿import { supabase } from "./supabase-client";
 
 export type DashboardMetricKind = "currency" | "number";
-export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "Livré";
-export type OrderChannel = "Salle" | "Livraison" | "A emporter";
+export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "Livré" | "Annulee";
+export type OrderChannel = "Livraison";
 export type StockStatus = "Normal" | "Faible" | "Critique";
 
 export interface SalesPoint {
@@ -23,7 +23,7 @@ export interface DishSale {
   trend: "up" | "down" | "stable";
 }
 
-export type CustomerSegment = "Nouveau" | "Régulier" | "VIP" | "Inactif";
+export type CustomerSegment = "Nouveau" | "RÃ©gulier" | "VIP" | "Inactif";
 
 export interface CustomerRecord {
   id: string;
@@ -71,6 +71,9 @@ export interface RestaurantOrder {
   placedAt: string;
   date: string;
   items: any[];
+  paymentMethod?: string | null;
+  paymentProofUrl?: string | null;
+  paymentStatus?: string | null;
 }
 
 export interface StockItem {
@@ -93,10 +96,10 @@ export interface Supplier {
   reliability?: number;
 }
 
-export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "Livré"];
-export const orderChannelOptions: OrderChannel[] = ["Salle", "Livraison", "A emporter"];
+export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "Livré", "Annulee"];
+export const orderChannelOptions: OrderChannel[] = ["Livraison"];
 export const stockStatusOptions: StockStatus[] = ["Normal", "Faible", "Critique"];
-export const customerSegmentOptions: CustomerSegment[] = ["Nouveau", "Régulier", "VIP", "Inactif"];
+export const customerSegmentOptions: CustomerSegment[] = ["Nouveau", "RÃ©gulier", "VIP", "Inactif"];
 
 export const clientAvatarPool = [
   "/images/user/user-01.jpg",
@@ -163,7 +166,10 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
       quantity: item.quantite,
       price: item.prix_unitaire,
       category: "Divers" // This would ideally come from the join
-    }))
+    })),
+    paymentMethod: cmd.payment_method ?? null,
+    paymentProofUrl: cmd.payment_proof_url ?? null,
+    paymentStatus: cmd.payment_status ?? null,
   }));
 }
 
@@ -216,10 +222,10 @@ export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
 
 // Keep mock data for metrics and others to avoid breaks
 export const dashboardMetrics: DashboardMetric[] = [
-  { id: "revenue", label: "Revenu total", value: 0, note: "Réel Supabase", kind: "currency" },
+  { id: "revenue", label: "Revenu total", value: 0, note: "RÃ©el Supabase", kind: "currency" },
   { id: "orders", label: "Commandes du jour", value: 0, note: "En direct", kind: "number" },
   { id: "customers", label: "Nouveaux clients", value: 0, note: "+0% vs hier", kind: "number" },
-  { id: "averageTicket", label: "Panier moyen", value: 0, note: "Calculé", kind: "currency" },
+  { id: "averageTicket", label: "Panier moyen", value: 0, note: "CalculÃ©", kind: "currency" },
 ];
 
 export const salesTrend: SalesPoint[] = [
@@ -237,7 +243,7 @@ export const dishSales: DishSale[] = [
   { name: "Tassot Cabrit", category: "Grillades", quantity: 98, revenue: 107800, trend: "up" },
   { name: "Poulet aux Noix", category: "Signature", quantity: 76, revenue: 64600, trend: "stable" },
   { name: "Lambi en Sauce", category: "Fruits de Mer", quantity: 45, revenue: 58500, trend: "down" },
-  { name: "Burger Créole", category: "Burgers", quantity: 112, revenue: 50400, trend: "up" },
+  { name: "Burger CrÃ©ole", category: "Burgers", quantity: 112, revenue: 50400, trend: "up" },
 ];
 
 export const peakHours: HourlyVolume[] = [
@@ -252,7 +258,7 @@ export const peakHours: HourlyVolume[] = [
 ];
 
 export const suppliers: Supplier[] = [
-  { id: "sup-1", name: "Marché Local", contact: "+509 1234-5678", category: "Légumes", specialty: "Fruits & Légumes", nextDelivery: "Lundi 09:00", reliability: 98 },
+  { id: "sup-1", name: "MarchÃ© Local", contact: "+509 1234-5678", category: "LÃ©gumes", specialty: "Fruits & LÃ©gumes", nextDelivery: "Lundi 09:00", reliability: 98 },
   { id: "sup-2", name: "Boucherie Centrale", contact: "+509 8765-4321", category: "Viande", specialty: "Viande rouge", nextDelivery: "Mardi 10:30", reliability: 95 },
 ];
 
@@ -278,7 +284,7 @@ export const customers: CustomerRecord[] = [
     lifetimeSpend: 32400,
     lastOrder: "Il y a 5 jours",
     favoriteDish: "Poulet aux Noix",
-    segment: "Régulier"
+    segment: "RÃ©gulier"
   },
   { 
     id: "3", 
@@ -299,7 +305,7 @@ export const customers: CustomerRecord[] = [
     visits: 5, 
     lifetimeSpend: 18900,
     lastOrder: "Il y a 1 semaine",
-    favoriteDish: "Burger Créole",
+    favoriteDish: "Burger CrÃ©ole",
     segment: "Nouveau"
   },
   { 
@@ -311,8 +317,10 @@ export const customers: CustomerRecord[] = [
     lifetimeSpend: 38500,
     lastOrder: "Il y a 3 jours",
     favoriteDish: "Griot Complet",
-    segment: "Régulier"
+    segment: "RÃ©gulier"
   },
 ];
 export const restaurantOrders: RestaurantOrder[] = [];
 export const menuItems: MenuItem[] = [];
+
+

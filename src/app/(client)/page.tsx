@@ -1,7 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useCart } from "@/context/CartContext";
+import { supabase } from "@/lib/supabase-client";
+import { MenuItem } from "@/types/restaurant";
 import {
   ArrowRight,
   Star,
@@ -14,6 +17,7 @@ import {
   Soup,
   CakeSlice,
   GlassWater,
+  Plus,
 } from "lucide-react";
 
 const categories = [
@@ -25,7 +29,69 @@ const categories = [
   { name: "Boissons", label: "Bwason", icon: GlassWater, color: "bg-cyan-50", text: "text-cyan-600" },
 ];
 
+const featuredDishes = [
+  {
+    name: "Poulet grille TaiTai",
+    category: "Griyay",
+    price: 1450,
+    image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c7?w=600",
+  },
+  {
+    name: "Bowl riz creole",
+    category: "Espesyal",
+    price: 1350,
+    image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600",
+  },
+  {
+    name: "Burger creole",
+    category: "Begè",
+    price: 1290,
+    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600",
+  },
+];
+
+featuredDishes.push(
+  {
+    name: "Pates fruits de mer",
+    category: "Pat",
+    price: 1890,
+    image: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=600",
+  },
+  {
+    name: "Jus passion maison",
+    category: "Bwason",
+    price: 550,
+    image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=600",
+  },
+);
+
 export default function ClientHomePage() {
+  const { addToCart } = useCart();
+  const [homeDishes, setHomeDishes] = useState<MenuItem[]>([]);
+
+  useEffect(() => {
+    async function fetchFeaturedDishes() {
+      const names = featuredDishes.map((dish) => dish.name);
+      const { data, error } = await supabase
+        .from("menu_items")
+        .select("*")
+        .in("nom", names)
+        .eq("disponible", true)
+        .is("deleted_at", null);
+
+      if (!error && data) {
+        const byName = new Map(data.map((item) => [item.nom, item as MenuItem]));
+        setHomeDishes(names.map((name) => byName.get(name)).filter(Boolean) as MenuItem[]);
+      }
+    }
+
+    fetchFeaturedDishes();
+  }, []);
+
+  const handleAddDish = (dish: MenuItem) => {
+    addToCart(dish);
+  };
+
   return (
     <div className="space-y-24 pb-20">
       <section className="relative overflow-hidden rounded-3xl bg-[#101828] p-8 text-white shadow-2xl md:px-12 md:py-16">
@@ -92,6 +158,59 @@ export default function ClientHomePage() {
               </Link>
             );
           })}
+        </div>
+      </section>
+
+      <section className="space-y-10">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="space-y-3">
+            <h2 className="text-4xl font-bold tracking-tight text-[#101828]">Kèk plat popilè</h2>
+            <p className="text-lg font-medium text-[#667085]">Chwazi youn nan plat kliyan yo renmen anpil.</p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+          {(homeDishes.length > 0 ? homeDishes : []).map((dish) => (
+            <div
+              key={dish.id}
+              className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+            >
+              <div className="relative h-52 overflow-hidden">
+                <img
+                  src={dish.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"}
+                  alt={dish.nom}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleAddDish(dish)}
+                  title="Ajoute nan panyen"
+                  className="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A640] text-white shadow-lg shadow-[#F4A640]/30 transition hover:rotate-90 hover:bg-[#101828] active:scale-95"
+                >
+                  <Plus size={24} strokeWidth={3} />
+                </button>
+              </div>
+              <div className="space-y-3 p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="rounded-full bg-[#F4A640]/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#C87518]">
+                    {dish.categorie}
+                  </span>
+                  <span className="text-lg font-black text-[#F4A640]">{dish.prix} HTG</span>
+                </div>
+                <h3 className="text-xl font-black leading-tight text-[#101828]">{dish.nom}</h3>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-center">
+          <Link
+            href="/menu"
+            className="inline-flex items-center gap-3 rounded-2xl bg-[#101828] px-8 py-4 font-black text-white shadow-lg shadow-black/10 transition hover:bg-[#F4A640] active:scale-95"
+          >
+            Voir plus
+            <ArrowRight size={18} strokeWidth={3} />
+          </Link>
         </div>
       </section>
 

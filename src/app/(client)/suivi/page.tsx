@@ -82,6 +82,16 @@ export default function SuiviPage() {
   };
 
   useEffect(() => {
+    if (!user || typeof window === "undefined") return;
+
+    const numeroParam = new URLSearchParams(window.location.search).get("numero");
+    if (numeroParam) {
+      setNumero(numeroParam);
+      handleSearch(undefined, numeroParam);
+    }
+  }, [user]);
+
+  useEffect(() => {
     if (!commande) return;
 
     const channel = supabase
@@ -110,6 +120,7 @@ export default function SuiviPage() {
     { value: "En préparation", label: "Ap prepare", icon: ChefHat, desc: "Ekip kwizin nan ap prepare kòmann ou." },
     { value: "Prêt", label: "Pare", icon: Package, desc: "Kòmann nan pare. Nou ap anbale li oswa li pare pou sèvis." },
     { value: "Livré", label: "Livre", icon: CheckCircle2, desc: "Kòmann nan rive. Bon apeti !" },
+    { value: "Annulee", label: "Annulee", icon: CheckCircle2, desc: "Kòmann nan annule apre verifikasyon." },
   ];
 
   const currentStepIndex = steps.findIndex(s => s.value === commande?.statut);

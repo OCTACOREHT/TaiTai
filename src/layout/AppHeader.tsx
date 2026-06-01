@@ -65,11 +65,11 @@ const AppHeader: React.FC = () => {
           <Link href="/dashboard" className="lg:hidden">
             <div className="flex items-center">
               <Image
-                width={100}
-                height={28}
-                src="/images/logo/tailogo.png"
-                alt="TaiTai"
-                className="h-7 w-auto object-contain"
+                width={36}
+                height={36}
+                src="/images/logo/logo-icon.svg"
+                alt="Logo"
+                className="h-9 w-9 rounded-lg object-contain"
               />
             </div>
           </Link>

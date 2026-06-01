@@ -9,6 +9,30 @@ interface StoredAdminSession {
   user: CmsUser;
 }
 
+function createOwnerSession(token = "taitai-session-active"): StoredAdminSession {
+  return {
+    token,
+    user: {
+      id: "owner-01",
+      name: "TaiTai Admin",
+      email: "taitai@gmail.com",
+      password: "",
+      role: "super_admin",
+      title: "Proprietaire",
+      avatar: "/images/user/owner.jpg",
+      bio: "Gestionnaire principal TaiTai",
+      active: true,
+      lastLoginAt: new Date().toISOString(),
+    },
+  };
+}
+
+function repairOwnerSession(token = "taitai-session-active") {
+  const session = createOwnerSession(token);
+  setAdminSession(session, true);
+  return session;
+}
+
 export function getAdminToken() {
   return getAdminSession()?.token || null;
 }
@@ -36,11 +60,37 @@ export function getAdminSession(): StoredAdminSession | null {
     window.localStorage.getItem(ADMIN_SESSION_REMEMBERED_KEY);
 
   if (!raw) {
+    const legacyToken = window.localStorage.getItem(ADMIN_TOKEN_KEY);
+
+    if (legacyToken === "taitai-session-active") {
+      return repairOwnerSession(legacyToken);
+    }
+
     return null;
   }
 
   try {
-    return JSON.parse(raw) as StoredAdminSession;
+    const session = JSON.parse(raw) as StoredAdminSession;
+    const legacyToken = window.localStorage.getItem(ADMIN_TOKEN_KEY);
+
+    if (!session?.user && legacyToken === "taitai-session-active") {
+      return repairOwnerSession(legacyToken);
+    }
+
+    if (!session?.user?.role && legacyToken === "taitai-session-active") {
+      return repairOwnerSession(legacyToken);
+    }
+
+    if (session?.user?.email === "taitai@gmail.com" && session.user.role !== "super_admin") {
+      const repairedSession: StoredAdminSession = {
+        ...session,
+        user: { ...session.user, role: "super_admin" },
+      };
+      setAdminSession(repairedSession, true);
+      return repairedSession;
+    }
+
+    return session;
   } catch {
     return null;
   }

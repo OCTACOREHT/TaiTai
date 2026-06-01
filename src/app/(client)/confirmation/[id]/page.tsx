@@ -4,19 +4,15 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { Commande } from "@/types/restaurant";
-import { CheckCircle2, Package, MapPin, ArrowLeft, Loader2, Navigation, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, CheckCircle2, CreditCard, Loader2, MapPin, Navigation, Package, Search } from "lucide-react";
 
-const WHATSAPP_NUMBER = "50948095613";
 const statusLabels: Record<string, string> = {
   "En attente": "Ap tann",
   "En préparation": "Ap prepare",
   "Prêt": "Pare",
   "Livré": "Livre",
-};
-const canalLabels: Record<string, string> = {
-  Livraison: "Livrezon",
-  "A emporter": "Pou pote ale",
-  Salle: "Sou plas",
+  Annulee: "Annulee",
 };
 
 export default function ConfirmationPage() {
@@ -24,7 +20,6 @@ export default function ConfirmationPage() {
   const router = useRouter();
   const [commande, setCommande] = useState<Commande | null>(null);
   const [loading, setLoading] = useState(true);
-  const [waMsg, setWaMsg] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchCommande() {
@@ -33,24 +28,12 @@ export default function ConfirmationPage() {
         .select("*")
         .eq("id", id)
         .single();
-      
-      if (!error && data) {
-        setCommande(data);
-      }
+
+      if (!error && data) setCommande(data);
       setLoading(false);
     }
-    if (id) {
-      fetchCommande();
-      const msg = sessionStorage.getItem("pending_whatsapp_msg");
-      if (msg) {
-        setWaMsg(msg);
-        // Try to auto-open WhatsApp, but don't worry if it's blocked, we have the button
-        setTimeout(() => {
-          window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
-          sessionStorage.removeItem("pending_whatsapp_msg");
-        }, 500);
-      }
-    }
+
+    if (id) fetchCommande();
   }, [id]);
 
   if (loading) {
@@ -64,39 +47,62 @@ export default function ConfirmationPage() {
   if (!commande) {
     return (
       <div className="py-20 text-center space-y-4">
-        <h1 className="text-2xl font-bold">Nou pa jwenn kòmann nan</h1>
-        <button onClick={() => router.push("/")} className="text-[#F4A640] hover:underline">Retounen akèy la</button>
+        <h1 className="text-2xl font-bold">Nou pa jwenn komann nan</h1>
+        <button onClick={() => router.push("/")} className="text-[#F4A640] hover:underline">
+          Retounen akey la
+        </button>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-12 py-10">
-      <div className="flex flex-col items-center text-center space-y-6">
-        <div className="h-24 w-24 rounded-[2.5rem] bg-green-50 flex items-center justify-center text-green-500 shadow-lg shadow-green-500/10 border-4 border-white">
+      <div className="rounded-3xl border border-green-100 bg-white p-8 text-center shadow-2xl">
+        <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] border-4 border-white bg-green-50 text-green-500 shadow-lg shadow-green-500/10">
           <CheckCircle2 size={48} strokeWidth={2.5} />
         </div>
-        <div className="space-y-3">
-          <h1 className="text-5xl font-black text-[#101828]">Mèsi, {commande.client_nom} !</h1>
-          <p className="text-[#667085] text-xl font-medium">Kòmann ou <span className="text-[#101828] font-black">{commande.numero_commande}</span> sou wout.</p>
+        <div className="mt-6 space-y-3">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-green-600">Komann pase ak sikse</p>
+          <h1 className="text-4xl font-black text-[#101828] md:text-5xl">Mesi, {commande.client_nom} !</h1>
+          <p className="text-[#667085] text-lg font-medium">
+            Nimewo komann ou se:
+          </p>
+          <div className="mx-auto inline-flex rounded-2xl bg-[#101828] px-8 py-4 text-3xl font-black tracking-widest text-[#F4A640]">
+            {commande.numero_commande}
+          </div>
+        </div>
+        <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+          <Link
+            href={`/suivi?numero=${commande.numero_commande}`}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F4A640] px-8 py-4 font-black text-white shadow-lg shadow-[#F4A640]/20 transition hover:bg-[#101828]"
+          >
+            <Search size={18} strokeWidth={3} />
+            Swiv komann nan
+          </Link>
+          <Link
+            href="/menu"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-8 py-4 font-black text-[#101828] shadow-sm transition hover:border-[#F4A640] hover:text-[#F4A640]"
+          >
+            Retounen nan meni an
+          </Link>
         </div>
       </div>
 
       <div className="rounded-3xl border border-gray-100 bg-white p-10 space-y-10 shadow-2xl overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-           <Package size={200} strokeWidth={1} />
+          <Package size={200} strokeWidth={1} />
         </div>
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-gray-50 pb-10">
           <div className="space-y-1">
-            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Eta aktyèl</p>
+            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Eta aktyel</p>
             <div className="flex items-center gap-3 text-3xl font-black text-[#F4A640]">
               <Package size={28} />
               {statusLabels[commande.statut] || commande.statut}
             </div>
           </div>
           <div className="text-center md:text-right space-y-1 bg-gray-50 px-8 py-5 rounded-2xl border border-gray-100">
-            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total peye</p>
+            <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total</p>
             <p className="text-3xl font-black text-[#101828]">{commande.total} HTG</p>
           </div>
         </div>
@@ -107,39 +113,46 @@ export default function ConfirmationPage() {
               <Navigation size={18} className="text-[#F4A640]" /> Fason pou resevwa
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
-              <p className="font-bold text-lg text-[#101828]">{canalLabels[commande.canal] || commande.canal}</p>
-              {commande.table_numero && <p className="text-[#667085] mt-1 font-medium italic">Nimewo tab: {commande.table_numero}</p>}
+              <p className="font-bold text-lg text-[#101828]">Livrezon</p>
             </div>
           </div>
-          
+
           <div className="space-y-5">
             <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
               <MapPin size={18} className="text-[#F4A640]" /> Destinasyon
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
-              <p className="text-[#667085] font-medium leading-relaxed italic">{commande.adresse_livraison || "Sou plas"}</p>
+              <p className="text-[#667085] font-medium leading-relaxed italic">{commande.adresse_livraison}</p>
+            </div>
+          </div>
+
+          <div className="space-y-5 md:col-span-2">
+            <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
+              <CreditCard size={18} className="text-[#F4A640]" /> Peman
+            </h3>
+            <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
+              <p className="font-bold text-lg text-[#101828]">{commande.payment_method || "Peman sou plas"}</p>
+              {commande.payment_status && (
+                <p className="mt-1 text-sm font-bold text-[#667085]">Verifikasyon: {commande.payment_status}</p>
+              )}
+              {commande.payment_method !== "Sur place" && (
+                <p className="mt-3 text-sm font-bold text-[#C87518]">
+                  Admin nan ap verifye justificatif peman an avan preparasyon an.
+                </p>
+              )}
             </div>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-6 sm:flex-row sm:justify-center pt-4">
-        {waMsg && (
-          <button 
-            onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${waMsg}`, "_blank")}
-            className="flex items-center justify-center gap-3 rounded-2xl bg-[#25D366] px-12 py-6 font-black text-white transition-all hover:bg-[#128C7E] hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#25D366]/20"
-          >
-            <MessageCircle size={24} />
-            Voye sou WhatsApp
-          </button>
-        )}
-        <button 
+        <button
           onClick={() => router.push("/suivi")}
           className="rounded-2xl bg-[#101828] px-12 py-6 font-black text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10"
         >
-          Swiv kòmann mwen
+          Swiv komann mwen
         </button>
-        <button 
+        <button
           onClick={() => router.push("/")}
           className="flex items-center justify-center gap-3 rounded-2xl bg-white border border-gray-200 px-12 py-6 font-black text-[#101828] transition-all hover:bg-gray-50 active:scale-95 shadow-lg shadow-black/5"
         >

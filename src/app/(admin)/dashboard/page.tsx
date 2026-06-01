@@ -2,62 +2,57 @@
 
 import { SectionCard } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
-import { CustomersTable } from "@/components/dashboard/CustomersTable";
-import { InventoryOverview } from "@/components/dashboard/InventoryOverview";
-import { MenuGrid } from "@/components/dashboard/MenuGrid";
 import { MetricGrid } from "@/components/dashboard/MetricGrid";
 import { OrdersTable } from "@/components/dashboard/OrdersTable";
-import { QuickActionLinks } from "@/components/dashboard/QuickActionLinks";
 import { SalesPerformanceChart } from "@/components/dashboard/SalesPerformanceChart";
+import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import {
-  getCommandes,
-  getMenuItems,
   aggregateSalesTrend,
   dashboardMetrics as initialMetrics,
+  getCommandes,
   salesTrend as initialSalesTrend,
-  suppliers,
-  stockItems,
-  customers,
+  type DashboardMetric,
+  type RestaurantOrder,
+  type SalesPoint,
 } from "@/lib/data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MenuItem, RestaurantOrder, DashboardMetric, SalesPoint } from "@/lib/data";
 
 export default function DashboardPage() {
-  const [menu, setMenu] = useState<MenuItem[]>([]);
   const [orders, setOrders] = useState<RestaurantOrder[]>([]);
   const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
   const [salesTrendData, setSalesTrendData] = useState<SalesPoint[]>(initialSalesTrend);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [menuData, ordersData] = await Promise.all([
-          getMenuItems(),
-          getCommandes()
-        ]);
-        
-        setMenu(menuData);
-        setOrders(ordersData);
-        setSalesTrendData(aggregateSalesTrend(ordersData));
+  const loadData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
 
-        // Update metrics based on real data
-        const totalRevenue = ordersData.reduce((acc, curr) => acc + curr.total, 0);
-        const updatedMetrics = [...initialMetrics];
-        updatedMetrics[0].value = totalRevenue;
-        updatedMetrics[1].value = ordersData.length;
-        updatedMetrics[3].value = ordersData.length > 0 ? Math.round(totalRevenue / ordersData.length) : 0;
-        
-        setMetrics(updatedMetrics);
-      } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      const ordersData = await getCommandes();
+
+      setOrders(ordersData);
+      setSalesTrendData(aggregateSalesTrend(ordersData));
+
+      const totalRevenue = ordersData.reduce((acc, curr) => acc + curr.total, 0);
+      const updatedMetrics = [...initialMetrics];
+      updatedMetrics[0].value = totalRevenue;
+      updatedMetrics[1].value = ordersData.length;
+      updatedMetrics[3].value =
+        ordersData.length > 0 ? Math.round(totalRevenue / ordersData.length) : 0;
+
+      setMetrics(updatedMetrics);
+    } catch (error) {
+      console.error("Failed to load dashboard data:", error);
+    } finally {
+      if (showLoading) setLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadData();
   }, []);
+
+  useAutoRefresh(() => loadData(false));
 
   return (
     <div className="space-y-6">
@@ -71,7 +66,8 @@ export default function DashboardPage() {
               Pilotage complet du restaurant TaiTai
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-              Interface connectée en temps réel à Supabase. {loading ? "Mise à jour des données..." : "Données synchronisées."}
+              Interface connectee a Supabase.{" "}
+              {loading ? "Mise a jour des donnees..." : "Donnees synchronisees."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -85,7 +81,7 @@ export default function DashboardPage() {
               href="/menu"
               className="rounded-lg border border-gray-300 px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              Gérer le menu
+              Gerer le menu
             </Link>
           </div>
         </div>
@@ -93,19 +89,12 @@ export default function DashboardPage() {
 
       <MetricGrid metrics={metrics} />
 
-      <SectionCard
-        title="Accès rapides"
-        description="Navigation directe vers les modules de gestion."
-      >
-        <QuickActionLinks />
-      </SectionCard>
-
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <SalesPerformanceChart data={salesTrendData} />
 
         <SectionCard
-          title="Commandes récentes"
-          description="Les derniers tickets arrivés du site client."
+          title="Commandes recentes"
+          description="Les derniers tickets arrives du site client."
           actions={
             <Link
               href="/commandes"
@@ -118,20 +107,6 @@ export default function DashboardPage() {
           <OrdersTable orders={orders.slice(0, 5)} />
         </SectionCard>
       </div>
-
-      <SectionCard
-        title="Gestion des plats"
-        description="État actuel du menu et disponibilités."
-      >
-        <MenuGrid items={menu} />
-      </SectionCard>
-
-      <SectionCard
-        title="Clients"
-        description="Profils clients (données de démonstration)."
-      >
-        <CustomersTable customers={customers} />
-      </SectionCard>
     </div>
   );
 }

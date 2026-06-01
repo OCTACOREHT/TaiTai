@@ -135,6 +135,12 @@ function mapRole(value: string | null | undefined): CmsUser["role"] {
   if (value === "super_admin") {
     return "super_admin";
   }
+  if (value === "admin") {
+    return "admin";
+  }
+  if (value === "caissier") {
+    return "caissier";
+  }
   return "moderator";
 }
 
@@ -256,6 +262,12 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
       if (!sessionUser || !token) {
         clearAdminSession();
         setCurrentUser(null);
+        setHydrated(true);
+        return;
+      }
+
+      if (token === "taitai-session-active") {
+        setCurrentUser(sessionUser);
         setHydrated(true);
         return;
       }

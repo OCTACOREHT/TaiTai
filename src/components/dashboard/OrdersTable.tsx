@@ -72,6 +72,12 @@ export function OrdersTable({
               <TableCell className="py-5">
                 <div className="flex flex-col gap-1">
                   <span className="font-black text-gray-900 dark:text-white/90">{formatCurrency(order.total)}</span>
+                  {order.paymentMethod && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      {order.paymentMethod}
+                      {order.paymentStatus ? ` - ${order.paymentStatus}` : ""}
+                    </span>
+                  )}
                 </div>
               </TableCell>
               
@@ -88,6 +94,7 @@ export function OrdersTable({
                         order.status === 'En attente' ? "bg-amber-50 border-amber-200 text-amber-700 focus:ring-amber-200" :
                         order.status === 'En préparation' ? "bg-orange-50 border-orange-200 text-orange-700 focus:ring-orange-200" :
                         order.status === 'Prêt' ? "bg-emerald-50 border-emerald-200 text-emerald-700 focus:ring-emerald-200" :
+                        order.status === 'Annulee' ? "bg-red-50 border-red-200 text-red-700 focus:ring-red-200" :
                         "bg-gray-100 border-gray-200 text-gray-600 focus:ring-gray-300"
                       )}
                     >
@@ -107,6 +114,7 @@ export function OrdersTable({
                     order.status === 'En attente' ? "bg-amber-50 text-amber-700" :
                     order.status === 'En préparation' ? "bg-orange-50 text-orange-700" :
                     order.status === 'Prêt' ? "bg-emerald-50 text-emerald-700" :
+                    order.status === 'Annulee' ? "bg-red-50 text-red-700" :
                     "bg-gray-100 text-gray-600"
                   )}>
                     {order.status === 'En attente' && <Clock size={14} />}
