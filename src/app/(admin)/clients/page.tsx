@@ -144,7 +144,7 @@ export default function ClientsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
+            <table className="min-w-[980px] w-full text-left">
               <thead>
                 <tr className="border-b border-gray-100 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:border-gray-800">
                   <th className="px-5 py-4">Client</th>

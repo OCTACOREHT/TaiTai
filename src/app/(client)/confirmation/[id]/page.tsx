@@ -56,18 +56,18 @@ export default function ConfirmationPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-12 py-10">
-      <div className="rounded-3xl border border-green-100 bg-white p-8 text-center shadow-2xl">
+    <div className="mx-auto max-w-3xl space-y-8 py-6 sm:space-y-12 sm:py-10">
+      <div className="rounded-3xl border border-green-100 bg-white p-5 text-center shadow-2xl sm:p-8">
         <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] border-4 border-white bg-green-50 text-green-500 shadow-lg shadow-green-500/10">
           <CheckCircle2 size={48} strokeWidth={2.5} />
         </div>
         <div className="mt-6 space-y-3">
           <p className="text-sm font-black uppercase tracking-[0.25em] text-green-600">Komann pase ak sikse</p>
-          <h1 className="text-4xl font-black text-[#101828] md:text-5xl">Mesi, {commande.client_nom} !</h1>
+          <h1 className="break-words text-3xl font-black text-[#101828] sm:text-4xl md:text-5xl">Mesi, {commande.client_nom} !</h1>
           <p className="text-[#667085] text-lg font-medium">
             Nimewo komann ou se:
           </p>
-          <div className="mx-auto inline-flex rounded-2xl bg-[#101828] px-8 py-4 text-3xl font-black tracking-widest text-[#F4A640]">
+          <div className="mx-auto inline-flex max-w-full break-all rounded-2xl bg-[#101828] px-5 py-4 text-2xl font-black tracking-widest text-[#F4A640] sm:px-8 sm:text-3xl">
             {commande.numero_commande}
           </div>
         </div>
@@ -88,20 +88,20 @@ export default function ConfirmationPage() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-gray-100 bg-white p-10 space-y-10 shadow-2xl overflow-hidden relative">
+      <div className="relative space-y-8 overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-2xl sm:space-y-10 sm:p-10">
         <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
           <Package size={200} strokeWidth={1} />
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-gray-50 pb-10">
+        <div className="flex flex-col items-center justify-between gap-6 border-b border-gray-50 pb-8 md:flex-row md:gap-8 md:pb-10">
           <div className="space-y-1">
             <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Eta aktyel</p>
-            <div className="flex items-center gap-3 text-3xl font-black text-[#F4A640]">
+            <div className="flex items-center gap-3 text-2xl font-black text-[#F4A640] sm:text-3xl">
               <Package size={28} />
               {statusLabels[commande.statut] || commande.statut}
             </div>
           </div>
-          <div className="text-center md:text-right space-y-1 bg-gray-50 px-8 py-5 rounded-2xl border border-gray-100">
+          <div className="space-y-1 rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 text-center sm:px-8 sm:py-5 md:text-right">
             <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total</p>
             <p className="text-3xl font-black text-[#101828]">{commande.total} HTG</p>
           </div>

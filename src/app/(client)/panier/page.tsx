@@ -303,10 +303,10 @@ export default function PanierPage() {
   }
 
   return (
-    <div className="grid gap-16 lg:grid-cols-2">
+    <div className="grid min-w-0 gap-10 lg:grid-cols-2 lg:gap-16">
       <div className="space-y-10">
         <div className="space-y-2">
-          <h1 className="text-4xl font-bold text-[#101828]">Rezime</h1>
+          <h1 className="text-3xl font-bold text-[#101828] sm:text-4xl">Rezime</h1>
           <p className="text-[#667085] font-medium">Verifye atik ou yo avan ou valide.</p>
         </div>
 
@@ -314,9 +314,9 @@ export default function PanierPage() {
           {cart.map((item) => (
             <div
               key={item.id}
-              className="flex items-center gap-6 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition hover:shadow-md"
+              className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:gap-6 sm:p-5"
             >
-              <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-gray-100">
+              <div className="h-28 w-full flex-shrink-0 overflow-hidden rounded-2xl border border-gray-100 sm:h-24 sm:w-24">
                 <img
                   src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"}
                   alt={item.nom}
@@ -327,8 +327,8 @@ export default function PanierPage() {
                   }}
                 />
               </div>
-              <div className="flex-grow space-y-2">
-                <h3 className="text-lg font-bold text-[#101828]">{item.nom}</h3>
+              <div className="w-full min-w-0 flex-grow space-y-2">
+                <h3 className="break-words text-lg font-bold text-[#101828]">{item.nom}</h3>
                 <p className="text-sm font-black text-[#F4A640]">
                   {item.prix} HTG
                   {"original_prix" in item && item.original_prix ? (
@@ -339,7 +339,7 @@ export default function PanierPage() {
                   <p className="text-xs font-bold text-red-600">{item.promotion_title}</p>
                 ) : null}
               </div>
-              <div className="flex items-center gap-4 bg-gray-50 rounded-xl p-1.5 border border-gray-100">
+              <div className="flex w-full items-center justify-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-1.5 sm:w-auto">
                 <button
                   onClick={() => updateQuantity(item.id, -1)}
                   className="p-1.5 rounded-lg bg-white shadow-sm text-[#101828] hover:text-[#F4A640] transition"
@@ -356,7 +356,7 @@ export default function PanierPage() {
               </div>
               <button
                 onClick={() => removeItem(item.id)}
-                className="p-3 text-[#98A2B3] hover:text-red-500 transition hover:bg-red-50 rounded-xl"
+                className="self-end rounded-xl p-3 text-[#98A2B3] transition hover:bg-red-50 hover:text-red-500 sm:self-auto"
               >
                 <Trash2 size={22} />
               </button>
@@ -364,13 +364,13 @@ export default function PanierPage() {
           ))}
         </div>
 
-        <div className="rounded-3xl bg-[#101828] p-8 space-y-5 text-white shadow-xl">
+        <div className="space-y-5 rounded-3xl bg-[#101828] p-5 text-white shadow-xl sm:p-8">
           <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
             <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
               <Tag size={14} />
               Kod promo
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={promoCode}
@@ -381,7 +381,7 @@ export default function PanierPage() {
               <button
                 type="button"
                 onClick={applyPromoCode}
-                className="rounded-xl bg-[#F4A640] px-4 text-sm font-black text-white transition hover:bg-[#db8923]"
+                className="rounded-xl bg-[#F4A640] px-4 py-3 text-sm font-black text-white transition hover:bg-[#db8923] sm:py-0"
               >
                 Aplike
               </button>
@@ -412,7 +412,7 @@ export default function PanierPage() {
             </span>
           </div>
           <div className="h-px bg-white/10" />
-          <div className="flex justify-between text-2xl font-black">
+          <div className="flex flex-col gap-1 text-2xl font-black sm:flex-row sm:justify-between">
             <span>Total pou peye</span>
             <span className="text-[#F4A640]">{total} HTG</span>
           </div>
@@ -426,12 +426,12 @@ export default function PanierPage() {
 
       <div className="space-y-10">
         <div className="space-y-2">
-          <h2 className="text-4xl font-bold text-[#101828]">Validasyon</h2>
+          <h2 className="text-3xl font-bold text-[#101828] sm:text-4xl">Validasyon</h2>
           <p className="text-[#667085] font-medium">Livrezon disponib selman nan depatman Ouest.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-3xl border border-gray-100 bg-white p-10 space-y-8 shadow-xl">
-          <div className="rounded-3xl bg-orange-50/50 p-6 border border-orange-100 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-8 rounded-3xl border border-gray-100 bg-white p-5 shadow-xl sm:p-10">
+          <div className="space-y-4 rounded-3xl border border-orange-100 bg-orange-50/50 p-4 sm:p-6">
             <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
               <MapPin size={16} className="text-[#F4A640]" />
               Adres livrezon
@@ -534,7 +534,7 @@ export default function PanierPage() {
             </div>
           </div>
 
-          <div className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50 p-6">
+          <div className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50 p-4 sm:p-6">
             <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
               <CreditCard size={16} className="text-[#F4A640]" />
               Mwayen peman
@@ -587,7 +587,7 @@ export default function PanierPage() {
           <button
             type="submit"
             disabled={loading || !livraisonDisponible}
-            className="w-full flex items-center justify-center gap-3 rounded-2xl bg-[#F4A640] py-6 text-xl font-black text-white transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 shadow-xl shadow-[#F4A640]/20 hover:shadow-none"
+            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#F4A640] px-4 py-5 text-base font-black text-white shadow-xl shadow-[#F4A640]/20 transition-all hover:bg-[#101828] hover:shadow-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:py-6 sm:text-xl"
           >
             {loading ? (
               "Konfimasyon ap fet..."
@@ -599,7 +599,7 @@ export default function PanierPage() {
             )}
           </button>
 
-          <div className="flex items-center gap-3 justify-center text-[#98A2B3] text-xs font-bold uppercase tracking-tighter">
+          <div className="flex items-start justify-center gap-3 text-xs font-bold uppercase tracking-tighter text-[#98A2B3] sm:items-center">
             <Info size={14} />
             <span>Komann nan ap pase sou sit la. Admin nan ap verifye justificatif MonCash/Zelle.</span>
           </div>

@@ -106,7 +106,7 @@ function MenuContent() {
     <div className="space-y-8 md:space-y-12">
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight text-[#101828]">Meni nou</h1>
+          <h1 className="text-3xl font-black tracking-tight text-[#101828] sm:text-4xl md:text-5xl">Meni nou</h1>
           <p className="text-base md:text-lg text-[#667085] font-medium">Dekouvri bon gou kreyòl lakay nou.</p>
         </div>
         
@@ -118,14 +118,14 @@ function MenuContent() {
               placeholder="Chèche yon plat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-6 text-sm font-medium focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none sm:w-80 shadow-sm transition-all"
+              className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-6 text-sm font-medium shadow-sm transition-all focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 sm:w-80"
             />
           </div>
         </div>
       </div>
 
       {/* Categories - Sticky on Mobile */}
-      <div className="sticky top-20 z-40 -mx-4 md:mx-0 bg-[#F9FAFB]/95 backdrop-blur-md px-4 py-4 md:static md:bg-transparent md:p-0 md:backdrop-blur-none">
+      <div className="sticky top-20 z-40 -mx-4 bg-[#F9FAFB]/95 px-4 py-4 backdrop-blur-md md:static md:mx-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
            {categories.map(cat => (
              <button
@@ -148,7 +148,7 @@ function MenuContent() {
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#F4A640] border-t-transparent"></div>
         </div>
       ) : filteredItems.length > 0 ? (
-        <div className="grid gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3 pb-10">
+        <div className="grid gap-6 pb-10 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
           {filteredItems.map((item) => {
             const outOfStock = (item.stock_quantity ?? 0) <= 0;
             const promotion = itemPromotions[item.id];
@@ -189,10 +189,10 @@ function MenuContent() {
                 </div>
               </div>
               
-              <div className="p-6 md:p-8 space-y-4 md:space-y-6">
+              <div className="space-y-4 p-5 sm:p-6 md:space-y-6 md:p-8">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-xl md:text-2xl font-bold text-[#101828] leading-tight">{item.nom}</h3>
+                    <h3 className="break-words text-xl font-bold leading-tight text-[#101828] md:text-2xl">{item.nom}</h3>
                     <span className="shrink-0 text-[10px] font-black text-[#98A2B3] uppercase tracking-widest bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">{categoryLabels[item.categorie] || item.categorie}</span>
                   </div>
                   {promotion && (

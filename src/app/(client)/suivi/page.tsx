@@ -126,13 +126,13 @@ export default function SuiviPage() {
   const currentStepIndex = steps.findIndex(s => s.value === commande?.statut);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-16 py-10">
+    <div className="mx-auto max-w-3xl space-y-10 py-6 sm:space-y-16 sm:py-10">
       <div className="space-y-4 text-center">
-        <h1 className="text-5xl font-extrabold tracking-tight text-[#101828]">Swivi kòmann</h1>
-        <p className="text-[#667085] text-lg font-medium">Swiv kòmann ou an tan reyèl.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#101828] sm:text-5xl">Swivi kòmann</h1>
+        <p className="text-base font-medium text-[#667085] sm:text-lg">Swiv kòmann ou an tan reyèl.</p>
       </div>
 
-      <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-xl space-y-8">
+      <div className="space-y-8 rounded-3xl border border-gray-100 bg-white p-5 shadow-xl sm:p-8">
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-grow">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-[#98A2B3]" size={22} />
@@ -141,13 +141,13 @@ export default function SuiviPage() {
               placeholder="Antre nimewo ou (egzanp: TT-1234)"
               value={numero}
               onChange={e => setNumero(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-5 pl-14 pr-6 text-xl font-bold text-[#101828] focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all placeholder:text-gray-300 uppercase"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-14 pr-4 text-base font-bold uppercase text-[#101828] transition-all placeholder:text-gray-300 focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 sm:py-5 sm:pr-6 sm:text-xl"
             />
           </div>
           <button 
             type="submit"
             disabled={loading}
-            className="rounded-2xl bg-[#101828] px-10 py-5 font-bold text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 disabled:opacity-50 shadow-lg shadow-black/10 min-w-[180px]"
+            className="min-w-[160px] rounded-2xl bg-[#101828] px-8 py-4 font-bold text-white shadow-lg shadow-black/10 transition-all hover:bg-[#F4A640] active:scale-95 disabled:opacity-50 sm:min-w-[180px] sm:px-10 sm:py-5"
           >
             {loading ? <Loader2 className="animate-spin mx-auto" size={24} /> : "Swiv"}
           </button>
@@ -193,15 +193,15 @@ export default function SuiviPage() {
 
       {commande && (
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
-          <div className="rounded-3xl border border-gray-100 bg-white p-10 space-y-12 shadow-2xl relative overflow-hidden">
+          <div className="relative space-y-10 overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-2xl sm:space-y-12 sm:p-10">
             <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
                <Navigation size={200} strokeWidth={1} />
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8 border-b border-gray-50 pb-8">
+            <div className="flex flex-col items-center justify-between gap-6 border-b border-gray-50 pb-8 md:flex-row md:gap-8">
               <div className="text-center md:text-left space-y-1">
                 <p className="text-xs font-black text-[#98A2B3] uppercase tracking-[0.2em]">Idantifyan</p>
-                <h3 className="text-3xl font-black text-[#101828]">{commande.numero_commande}</h3>
+                <h3 className="break-all text-2xl font-black text-[#101828] sm:text-3xl">{commande.numero_commande}</h3>
               </div>
               <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100">
                 <div className="text-center md:text-right space-y-1">
@@ -213,28 +213,28 @@ export default function SuiviPage() {
 
             {/* Stepper */}
             <div className="relative pt-4">
-              <div className="absolute left-10 top-0 h-full w-[2px] bg-gray-100"></div>
-              <div className="space-y-14">
+              <div className="absolute left-7 top-0 h-full w-[2px] bg-gray-100 sm:left-10"></div>
+              <div className="space-y-10 sm:space-y-14">
                 {steps.map((step, idx) => {
                   const isDone = idx < currentStepIndex;
                   const isCurrent = idx === currentStepIndex;
                   const Icon = step.icon;
                   
                   return (
-                    <div key={step.label} className={`relative flex gap-8 items-start transition-all duration-500 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
-                      <div className={`z-10 flex h-20 w-20 items-center justify-center rounded-[2.5rem] border-4 transition-all duration-500 shadow-xl ${
+                    <div key={step.label} className={`relative flex items-start gap-4 transition-all duration-500 sm:gap-8 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
+                      <div className={`z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.5rem] border-4 shadow-xl transition-all duration-500 sm:h-20 sm:w-20 sm:rounded-[2.5rem] ${
                         isDone || isCurrent 
                         ? "border-[#F4A640]/20 bg-[#F4A640] text-white rotate-[360deg]" 
                         : "border-gray-50 bg-white text-[#98A2B3]"
                       }`}>
-                        <Icon size={32} strokeWidth={isCurrent ? 2.5 : 2} />
+                        <Icon size={24} strokeWidth={isCurrent ? 2.5 : 2} />
                       </div>
                       <div className="space-y-2 pt-2">
                         <div className="flex items-center gap-3">
-                           <h4 className={`text-2xl font-black ${isCurrent ? 'text-[#101828]' : 'text-[#667085]'}`}>{step.label}</h4>
+                           <h4 className={`text-xl font-black sm:text-2xl ${isCurrent ? 'text-[#101828]' : 'text-[#667085]'}`}>{step.label}</h4>
                            {isCurrent && <span className="flex h-3 w-3 rounded-full bg-[#F4A640] animate-ping" />}
                         </div>
-                        <p className="text-lg text-[#667085] font-medium leading-relaxed">{step.desc}</p>
+                        <p className="text-base font-medium leading-relaxed text-[#667085] sm:text-lg">{step.desc}</p>
                       </div>
                     </div>
                   );
@@ -243,7 +243,7 @@ export default function SuiviPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-gray-100 bg-white p-8 flex flex-col md:flex-row items-center gap-8 shadow-xl">
+          <div className="flex flex-col items-center gap-6 rounded-3xl border border-gray-100 bg-white p-5 shadow-xl sm:p-8 md:flex-row md:gap-8">
              <div className="h-16 w-16 rounded-[1.25rem] bg-[#101828] flex items-center justify-center text-white shadow-lg shadow-black/20">
                 <MapPin size={32} />
              </div>

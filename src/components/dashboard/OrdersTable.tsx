@@ -22,7 +22,7 @@ export function OrdersTable({
 }: OrdersTableProps) {
   return (
     <div className="max-w-full overflow-x-auto custom-scrollbar">
-      <Table>
+      <Table className="min-w-[760px]">
         <TableHeader className="border-y border-gray-100 dark:border-gray-800">
           <TableRow>
             <TableCell isHeader className="py-4 text-start text-xs font-bold uppercase tracking-wider text-gray-500">ID / Heure</TableCell>

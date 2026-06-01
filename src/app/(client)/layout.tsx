@@ -61,20 +61,20 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] pb-20 text-[#101828] selection:bg-[#F4A640] selection:text-white md:pb-0`}>
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="group flex items-center">
             <div className="relative h-8 w-32 transition-transform group-hover:scale-105">
               <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain object-left" />
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-10 md:flex">
+          <nav className="hidden min-w-0 items-center gap-4 md:flex lg:gap-8 xl:gap-10">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "text-sm font-semibold transition hover:text-[#F4A640]",
+                  "whitespace-nowrap text-sm font-semibold transition hover:text-[#F4A640]",
                   pathname === link.href ? "text-[#F4A640]" : "text-[#475467]",
                 )}
               >
@@ -101,11 +101,11 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12">
+      <main className="mx-auto w-full max-w-7xl overflow-hidden px-4 py-8 sm:px-6 md:py-12">
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-around border-t border-gray-100 bg-white/90 px-4 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-20 items-center justify-between border-t border-gray-100 bg-white/90 px-1 shadow-[0_-8px_30px_rgb(0,0,0,0.04)] backdrop-blur-xl sm:px-3 md:hidden">
         {navLinks.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
@@ -114,14 +114,14 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
               key={link.href}
               href={link.href}
               className={cn(
-                "flex flex-col items-center gap-1 transition-all duration-300",
+                "flex min-w-0 flex-1 flex-col items-center gap-1 transition-all duration-300",
                 isActive ? "scale-110 text-[#F4A640]" : "text-[#98A2B3] hover:text-[#475467]",
               )}
             >
-              <div className={cn("flex h-10 w-10 items-center justify-center rounded-2xl transition-all", isActive ? "bg-[#F4A640]/10" : "")}>
-                <Icon size={isActive ? 22 : 20} strokeWidth={isActive ? 2.5 : 2} />
+              <div className={cn("flex h-9 w-9 items-center justify-center rounded-2xl transition-all", isActive ? "bg-[#F4A640]/10" : "")}>
+                <Icon size={isActive ? 21 : 19} strokeWidth={isActive ? 2.5 : 2} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest">{link.label.split(" ")[0]}</span>
+              <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-wide sm:text-[10px]">{link.label.split(" ")[0]}</span>
             </Link>
           );
         })}

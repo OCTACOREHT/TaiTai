@@ -35,17 +35,17 @@ const contactCards = [
 export default function ContactPage() {
   return (
     <div className="space-y-14 pb-16">
-      <section className="grid gap-8 rounded-3xl bg-[#101828] p-8 text-white shadow-2xl md:grid-cols-[1.1fr_0.9fr] md:p-12">
+      <section className="grid gap-8 rounded-3xl bg-[#101828] p-6 text-white shadow-2xl sm:p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12">
         <div className="space-y-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-[#F4A640]">
             <MessageCircle className="h-4 w-4" />
             Kontakte TaiTai
           </span>
           <div className="space-y-4">
-            <h1 className="text-4xl font-black leading-tight md:text-5xl">
+            <h1 className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
               Nou la pou ede w ak kòmann ou.
             </h1>
-            <p className="max-w-2xl text-lg leading-8 text-gray-300">
+            <p className="max-w-2xl text-base leading-8 text-gray-300 sm:text-lg">
               Bezwen poze yon kesyon, verifye livrezon, oswa pale ak ekip la?
               Voye mesaj la, rele nou, oubyen pase kòmann ou dirèkteman nan meni an.
             </p>
@@ -53,20 +53,20 @@ export default function ContactPage() {
           <div className="flex flex-wrap gap-4">
             <Link
               href="/menu"
-              className="inline-flex items-center justify-center rounded-2xl bg-[#F4A640] px-6 py-4 text-sm font-black text-white transition hover:bg-[#db8923]"
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#F4A640] px-6 py-4 text-sm font-black text-white transition hover:bg-[#db8923] sm:w-auto"
             >
               Gade meni an
             </Link>
             <Link
               href="/suivi"
-              className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-6 py-4 text-sm font-black text-white transition hover:bg-white/10"
+              className="inline-flex w-full items-center justify-center rounded-2xl border border-white/15 px-6 py-4 text-sm font-black text-white transition hover:bg-white/10 sm:w-auto"
             >
               Swiv kòmann mwen
             </Link>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+        <div className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur sm:p-6">
           <div className="space-y-5">
             <InfoRow icon={<Clock />} label="Orè" value="Lendi - Dimanch, 11h - 22h" />
             <InfoRow icon={<Truck />} label="Livrezon" value="Disponib sèlman nan Lwès" />
@@ -92,7 +92,7 @@ export default function ContactPage() {
       </section>
 
       <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm">
+        <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7">
           <h2 className="text-2xl font-black text-[#101828]">Enfòmasyon itil</h2>
           <div className="mt-6 space-y-4 text-sm leading-7 text-[#667085]">
             <p>
@@ -111,7 +111,7 @@ export default function ContactPage() {
             event.preventDefault();
             alert("Mèsi! Mesaj ou a pare pou ekip TaiTai la.");
           }}
-          className="rounded-3xl border border-gray-100 bg-white p-7 shadow-sm"
+          className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7"
         >
           <div className="mb-6">
             <h2 className="text-2xl font-black text-[#101828]">Voye yon mesaj</h2>
