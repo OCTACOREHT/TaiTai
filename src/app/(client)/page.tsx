@@ -71,17 +71,17 @@ export default function ClientHomePage() {
 
   useEffect(() => {
     async function fetchFeaturedDishes() {
-      const names = featuredDishes.map((dish) => dish.name);
       const { data, error } = await supabase
         .from("menu_items")
         .select("*")
-        .in("nom", names)
         .eq("disponible", true)
-        .is("deleted_at", null);
+        .is("deleted_at", null)
+        .order("best_seller", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(5);
 
       if (!error && data) {
-        const byName = new Map(data.map((item) => [item.nom, item as MenuItem]));
-        setHomeDishes(names.map((name) => byName.get(name)).filter(Boolean) as MenuItem[]);
+        setHomeDishes(data as MenuItem[]);
       }
     }
 
@@ -166,14 +166,15 @@ export default function ClientHomePage() {
           <div className="space-y-3">
             <h2 className="text-3xl font-bold tracking-tight text-[#101828] sm:text-4xl">Kèk plat popilè</h2>
             <p className="text-lg font-medium text-[#667085]">Chwazi youn nan plat kliyan yo renmen anpil.</p>
+            <p className="text-sm font-bold text-[#98A2B3] md:hidden">Glise a goch oswa adwat pou wè lòt plat yo.</p>
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3 xl:grid-cols-5">
           {(homeDishes.length > 0 ? homeDishes : []).map((dish) => (
             <div
               key={dish.id}
-              className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
+              className="group min-w-[82vw] snap-center overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:min-w-[360px] md:min-w-0"
             >
               <div className="relative h-52 overflow-hidden">
                 <img

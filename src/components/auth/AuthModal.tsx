@@ -29,6 +29,100 @@ const DEPARTMENTS = [
   "Sud-Est",
 ];
 
+const CITIES_BY_DEPARTMENT: Record<string, string[]> = {
+  Ouest: [
+    "Port-au-Prince",
+    "Petion-Ville",
+    "Delmas",
+    "Carrefour",
+    "Tabarre",
+    "Croix-des-Bouquets",
+    "Kenscoff",
+    "Gressier",
+    "Leogane",
+    "Arcahaie",
+  ],
+  Artibonite: [
+    "Gonaives",
+    "Saint-Marc",
+    "Dessalines",
+    "Verrettes",
+    "Petite-Riviere de l'Artibonite",
+    "Ennery",
+    "Gros-Morne",
+  ],
+  Centre: [
+    "Hinche",
+    "Mirebalais",
+    "Lascahobas",
+    "Belladere",
+    "Saut-d'Eau",
+    "Thomonde",
+    "Cerca-la-Source",
+  ],
+  "Grand'Anse": [
+    "Jeremie",
+    "Anse-d'Hainault",
+    "Dame-Marie",
+    "Corail",
+    "Abricots",
+    "Beaumont",
+    "Roseaux",
+  ],
+  Nippes: [
+    "Miragoane",
+    "Anse-a-Veau",
+    "Petite-Riviere de Nippes",
+    "Baraderes",
+    "Plaisance du Sud",
+    "Fonds-des-Negres",
+  ],
+  Nord: [
+    "Cap-Haitien",
+    "Limonade",
+    "Acul-du-Nord",
+    "Grande-Riviere-du-Nord",
+    "Milot",
+    "Plaisance",
+    "Saint-Raphael",
+  ],
+  "Nord-Est": [
+    "Fort-Liberte",
+    "Ouanaminthe",
+    "Trou-du-Nord",
+    "Terrier-Rouge",
+    "Vallieres",
+    "Caracol",
+    "Mont-Organise",
+  ],
+  "Nord-Ouest": [
+    "Port-de-Paix",
+    "Saint-Louis du Nord",
+    "Mole-Saint-Nicolas",
+    "Jean-Rabel",
+    "Bombardopolis",
+    "Baie-de-Henne",
+  ],
+  Sud: [
+    "Les Cayes",
+    "Aquin",
+    "Cavaillon",
+    "Saint-Louis du Sud",
+    "Port-Salut",
+    "Torbeck",
+    "Camp-Perrin",
+  ],
+  "Sud-Est": [
+    "Jacmel",
+    "Bainet",
+    "Cotes-de-Fer",
+    "Belle-Anse",
+    "Marigot",
+    "Thiotte",
+    "Anse-a-Pitres",
+  ],
+};
+
 function ModalPortal({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -51,10 +145,17 @@ export default function AuthModal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const selectedCities = CITIES_BY_DEPARTMENT[departement] || [];
 
   useEffect(() => {
     if (!isOpen) document.body.style.overflow = "";
   }, [isOpen]);
+
+  useEffect(() => {
+    if (mode === "signup" && selectedCities.length > 0 && !selectedCities.includes(ville)) {
+      setVille(selectedCities[0]);
+    }
+  }, [departement, mode, selectedCities, ville]);
 
   useEffect(() => {
     return () => {
@@ -268,20 +369,29 @@ export default function AuthModal() {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="relative">
                         <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                        <input
-                          type="text"
+                        <select
                           required
-                          placeholder="Vil / komin"
                           value={ville}
                           onChange={(event) => setVille(event.target.value)}
-                          className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                        />
+                          className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-10 text-sm font-medium text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
+                        >
+                          {selectedCities.map((city) => (
+                            <option key={city} value={city}>
+                              {city}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronRight size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-[#98A2B3]" />
                       </div>
                       <div className="relative">
                         <select
                           required
                           value={departement}
-                          onChange={(event) => setDepartement(event.target.value)}
+                          onChange={(event) => {
+                            const nextDepartment = event.target.value;
+                            setDepartement(nextDepartment);
+                            setVille(CITIES_BY_DEPARTMENT[nextDepartment]?.[0] || "");
+                          }}
                           className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-5 pr-10 text-sm font-medium text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
                         >
                           {DEPARTMENTS.map((item) => (
