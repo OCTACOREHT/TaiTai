@@ -48,7 +48,7 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
           </div>
           <p className="text-[10px] text-center opacity-70 leading-tight uppercase font-medium">
             18 RUE DES SAVEURS, PETION-VILLE<br />
-            HAÏTI - TEL: +509 3644-8822
+            HAÏTI - TEL: +509 31 19 1999
           </p>
         </div>
 

@@ -154,7 +154,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
               <h4 className="mb-6 font-bold text-[#101828]">Kontak</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
                 <li>Port-au-Prince, Ayiti</li>
-                <li>+509 0000-0000</li>
+                <li>+509 31 19 1999</li>
                 <li>contact@taitai.ht</li>
               </ul>
             </div>
@@ -162,8 +162,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
             <div>
               <h4 className="mb-6 font-bold text-[#101828]">Orè</h4>
               <ul className="space-y-4 text-sm text-[#475467]">
-                <li>Lendi - Vandredi: 11h - 22h</li>
-                <li>Samdi - Dimanch: 12h - 23h</li>
+                <li>Livrezon: apati 12h midi</li>
+                <li>Lendi - Dimanch: 12h - 22h</li>
               </ul>
             </div>
           </div>

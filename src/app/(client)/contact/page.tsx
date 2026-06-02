@@ -14,7 +14,7 @@ import {
 const contactCards = [
   {
     title: "Telefòn",
-    value: "+509 0000-0000",
+    value: "+509 31 19 1999",
     note: "Rele nou pou kesyon rapid.",
     icon: Phone,
   },
@@ -68,9 +68,9 @@ export default function ContactPage() {
 
         <div className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur sm:p-6">
           <div className="space-y-5">
-            <InfoRow icon={<Clock />} label="Orè" value="Lendi - Dimanch, 11h - 22h" />
+            <InfoRow icon={<Clock />} label="Orè" value="Livrezon apati 12h midi" />
             <InfoRow icon={<Truck />} label="Livrezon" value="Disponib sèlman nan Lwès" />
-            <InfoRow icon={<Phone />} label="Sèvis kliyan" value="+509 0000-0000" />
+            <InfoRow icon={<Phone />} label="Sèvis kliyan" value="+509 31 19 1999" />
           </div>
         </div>
       </section>

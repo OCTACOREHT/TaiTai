@@ -66,6 +66,7 @@ const paymentLabels: Record<PaymentMethod, string> = {
   Zelle: "Zelle",
 };
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const DELIVERY_START_HOUR = 12;
 
 const getDiscountAmount = (base: number, promotion: OrderPromotion | null) => {
   if (!promotion) return 0;
@@ -86,6 +87,7 @@ export default function PanierPage() {
   const [appliedPromo, setAppliedPromo] = useState<OrderPromotion | null>(null);
   const [promoMessage, setPromoMessage] = useState("");
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   const [formData, setFormData] = useState({
     client_nom: "",
@@ -107,7 +109,13 @@ export default function PanierPage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const interval = window.setInterval(() => setCurrentTime(new Date()), 60 * 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
   const livraisonDisponible = formData.departement === "Ouest";
+  const deliveryHasStarted = currentTime.getHours() >= DELIVERY_START_HOUR;
   const selectedZone = ZONES_LIVRAISON.find((z) => z.zone === formData.zone_livraison);
   const fraisLivraison = livraisonDisponible && selectedZone ? selectedZone.frais : 0;
   const sousTotal = cart.reduce((acc, item) => acc + item.prix * item.quantity, 0);
@@ -431,6 +439,13 @@ export default function PanierPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 rounded-3xl border border-gray-100 bg-white p-5 shadow-xl sm:p-10">
+          {!deliveryHasStarted && (
+            <div className="rounded-3xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm font-black leading-6 text-amber-700">
+              Livrezon yo kòmanse apati 12h midi. Ou ka prepare kòmann ou kounye a,
+              men livrezon an ap disponib sèlman apre midi.
+            </div>
+          )}
+
           <div className="space-y-4 rounded-3xl border border-orange-100 bg-orange-50/50 p-4 sm:p-6">
             <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
               <MapPin size={16} className="text-[#F4A640]" />
