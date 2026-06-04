@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+<<<<<<< HEAD
 
 const DEPARTMENTS = [
   "Ouest",
@@ -123,6 +124,9 @@ const CITIES_BY_DEPARTMENT: Record<string, string[]> = {
   ],
 };
 
+=======
+import Image from "next/image";
+>>>>>>> 1078879 (Update TaiTai branding)
 function ModalPortal({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -286,11 +290,23 @@ export default function AuthModal() {
                 <X size={20} />
               </button>
 
+<<<<<<< HEAD
               <div className="mb-5 mt-1 text-center">
                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A640]/10">
                   <span className="text-2xl">TT</span>
+=======
+              {/* Logo / Title */}
+              <div className="mb-8 text-center mt-2">
+              <div className="mx-auto mb-4 relative h-20 w-40">
+                  <Image
+                    src="/images/logo/tailogo.png"
+                    alt="TaiTai"
+                    fill
+                    className="object-contain"
+                  />
+>>>>>>> 1078879 (Update TaiTai branding)
                 </div>
-                <h2 className="text-2xl font-black text-[#101828]">
+                                <h2 className="text-2xl font-black text-[#101828]">
                   {mode === "login" ? "Byenveni !" : "Kreye yon kont"}
                 </h2>
                 <p className="mt-1 text-sm text-[#667085]">
