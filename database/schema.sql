@@ -121,11 +121,23 @@ CREATE TABLE public.promotions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table avis clients
+CREATE TABLE public.avis_clients (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  client_user_id UUID,
+  nom TEXT NOT NULL,
+  note INTEGER NOT NULL CHECK (note BETWEEN 1 AND 5),
+  commentaire TEXT NOT NULL,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- [5] SECURITY (RLS Policies)
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commandes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commande_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promotions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.avis_clients ENABLE ROW LEVEL SECURITY;
 
 -- Menu : lecture publique
 CREATE POLICY "menu_public_read" ON public.menu_items
@@ -158,6 +170,12 @@ CREATE POLICY "promotions_admin_update" ON public.promotions
   FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "promotions_admin_delete" ON public.promotions
   FOR DELETE USING (true);
+
+-- Avis clients : lecture et ajout publics
+CREATE POLICY "avis_public_read" ON public.avis_clients
+  FOR SELECT USING (active = true);
+CREATE POLICY "avis_public_insert" ON public.avis_clients
+  FOR INSERT WITH CHECK (true);
 
 -- [6] REALTIME
 -- Note: If publication doesn't exist, this might need manual setup in Supabase, 

@@ -230,34 +230,68 @@ export default function AuthModal() {
 
   if (user) {
     const initials = user.nom?.slice(0, 2).toUpperCase() ?? "TT";
+    const firstName = user.nom.split(" ")[0] || "Kont";
     return (
       <div className="relative">
         <button
           onClick={() => setShowUserMenu((value) => !value)}
-          className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-bold text-[#101828] shadow-sm transition hover:border-[#F4A640] hover:text-[#F4A640]"
+          className="group flex items-center gap-3 rounded-2xl border border-[#F4A640]/20 bg-white px-2.5 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#F4A640] hover:shadow-lg hover:shadow-[#F4A640]/10 sm:px-3"
         >
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F4A640] text-xs font-black uppercase text-white">
+          <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-[#101828] text-sm font-black uppercase text-[#F4A640] shadow-inner">
             {initials}
+            <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
           </span>
-          <span className="hidden sm:block">{user.nom.split(" ")[0]}</span>
+          <span className="hidden min-w-0 flex-col sm:flex">
+            <span className="max-w-28 truncate text-xs font-black uppercase tracking-wider text-[#98A2B3]">
+              Konekte
+            </span>
+            <span className="max-w-32 truncate text-sm font-black text-[#101828] group-hover:text-[#F4A640]">
+              {firstName}
+            </span>
+          </span>
+          <ChevronRight className="hidden h-4 w-4 rotate-90 text-[#98A2B3] transition group-hover:text-[#F4A640] sm:block" />
         </button>
 
         {showUserMenu && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
-            <div className="absolute right-0 top-full z-50 mt-3 w-64 rounded-3xl border border-gray-100 bg-white p-4 shadow-2xl">
-              <p className="mb-1 text-xs font-black uppercase tracking-widest text-[#98A2B3]">Konekte kom</p>
-              <p className="mb-1 truncate text-sm font-bold text-[#101828]">{user.nom}</p>
-              <p className="mb-4 text-xs text-[#667085]">{user.telephone}</p>
+            <div className="absolute right-0 top-full z-50 mt-3 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl">
+              <div className="bg-[#101828] p-5 text-white">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A640] text-sm font-black uppercase text-white">
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-black">{user.nom}</p>
+                    <p className="mt-1 text-xs font-bold text-white/60">Kont kliyan TaiTai</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 p-4">
+                <div className="rounded-2xl bg-gray-50 p-4">
+                  <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3]">Kontak</p>
+                  <p className="mt-2 text-sm font-bold text-[#101828]">{user.telephone}</p>
+                  {user.email ? <p className="mt-1 truncate text-xs font-medium text-[#667085]">{user.email}</p> : null}
+                </div>
+                {user.ville || user.departement ? (
+                  <div className="rounded-2xl bg-[#F4A640]/10 p-4">
+                    <p className="text-xs font-black uppercase tracking-widest text-[#C87518]">Adrès</p>
+                    <p className="mt-2 text-sm font-bold text-[#101828]">
+                      {[user.ville, user.departement].filter(Boolean).join(", ")}
+                    </p>
+                  </div>
+                ) : null}
               <button
                 onClick={async () => {
                   await signOut();
                   setShowUserMenu(false);
                 }}
-                className="w-full rounded-2xl bg-red-50 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100"
+                  className="w-full rounded-2xl bg-red-50 py-3 text-sm font-black text-red-600 transition hover:bg-red-100"
               >
                 Dekonekte
               </button>
+              </div>
             </div>
           </>
         )}

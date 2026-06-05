@@ -4,8 +4,9 @@ import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { TextInput } from "@/components/common/CmsShared";
 import { Modal } from "@/components/ui/modal";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
+import { exportToExcel } from "@/lib/export-excel";
 import { supabase } from "@/lib/supabase-client";
-import { Loader2, MapPin, Phone, PlusIcon, RefreshCcw, Store } from "lucide-react";
+import { Download, Loader2, MapPin, Phone, PlusIcon, RefreshCcw, Store } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 type Supplier = {
@@ -71,11 +72,39 @@ export default function FournisseursPage() {
     setSaving(false);
   };
 
+  const exportSuppliers = () => {
+    if (suppliers.length === 0) {
+      alert("Aucun fournisseur a exporter.");
+      return;
+    }
+
+    exportToExcel({
+      filename: `fournisseurs-taitai-${new Date().toISOString().slice(0, 10)}.xls`,
+      sheetName: "Fournisseurs",
+      headers: ["Nom", "Telephone", "Adresse", "Date ajout", "ID fournisseur"],
+      rows: suppliers.map((supplier) => [
+        supplier.nom,
+        supplier.telephone,
+        supplier.adresse,
+        supplier.created_at ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(supplier.created_at)) : "",
+        supplier.id,
+      ]),
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Fournisseurs" />
         <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={exportSuppliers}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-brand-600"
+          >
+            <Download className="h-4 w-4" />
+            Exporter Excel
+          </button>
           <button
             type="button"
             onClick={() => loadSuppliers()}

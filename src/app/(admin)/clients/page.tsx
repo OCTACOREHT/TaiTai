@@ -2,8 +2,9 @@
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
+import { exportToExcel } from "@/lib/export-excel";
 import { supabase } from "@/lib/supabase-client";
-import { Clock, Loader2, Mail, Phone, RefreshCcw, ShoppingBag, Trophy, UserRound } from "lucide-react";
+import { Clock, Download, Loader2, Mail, Phone, RefreshCcw, ShoppingBag, Trophy, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -94,18 +95,62 @@ export default function ClientsPage() {
     };
   }, [clients]);
 
+  const exportClients = () => {
+    if (clients.length === 0) {
+      alert("Aucun client a exporter.");
+      return;
+    }
+
+    exportToExcel({
+      filename: `clients-taitai-${new Date().toISOString().slice(0, 10)}.xls`,
+      sheetName: "Clients",
+      headers: [
+        "Classement",
+        "Nom",
+        "Telephone",
+        "Email",
+        "Commandes",
+        "Total depense HTG",
+        "Derniere connexion",
+        "Inscription",
+        "ID client",
+      ],
+      rows: clients.map((client, index) => [
+        index + 1,
+        client.nom,
+        client.telephone || "",
+        client.email || "",
+        client.order_count,
+        client.total_spent,
+        formatDateTime(client.last_login_at),
+        formatDateTime(client.created_at),
+        client.id,
+      ]),
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Clients" />
-        <button
-          type="button"
-          onClick={() => loadClients()}
-          className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-        >
-          <RefreshCcw className="h-4 w-4" />
-          Actualiser
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={exportClients}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600"
+          >
+            <Download className="h-4 w-4" />
+            Exporter Excel
+          </button>
+          <button
+            type="button"
+            onClick={() => loadClients()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-theme-xs transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Actualiser
+          </button>
+        </div>
       </div>
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">

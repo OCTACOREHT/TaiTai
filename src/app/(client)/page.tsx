@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { supabase } from "@/lib/supabase-client";
 import { MenuItem } from "@/types/restaurant";
 import {
@@ -28,6 +29,14 @@ const categories = [
   { name: "Desserts", label: "Desè", icon: CakeSlice, color: "bg-pink-50", text: "text-pink-600" },
   { name: "Boissons", label: "Bwason", icon: GlassWater, color: "bg-cyan-50", text: "text-cyan-600" },
 ];
+
+type ClientReview = {
+  id: string;
+  nom: string;
+  note: number;
+  commentaire: string;
+  created_at: string;
+};
 
 const featuredDishes = [
   {
@@ -67,7 +76,14 @@ featuredDishes.push(
 
 export default function ClientHomePage() {
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const [homeDishes, setHomeDishes] = useState<MenuItem[]>([]);
+  const [reviews, setReviews] = useState<ClientReview[]>([]);
+  const [reviewName, setReviewName] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewMessage, setReviewMessage] = useState("");
 
   useEffect(() => {
     async function fetchFeaturedDishes() {
@@ -88,8 +104,68 @@ export default function ClientHomePage() {
     fetchFeaturedDishes();
   }, []);
 
+  useEffect(() => {
+    async function fetchReviews() {
+      const { data, error } = await supabase
+        .from("avis_clients")
+        .select("id, nom, note, commentaire, created_at")
+        .eq("active", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (!error && data) {
+        setReviews(data as ClientReview[]);
+      }
+    }
+
+    fetchReviews();
+  }, []);
+
+  useEffect(() => {
+    if (user && !reviewName) {
+      setReviewName(user.nom);
+    }
+  }, [user, reviewName]);
+
   const handleAddDish = (dish: MenuItem) => {
     addToCart(dish);
+  };
+
+  const handleSubmitReview = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setReviewMessage("");
+
+    const name = (user?.nom || reviewName).trim();
+    const comment = reviewComment.trim();
+
+    if (!name || !comment) {
+      setReviewMessage("Tanpri mete non ou ak kòmantè a.");
+      return;
+    }
+
+    setReviewSubmitting(true);
+    const { data, error } = await supabase
+      .from("avis_clients")
+      .insert({
+        client_user_id: user?.id ?? null,
+        nom: name,
+        note: reviewRating,
+        commentaire: comment,
+      })
+      .select("id, nom, note, commentaire, created_at")
+      .single();
+
+    setReviewSubmitting(false);
+
+    if (error || !data) {
+      setReviewMessage("Nou pa ka voye avis la pou kounye a.");
+      return;
+    }
+
+    setReviews((current) => [data as ClientReview, ...current].slice(0, 6));
+    setReviewComment("");
+    setReviewRating(5);
+    setReviewMessage("Mèsi pou avis ou!");
   };
 
   return (
@@ -141,19 +217,23 @@ export default function ClientHomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3 lg:grid-cols-6">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-0 md:px-0">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
               <Link
                 key={cat.name}
                 href={`/menu?cat=${cat.name}`}
-                className="group flex flex-col items-center gap-4 rounded-3xl border border-gray-100 bg-white p-5 transition-all duration-300 hover:border-[#F4A640]/30 hover:shadow-xl sm:gap-5 sm:p-8"
+                className="group relative min-w-[150px] snap-center overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#F4A640]/30 hover:shadow-xl sm:min-w-[175px] sm:p-6"
               >
-                <div className={`relative flex h-24 w-24 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${cat.color}`}>
-                  <Icon className={`h-12 w-12 ${cat.text}`} strokeWidth={1.5} />
+                <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${cat.color}`} />
+                <div className={`relative flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${cat.color}`}>
+                  <Icon className={`h-9 w-9 ${cat.text}`} strokeWidth={1.7} />
                 </div>
-                <span className="font-bold text-[#101828]">{cat.label}</span>
+                <div className="relative mt-5">
+                  <span className="block font-black text-[#101828]">{cat.label}</span>
+                  <span className="mt-1 block text-xs font-bold text-[#98A2B3]">Gade plat yo</span>
+                </div>
               </Link>
             );
           })}
@@ -173,14 +253,18 @@ export default function ClientHomePage() {
           {(homeDishes.length > 0 ? homeDishes : []).map((dish) => (
             <div
               key={dish.id}
-              className="group min-w-[82vw] snap-center overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl sm:min-w-[360px] md:min-w-0"
+              className="group min-w-[82vw] snap-center overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#101828]/10 sm:min-w-[360px] md:min-w-0"
             >
-              <div className="relative h-52 overflow-hidden">
+              <div className="relative h-56 overflow-hidden">
                 <img
                   src={dish.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"}
                   alt={dish.nom}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#C87518] backdrop-blur">
+                  {dish.categorie}
+                </span>
                 <button
                   type="button"
                   onClick={() => handleAddDish(dish)}
@@ -189,15 +273,20 @@ export default function ClientHomePage() {
                 >
                   <Plus size={24} strokeWidth={3} />
                 </button>
-              </div>
-              <div className="space-y-3 p-6">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="rounded-full bg-[#F4A640]/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#C87518]">
-                    {dish.categorie}
-                  </span>
-                  <span className="text-lg font-black text-[#F4A640]">{dish.prix} HTG</span>
+                <div className="absolute bottom-4 left-4 right-20">
+                  <h3 className="line-clamp-2 text-xl font-black leading-tight text-white drop-shadow">
+                    {dish.nom}
+                  </h3>
                 </div>
-                <h3 className="text-xl font-black leading-tight text-[#101828]">{dish.nom}</h3>
+              </div>
+              <div className="flex items-center justify-between gap-3 p-5">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3]">Pri</p>
+                  <p className="mt-1 text-xl font-black text-[#F4A640]">{dish.prix} HTG</p>
+                </div>
+                <div className="rounded-2xl bg-[#F4A640]/10 px-3 py-2 text-right">
+                  <p className="text-xs font-black text-[#C87518]">Disponib</p>
+                </div>
               </div>
             </div>
           ))}
@@ -211,6 +300,104 @@ export default function ClientHomePage() {
             Voir plus
             <ArrowRight size={18} strokeWidth={3} />
           </Link>
+        </div>
+      </section>
+
+      <section className="grid gap-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
+        <div className="space-y-6">
+          <div className="space-y-3">
+            <p className="text-sm font-black uppercase tracking-widest text-[#F4A640]">Avis kliyan</p>
+            <h2 className="text-3xl font-black tracking-tight text-[#101828] sm:text-4xl">
+              Di nou kijan ou jwenn TaiTai.
+            </h2>
+            <p className="text-base font-medium leading-7 text-[#667085]">
+              Kite yon kòmantè ak yon nòt sou 5 zetwal pou ede lòt kliyan chwazi pi byen.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmitReview} className="space-y-4 rounded-3xl bg-gray-50 p-4 sm:p-5">
+            <input
+              type="text"
+              required
+              value={reviewName}
+              onChange={(event) => setReviewName(event.target.value)}
+              disabled={Boolean(user)}
+              placeholder="Non ou"
+              className="h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-bold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 disabled:text-[#667085]"
+            />
+
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setReviewRating(value)}
+                  className="rounded-xl p-1 transition hover:scale-110"
+                  aria-label={`${value} zetwal`}
+                >
+                  <Star
+                    className={`h-8 w-8 ${
+                      value <= reviewRating ? "fill-[#F4A640] text-[#F4A640]" : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              ))}
+              <span className="ml-2 text-sm font-black text-[#101828]">{reviewRating}/5</span>
+            </div>
+
+            <textarea
+              required
+              rows={4}
+              value={reviewComment}
+              onChange={(event) => setReviewComment(event.target.value)}
+              placeholder="Ekri avis ou..."
+              className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-semibold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+            />
+
+            {reviewMessage ? (
+              <p className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#667085]">
+                {reviewMessage}
+              </p>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={reviewSubmitting}
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#101828] px-6 py-4 text-sm font-black text-white transition hover:bg-[#F4A640] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {reviewSubmitting ? "Ap voye..." : "Voye avis mwen"}
+            </button>
+          </form>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <article key={review.id} className="rounded-3xl border border-gray-100 bg-[#F9FAFB] p-5">
+                <div className="mb-4 flex items-center gap-1 text-[#F4A640]">
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <Star
+                      key={value}
+                      className={`h-4 w-4 ${value <= review.note ? "fill-current" : "text-gray-300"}`}
+                    />
+                  ))}
+                </div>
+                <p className="line-clamp-4 text-sm font-medium leading-7 text-[#475467]">
+                  “{review.commentaire}”
+                </p>
+                <div className="mt-5 border-t border-gray-200 pt-4">
+                  <p className="font-black text-[#101828]">{review.nom}</p>
+                  <p className="mt-1 text-xs font-bold text-[#98A2B3]">
+                    {new Date(review.created_at).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="flex min-h-56 items-center justify-center rounded-3xl border border-dashed border-gray-200 bg-[#F9FAFB] p-8 text-center text-sm font-bold text-[#98A2B3] sm:col-span-2">
+              Pa gen avis pou kounye a. Se pou ou premye moun ki bay nòt!
+            </div>
+          )}
         </div>
       </section>
 
