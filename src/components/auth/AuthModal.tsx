@@ -6,6 +6,8 @@ import { createPortal } from "react-dom";
 import {
   Building2,
   ChevronRight,
+  Eye,
+  EyeOff,
   Loader2,
   Lock,
   LogIn,
@@ -146,6 +148,8 @@ export default function AuthModal() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -176,6 +180,8 @@ export default function AuthModal() {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
+    setShowPassword(false);
+    setShowConfirmPassword(false);
     setError("");
     setLoading(false);
   };
@@ -428,12 +434,28 @@ export default function AuthModal() {
       <div className="grid grid-cols-2 gap-3">
         <div className="relative">
           <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="password" required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+          <input type={showPassword ? "text" : "password"} required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+          <button
+            type="button"
+            onClick={() => setShowPassword((value) => !value)}
+            aria-label={showPassword ? "Kache modpas la" : "Montre modpas la"}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#F4A640]"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
 
         <div className="relative">
           <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="password" required placeholder="Konfime modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+          <input type={showConfirmPassword ? "text" : "password"} required placeholder="Konfime modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword((value) => !value)}
+            aria-label={showConfirmPassword ? "Kache konfimasyon modpas la" : "Montre konfimasyon modpas la"}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#F4A640]"
+          >
+            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
         </div>
       </div>
     </>
@@ -446,7 +468,15 @@ export default function AuthModal() {
 
       <div className="relative">
         <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-        <input type="password" required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        <input type={showPassword ? "text" : "password"} required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        <button
+          type="button"
+          onClick={() => setShowPassword((value) => !value)}
+          aria-label={showPassword ? "Kache modpas la" : "Montre modpas la"}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#F4A640]"
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
       </div>
     </>
   )}
