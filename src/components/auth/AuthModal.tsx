@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import {
   Building2,
@@ -15,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-<<<<<<< HEAD
+
 
 const DEPARTMENTS = [
   "Ouest",
@@ -124,9 +125,8 @@ const CITIES_BY_DEPARTMENT: Record<string, string[]> = {
   ],
 };
 
-=======
-import Image from "next/image";
->>>>>>> 1078879 (Update TaiTai branding)
+
+
 function ModalPortal({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -266,7 +266,7 @@ export default function AuthModal() {
   }
 
   return (
-    <>
+     <>
       <button
         onClick={() => openModal("login")}
         className="flex items-center gap-2 rounded-2xl bg-[#F4A640] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[#F4A640]/30 transition hover:bg-[#101828] hover:scale-105 active:scale-95"
@@ -290,30 +290,28 @@ export default function AuthModal() {
                 <X size={20} />
               </button>
 
-<<<<<<< HEAD
-              <div className="mb-5 mt-1 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A640]/10">
-                  <span className="text-2xl">TT</span>
-=======
-              {/* Logo / Title */}
-              <div className="mb-8 text-center mt-2">
-              <div className="mx-auto mb-4 relative h-20 w-40">
-                  <Image
-                    src="/images/logo/tailogo.png"
-                    alt="TaiTai"
-                    fill
-                    className="object-contain"
-                  />
->>>>>>> 1078879 (Update TaiTai branding)
-                </div>
-                                <h2 className="text-2xl font-black text-[#101828]">
-                  {mode === "login" ? "Byenveni !" : "Kreye yon kont"}
-                </h2>
-                <p className="mt-1 text-sm text-[#667085]">
-                  {mode === "login" ? "Konekte pou pase komann" : "Antre nan TaiTai pou komande"}
-                </p>
-              </div>
 
+             <div className="mb-8 mt-2 text-center">
+  <div className="mx-auto mb-4 relative h-20 w-40">
+    <Image
+      src="/images/logo/tailogo.png"
+      alt="TaiTai"
+      fill
+      className="object-contain"
+    />
+  </div>
+
+  <h2 className="text-2xl font-black text-[#101828]">
+    {mode === "login" ? "Byenveni !" : "Kreye yon kont"}
+  </h2>
+
+  <p className="mt-1 text-sm text-[#667085]">
+    {mode === "login"
+      ? "Konekte pou pase kòmann"
+      : "Antre nan TaiTai pou kòmande"}
+  </p>
+</div>
+                
               <div className="mb-5 flex rounded-2xl bg-gray-100 p-1">
                 <button
                   type="button"
@@ -341,145 +339,101 @@ export default function AuthModal() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-3">
-                {mode === "signup" && (
-                  <div className="relative">
-                    <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Non konple"
-                      value={nom}
-                      onChange={(event) => setNom(event.target.value)}
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                    />
-                  </div>
-                )}
+             <form onSubmit={handleSubmit} className="space-y-3">
+  {mode === "signup" ? (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="relative">
+          <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <input type="text" required placeholder="Non konple" value={nom} onChange={(event) => setNom(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        </div>
 
-                <div className="relative">
-                  <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="Adres imel"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                  />
-                </div>
+        <div className="relative">
+          <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <input type="tel" required placeholder="Telefòn" value={telephone} onChange={(event) => setTelephone(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        </div>
+      </div>
 
-                {mode === "signup" && (
-                  <>
-                    <div className="relative">
-                      <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                      <input
-                        type="tel"
-                        required
-                        placeholder="Telefon (+509...)"
-                        value={telephone}
-                        onChange={(event) => setTelephone(event.target.value)}
-                        className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                      />
-                    </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="relative">
+          <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        </div>
 
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="relative">
-                        <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                        <select
-                          required
-                          value={ville}
-                          onChange={(event) => setVille(event.target.value)}
-                          className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-10 text-sm font-medium text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                        >
-                          {selectedCities.map((city) => (
-                            <option key={city} value={city}>
-                              {city}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronRight size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-[#98A2B3]" />
-                      </div>
-                      <div className="relative">
-                        <select
-                          required
-                          value={departement}
-                          onChange={(event) => {
-                            const nextDepartment = event.target.value;
-                            setDepartement(nextDepartment);
-                            setVille(CITIES_BY_DEPARTMENT[nextDepartment]?.[0] || "");
-                          }}
-                          className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-5 pr-10 text-sm font-medium text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                        >
-                          {DEPARTMENTS.map((item) => (
-                            <option key={item} value={item}>
-                              {item}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronRight size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-[#98A2B3]" />
-                      </div>
-                    </div>
+        <div className="relative">
+          <MapPin size={18} className="absolute left-4 top-5 text-[#98A2B3]" />
+          <textarea required placeholder="Adres konplè" value={adresse} onChange={(event) => setAdresse(event.target.value)} className="h-[58px] w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        </div>
+      </div>
 
-                    <div className="relative">
-                      <MapPin size={18} className="absolute left-4 top-5 text-[#98A2B3]" />
-                      <textarea
-                        required
-                        placeholder="Adres konple"
-                        value={adresse}
-                        onChange={(event) => setAdresse(event.target.value)}
-                        className="min-h-20 w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                      />
-                    </div>
-                  </>
-                )}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="relative">
+          <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <select required value={ville} onChange={(event) => setVille(event.target.value)} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-10 text-sm font-medium text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10">
+            {selectedCities.map((city) => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+          <ChevronRight size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-[#98A2B3]" />
+        </div>
 
-                <div className="relative">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                  <input
-                    type="password"
-                    required
-                    placeholder="Modpas"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                  />
-                </div>
+        <div className="relative">
+          <select required value={departement} onChange={(event) => {
+            const nextDepartment = event.target.value;
+            setDepartement(nextDepartment);
+            setVille(CITIES_BY_DEPARTMENT[nextDepartment]?.[0] || "");
+          }} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-5 pr-10 text-sm font-medium text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10">
+            {DEPARTMENTS.map((item) => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </select>
+          <ChevronRight size={16} className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-[#98A2B3]" />
+        </div>
+      </div>
 
-                {mode === "signup" && (
-                  <div className="relative">
-                    <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-                    <input
-                      type="password"
-                      required
-                      placeholder="Konfime modpas la"
-                      value={confirmPassword}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
-                      className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
-                    />
-                  </div>
-                )}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="relative">
+          <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <input type="password" required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        </div>
 
-                {error && (
-                  <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-                    {error}
-                  </div>
-                )}
+        <div className="relative">
+          <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+          <input type="password" required placeholder="Konfime modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        </div>
+      </div>
+    </>
+  ) : (
+    <>
+      <div className="relative">
+        <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+        <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+      </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F4A640] py-4 text-base font-black text-white shadow-lg shadow-[#F4A640]/20 transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-60"
-                >
-                  {loading ? (
-                    <Loader2 size={20} className="animate-spin" />
-                  ) : (
-                    <>
-                      {mode === "login" ? "Konekte" : "Kreye kont mwen"}
-                      <ChevronRight size={18} strokeWidth={3} />
-                    </>
-                  )}
-                </button>
-              </form>
+      <div className="relative">
+        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+        <input type="password" required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+      </div>
+    </>
+  )}
+
+  {error && (
+    <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+      {error}
+    </div>
+  )}
+
+  <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#F4A640] py-4 text-base font-black text-white shadow-lg shadow-[#F4A640]/20 transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-60">
+    {loading ? (
+      <Loader2 size={20} className="animate-spin" />
+    ) : (
+      <>
+        {mode === "login" ? "Konekte" : "Kreye kont mwen"}
+        <ChevronRight size={18} strokeWidth={3} />
+      </>
+    )}
+  </button>
+</form>
             </div>
           </div>
         </ModalPortal>
