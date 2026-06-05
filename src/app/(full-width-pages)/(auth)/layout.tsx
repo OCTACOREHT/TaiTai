@@ -30,7 +30,7 @@ export default function AuthLayout({
                     />
                     <div>
                       <p className="text-2xl font-semibold text-white">TaiTai</p>
-                      <p className="text-sm text-gray-300">Restaurant SaaS</p>
+                      <p className="text-sm text-gray-300">Restaurant</p>
                     </div>
                   </div>
                 </Link>

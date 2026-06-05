@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Erreur 404 | TaiTai SaaS",
+  title: "Erreur 404 | TaiTai",
   description: "Page non trouvee pour l'interface TaiTai",
 };
 
@@ -46,7 +46,7 @@ export default function Error404Page() {
       </div>
 
       <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} - TaiTai SaaS
+        &copy; {new Date().getFullYear()} - TaiTai
       </p>
     </div>
   );

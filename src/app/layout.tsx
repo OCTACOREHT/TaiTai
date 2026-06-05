@@ -12,8 +12,8 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "TaiTai | Restaurant SaaS",
-  description: "Interface front-end de gestion de restaurant pour TaiTai",
+  title: "TaiTai",
+  description: "Commandes et livraison TaiTai",
   icons: {
     icon: "/images/logo/tailogo.png",
     shortcut: "/images/logo/tailogo.png",

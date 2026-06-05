@@ -184,7 +184,7 @@ export default function PanierPage() {
     }
 
     if (proofRequired && !paymentProofFile) {
-      alert("Tanpri ajoute justificatif peman an pou MonCash/Zelle.");
+      alert("Tanpri ajoute jistifikatif peman an pou MonCash/Zelle.");
       return;
     }
 
@@ -582,7 +582,7 @@ export default function PanierPage() {
                   <UploadCloud className="text-[#F4A640]" size={30} />
                 )}
                 <span className="text-sm font-black text-[#101828]">
-                  {paymentProofFile ? paymentProofFile.name : "Ajoute justificatif peman an"}
+                  {paymentProofFile ? paymentProofFile.name : "Ajoute jistifikatif peman an"}
                 </span>
                 <span className="text-xs font-bold text-[#667085]">Image oswa PDF, 8 MB maksimom.</span>
                 <input

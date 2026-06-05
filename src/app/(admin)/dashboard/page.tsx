@@ -59,7 +59,7 @@ export default function DashboardPage() {
       <PageBreadCrumb pageTitle="Dashboard restaurant" />
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-        <p className="text-sm text-brand-500">TaiTai SaaS</p>
+        <p className="text-sm text-brand-500">TaiTai</p>
         <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-gray-900 dark:text-white/90">
