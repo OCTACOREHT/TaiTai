@@ -11,6 +11,7 @@ import {
   ChevronDown,
   CreditCard,
   Info,
+  Mail,
   MapPin,
   Minus,
   Plus,
@@ -92,6 +93,7 @@ export default function PanierPage() {
   const [formData, setFormData] = useState({
     client_nom: "",
     client_tel: "",
+    client_email: "",
     departement: "Ouest",
     zone_livraison: "",
     adresse_livraison: "",
@@ -105,6 +107,7 @@ export default function PanierPage() {
         ...prev,
         client_nom: prev.client_nom || user.nom,
         client_tel: prev.client_tel || user.telephone,
+        client_email: prev.client_email || user.email || "",
       }));
     }
   }, [user]);
@@ -167,6 +170,23 @@ export default function PanierPage() {
     }
 
     return result.url as string;
+  };
+
+  const sendConfirmationEmail = async (orderId: string) => {
+    const response = await fetch("/api/orders/confirmation-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId,
+        email: formData.client_email.trim(),
+        clientTel: formData.client_tel,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || "Nou pa ka voye email konfimasyon an.");
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -272,6 +292,13 @@ export default function PanierPage() {
             .eq("id", item.id);
         }),
       );
+
+      try {
+        await sendConfirmationEmail(commande.id);
+      } catch (emailError) {
+        console.error("[order confirmation email]", emailError);
+        alert(`Komann nan pase, men email konfimasyon an pa rive voye: ${(emailError as Error).message}`);
+      }
 
       const orderHistory = JSON.parse(localStorage.getItem("taitai-orders-history") || "[]");
       orderHistory.unshift({
@@ -524,6 +551,21 @@ export default function PanierPage() {
                   className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
                 />
               </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-[#101828]">
+                <Mail size={16} className="text-[#F4A640]" />
+                Email pou konfimasyon
+              </label>
+              <input
+                required
+                type="email"
+                placeholder="Egzanp: jean@email.com"
+                value={formData.client_email}
+                onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 font-medium transition-all focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
+              />
             </div>
 
             <div className="space-y-3">

@@ -137,9 +137,9 @@ function ModalPortal({ children }: { children: React.ReactNode }) {
 }
 
 export default function AuthModal() {
-  const { user, signIn, signUp, signOut } = useAuth();
+  const { user, signIn, signUp, resetPassword, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup" | "reset">("login");
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [adresse, setAdresse] = useState("");
@@ -152,6 +152,7 @@ export default function AuthModal() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showUserMenu, setShowUserMenu] = useState(false);
   const selectedCities = CITIES_BY_DEPARTMENT[departement] || [];
 
@@ -183,10 +184,11 @@ export default function AuthModal() {
     setShowPassword(false);
     setShowConfirmPassword(false);
     setError("");
+    setSuccess("");
     setLoading(false);
   };
 
-  const openModal = (nextMode: "login" | "signup") => {
+  const openModal = (nextMode: "login" | "signup" | "reset") => {
     reset();
     setMode(nextMode);
     setIsOpen(true);
@@ -202,6 +204,7 @@ export default function AuthModal() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+    setSuccess("");
 
     if (mode === "signup" && !nom.trim()) {
       setError("Tanpri antre non konple ou.");
@@ -211,7 +214,7 @@ export default function AuthModal() {
       setError("Tanpri ranpli adres, vil ak depatman ou.");
       return;
     }
-    if (mode === "signup" && password !== confirmPassword) {
+    if ((mode === "signup" || mode === "reset") && password !== confirmPassword) {
       setError("Modpas yo pa menm.");
       return;
     }
@@ -224,12 +227,22 @@ export default function AuthModal() {
     try {
       if (mode === "login") {
         await signIn(email, password);
-      } else {
+        closeModal();
+      } else if (mode === "signup") {
         await signUp(nom, telephone, email, password, adresse, ville, departement);
+        closeModal();
+      } else {
+        await resetPassword(email, password);
+        setPassword("");
+        setConfirmPassword("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        setMode("login");
+        setSuccess("Modpas la chanje. Ou ka konekte ak nouvo modpas la.");
       }
-      closeModal();
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Gen yon ere ki pase.");
+    } finally {
       setLoading(false);
     }
   };
@@ -342,7 +355,7 @@ export default function AuthModal() {
   </div>
 
   <h2 className="text-2xl font-black text-[#101828]">
-    {mode === "login" ? "Byenveni !" : "Kreye yon kont"}
+    {mode === "login" ? "Byenveni !" : mode === "signup" ? "Kreye yon kont" : "Chanje modpas"}
   </h2>
 
   <p className="mt-1 text-sm text-[#667085]">
@@ -459,6 +472,50 @@ export default function AuthModal() {
         </div>
       </div>
     </>
+  ) : mode === "reset" ? (
+    <>
+      <div className="relative">
+        <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+        <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+      </div>
+
+      <div className="relative">
+        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+        <input type={showPassword ? "text" : "password"} required placeholder="Nouvo modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        <button
+          type="button"
+          onClick={() => setShowPassword((value) => !value)}
+          aria-label={showPassword ? "Kache modpas la" : "Montre modpas la"}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#F4A640]"
+        >
+          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+
+      <div className="relative">
+        <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
+        <input type={showConfirmPassword ? "text" : "password"} required placeholder="Konfime nouvo modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10" />
+        <button
+          type="button"
+          onClick={() => setShowConfirmPassword((value) => !value)}
+          aria-label={showConfirmPassword ? "Kache konfimasyon modpas la" : "Montre konfimasyon modpas la"}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#F4A640]"
+        >
+          {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          reset();
+          setMode("login");
+        }}
+        className="text-sm font-bold text-[#667085] transition hover:text-[#F4A640]"
+      >
+        Retounen konekte
+      </button>
+    </>
   ) : (
     <>
       <div className="relative">
@@ -478,7 +535,26 @@ export default function AuthModal() {
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
       </div>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => {
+            reset();
+            setMode("reset");
+          }}
+          className="text-sm font-bold text-[#F4A640] transition hover:text-[#101828]"
+        >
+          Ou bliye modpas ou ?
+        </button>
+      </div>
     </>
+  )}
+
+  {success && (
+    <div className="rounded-2xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+      {success}
+    </div>
   )}
 
   {error && (
@@ -492,7 +568,7 @@ export default function AuthModal() {
       <Loader2 size={20} className="animate-spin" />
     ) : (
       <>
-        {mode === "login" ? "Konekte" : "Kreye kont mwen"}
+        {mode === "reset" ? "Chanje modpas" : mode === "login" ? "Konekte" : "Kreye kont mwen"}
         <ChevronRight size={18} strokeWidth={3} />
       </>
     )}

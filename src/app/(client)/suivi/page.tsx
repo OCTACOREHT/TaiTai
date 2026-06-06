@@ -120,7 +120,7 @@ export default function SuiviPage() {
     { value: "En préparation", label: "Ap prepare", icon: ChefHat, desc: "Ekip kwizin nan ap prepare kòmann ou." },
     { value: "Prêt", label: "Pare", icon: Package, desc: "Kòmann nan pare. Nou ap anbale li oswa li pare pou sèvis." },
     { value: "Livré", label: "Livre", icon: CheckCircle2, desc: "Kòmann nan rive. Bon apeti !" },
-    { value: "Annulee", label: "Annulee", icon: CheckCircle2, desc: "Kòmann nan annule apre verifikasyon." },
+    { value: "Annulee", label: "Anile", icon: CheckCircle2, desc: "Kòmann nan anile apre verifikasyon." },
   ];
 
   const currentStepIndex = steps.findIndex(s => s.value === commande?.statut);
@@ -213,7 +213,6 @@ export default function SuiviPage() {
 
             {/* Stepper */}
             <div className="relative pt-4">
-              <div className="absolute left-7 top-0 h-full w-[2px] bg-gray-100 sm:left-10"></div>
               <div className="space-y-10 sm:space-y-14">
                 {steps.map((step, idx) => {
                   const isDone = idx < currentStepIndex;
@@ -221,7 +220,7 @@ export default function SuiviPage() {
                   const Icon = step.icon;
                   
                   return (
-                    <div key={step.label} className={`relative flex items-start gap-4 transition-all duration-500 sm:gap-8 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
+                    <div key={step.label} className={`relative flex items-center gap-4 transition-all duration-500 sm:gap-8 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
                       <div className={`z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.5rem] border-4 shadow-xl transition-all duration-500 sm:h-20 sm:w-20 sm:rounded-[2.5rem] ${
                         isDone || isCurrent 
                         ? "border-[#F4A640]/20 bg-[#F4A640] text-white rotate-[360deg]" 

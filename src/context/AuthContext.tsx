@@ -26,6 +26,7 @@ interface AuthContextProps {
     ville: string,
     departement: string,
   ) => Promise<void>;
+  resetPassword: (email: string, mot_de_passe: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -174,6 +175,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(SESSION_LAST_ACTIVITY_KEY, String(Date.now()));
   };
 
+  const resetPassword = async (email: string, mot_de_passe: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data: existing, error: findError } = await supabase
+      .from("clients")
+      .select("id")
+      .ilike("email", normalizedEmail)
+      .single();
+
+    if (findError || !existing) {
+      throw new Error("Nou pa jwenn kont ki gen imel sa a.");
+    }
+
+    const hash = await hashPassword(mot_de_passe);
+    const { error } = await supabase
+      .from("clients")
+      .update({ mot_de_passe_hash: hash })
+      .eq("id", existing.id);
+
+    if (error) {
+      throw new Error("Nou pa ka chanje modpas la kounye a.");
+    }
+  };
+
   const signOut = async () => {
     setUser(null);
     localStorage.removeItem("taitai_user_id");
@@ -181,7 +206,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, resetPassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );

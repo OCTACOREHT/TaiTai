@@ -31,7 +31,7 @@ const statusLabels: Record<string, string> = {
   "En préparation": "Ap prepare",
   "Prêt": "Pare",
   "Livré": "Livre",
-  Annulee: "Annulee",
+  Annulee: "Anile",
 };
 
 const canalLabels: Record<string, string> = {
