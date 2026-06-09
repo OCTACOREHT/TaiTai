@@ -148,7 +148,7 @@ function MenuContent() {
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#F4A640] border-t-transparent"></div>
         </div>
       ) : filteredItems.length > 0 ? (
-        <div className="grid gap-6 pb-10 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
+        <div className="grid auto-rows-fr gap-6 pb-10 sm:grid-cols-2 md:gap-8 lg:grid-cols-3">
           {filteredItems.map((item) => {
             const outOfStock = (item.stock_quantity ?? 0) <= 0;
             const promotion = itemPromotions[item.id];
@@ -156,7 +156,7 @@ function MenuContent() {
             const finalPrice = item.prix - discount;
 
             return (
-            <div key={item.id} className={`group overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 ${outOfStock ? "opacity-60 grayscale" : "hover:shadow-xl hover:border-transparent"}`}>
+            <div key={item.id} className={`group flex h-full min-w-0 flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 ${outOfStock ? "opacity-60 grayscale" : "hover:shadow-xl hover:border-transparent"}`}>
               <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <img 
                   src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} 
@@ -189,8 +189,8 @@ function MenuContent() {
                 </div>
               </div>
               
-              <div className="space-y-4 p-5 sm:p-6 md:space-y-6 md:p-8">
-                <div className="space-y-2">
+              <div className="flex flex-1 flex-col space-y-4 p-5 sm:p-6 md:space-y-6 md:p-8">
+                <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="break-words text-xl font-bold leading-tight text-[#101828] md:text-2xl">{item.nom}</h3>
                     <span className="shrink-0 text-[10px] font-black text-[#98A2B3] uppercase tracking-widest bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">{categoryLabels[item.categorie] || item.categorie}</span>
@@ -203,7 +203,7 @@ function MenuContent() {
                   <p className="text-[#667085] line-clamp-2 text-xs md:text-sm leading-relaxed font-medium">{item.description}</p>
                 </div>
                 
-                <div className="flex items-center justify-between pt-2">
+                <div className="mt-auto flex items-center justify-between pt-2">
                   <div className="flex items-center gap-2 text-xs font-bold text-[#667085]">
                     <div className="p-1.5 rounded-lg bg-gray-50 text-[#98A2B3]">
                       <Clock size={16} />
