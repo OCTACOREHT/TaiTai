@@ -351,7 +351,7 @@ export default function PanierPage() {
               key={item.id}
               className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:gap-6 sm:p-5"
             >
-              <div className="h-28 w-full flex-shrink-0 overflow-hidden rounded-2xl border border-gray-100 sm:h-24 sm:w-24">
+             <div className="h-56 w-full overflow-hidden rounded-2xl">
                 <img
                   src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"}
                   alt={item.nom}
