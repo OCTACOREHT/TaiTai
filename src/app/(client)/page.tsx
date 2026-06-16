@@ -135,6 +135,10 @@ export default function ClientHomePage() {
     event.preventDefault();
     setReviewMessage("");
 
+    if (!user) {
+      return;
+    }
+
     const name = (user?.nom || reviewName).trim();
     const comment = reviewComment.trim();
 
@@ -315,59 +319,61 @@ export default function ClientHomePage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmitReview} className="space-y-4 rounded-3xl bg-gray-50 p-4 sm:p-5">
-            <input
-              type="text"
-              required
-              value={reviewName}
-              onChange={(event) => setReviewName(event.target.value)}
-              disabled={Boolean(user)}
-              placeholder="Non ou"
-              className="h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-bold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 disabled:text-[#667085]"
-            />
+          {user ? (
+            <form onSubmit={handleSubmitReview} className="space-y-4 rounded-3xl bg-gray-50 p-4 sm:p-5">
+              <input
+                type="text"
+                required
+                value={reviewName}
+                onChange={(event) => setReviewName(event.target.value)}
+                disabled
+                placeholder="Non ou"
+                className="h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-bold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 disabled:text-[#667085]"
+              />
 
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5].map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setReviewRating(value)}
-                  className="rounded-xl p-1 transition hover:scale-110"
-                  aria-label={`${value} zetwal`}
-                >
-                  <Star
-                    className={`h-8 w-8 ${
-                      value <= reviewRating ? "fill-[#F4A640] text-[#F4A640]" : "text-gray-300"
-                    }`}
-                  />
-                </button>
-              ))}
-              <span className="ml-2 text-sm font-black text-[#101828]">{reviewRating}/5</span>
-            </div>
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setReviewRating(value)}
+                    className="rounded-xl p-1 transition hover:scale-110"
+                    aria-label={`${value} zetwal`}
+                  >
+                    <Star
+                      className={`h-8 w-8 ${
+                        value <= reviewRating ? "fill-[#F4A640] text-[#F4A640]" : "text-gray-300"
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="ml-2 text-sm font-black text-[#101828]">{reviewRating}/5</span>
+              </div>
 
-            <textarea
-              required
-              rows={4}
-              value={reviewComment}
-              onChange={(event) => setReviewComment(event.target.value)}
-              placeholder="Ekri avis ou..."
-              className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-semibold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
-            />
+              <textarea
+                required
+                rows={4}
+                value={reviewComment}
+                onChange={(event) => setReviewComment(event.target.value)}
+                placeholder="Ekri avis ou..."
+                className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-semibold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+              />
 
-            {reviewMessage ? (
-              <p className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#667085]">
-                {reviewMessage}
-              </p>
-            ) : null}
+              {reviewMessage ? (
+                <p className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#667085]">
+                  {reviewMessage}
+                </p>
+              ) : null}
 
-            <button
-              type="submit"
-              disabled={reviewSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#101828] px-6 py-4 text-sm font-black text-white transition hover:bg-[#F4A640] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            >
-              {reviewSubmitting ? "Ap voye..." : "Voye avis mwen"}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={reviewSubmitting}
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#101828] px-6 py-4 text-sm font-black text-white transition hover:bg-[#F4A640] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+              >
+                {reviewSubmitting ? "Ap voye..." : "Voye avis mwen"}
+              </button>
+            </form>
+          ) : null}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

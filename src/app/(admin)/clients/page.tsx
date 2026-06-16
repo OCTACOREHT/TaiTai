@@ -13,6 +13,9 @@ type ClientAccount = {
   nom: string;
   telephone: string | null;
   email: string | null;
+  adresse: string | null;
+  ville: string | null;
+  departement: string | null;
   created_at: string | null;
   last_login_at: string | null;
   order_count: number;
@@ -37,7 +40,7 @@ export default function ClientsPage() {
     const [{ data, error }, ordersResult] = await Promise.all([
       supabase
       .from("clients")
-      .select("id, nom, telephone, email, created_at, last_login_at")
+      .select("id, nom, telephone, email, adresse, ville, departement, created_at, last_login_at")
       .not("last_login_at", "is", null)
       .order("last_login_at", { ascending: false }),
       supabase
@@ -109,6 +112,9 @@ export default function ClientsPage() {
         "Nom",
         "Telephone",
         "Email",
+        "Adresse",
+        "Departement",
+        "Commune",
         "Commandes",
         "Total depense HTG",
         "Derniere connexion",
@@ -120,6 +126,9 @@ export default function ClientsPage() {
         client.nom,
         client.telephone || "",
         client.email || "",
+        client.adresse || "",
+        client.departement || "",
+        client.ville || "",
         client.order_count,
         client.total_spent,
         formatDateTime(client.last_login_at),
@@ -189,12 +198,13 @@ export default function ClientsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-[980px] w-full text-left">
+            <table className="min-w-[1160px] w-full text-left">
               <thead>
                 <tr className="border-b border-gray-100 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:border-gray-800">
                   <th className="px-5 py-4">Client</th>
                   <th className="px-5 py-4">Classement</th>
                   <th className="px-5 py-4">Contact</th>
+                  <th className="px-5 py-4">Adresse</th>
                   <th className="px-5 py-4">Commandes</th>
                   <th className="px-5 py-4">Total depense</th>
                   <th className="px-5 py-4">Derniere connexion</th>
@@ -239,6 +249,18 @@ export default function ClientsPage() {
                           <Mail className="h-4 w-4 text-gray-400" />
                           {client.email || "Non renseigne"}
                         </p>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="max-w-[220px] space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                        <p className="font-semibold text-gray-900 dark:text-white/90">
+                          {[client.departement, client.ville].filter(Boolean).join(" - ") || "Non renseigne"}
+                        </p>
+                        {client.adresse ? (
+                          <p className="line-clamp-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
+                            {client.adresse}
+                          </p>
+                        ) : null}
                       </div>
                     </td>
                     <td className="px-5 py-4 text-sm font-semibold text-gray-900 dark:text-white/90">
