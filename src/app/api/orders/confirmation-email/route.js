@@ -5,6 +5,8 @@ const db = require("@/server/db");
 
 export const runtime = "nodejs";
 
+const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -126,7 +128,7 @@ export async function POST(request) {
     const followUrl = `${request.nextUrl.origin}/suivi?numero=${encodeURIComponent(order.numero_commande)}`;
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { error } = await resend.emails.send({
-      from: "TaiTai Restaurant <onboarding@resend.dev>",
+      from: fromEmail,
       to: [email],
       subject: `Confirmation commande ${order.numero_commande}`,
       html: buildOrderEmailHtml({ order, items, followUrl }),

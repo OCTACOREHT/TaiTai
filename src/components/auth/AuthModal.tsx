@@ -17,7 +17,7 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { getPasswordStrengthError, useAuth } from "@/context/AuthContext";
 
 
 const DEPARTMENTS = [
@@ -218,8 +218,9 @@ export default function AuthModal() {
       setError("Modpas yo pa menm.");
       return;
     }
-    if (password.length < 6) {
-      setError("Modpas la dwe gen omwen 6 karakte.");
+    const passwordError = getPasswordStrengthError(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 

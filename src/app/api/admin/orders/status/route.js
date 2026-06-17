@@ -5,6 +5,8 @@ const db = require("@/server/db");
 
 export const runtime = "nodejs";
 
+const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
+
 const allowedStatuses = new Set(["En attente", "En préparation", "Prêt", "Livré", "Annulee"]);
 
 const statusMessages = {
@@ -135,7 +137,7 @@ export async function PATCH(request) {
     if (email && process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
       const { error } = await resend.emails.send({
-        from: "TaiTai Restaurant <onboarding@resend.dev>",
+        from: fromEmail,
         to: [email],
         subject: `Votre commande ${order.numero_commande} est ${status}`,
         html: buildEmailHtml({

@@ -4,6 +4,17 @@ import { Resend } from "resend";
 const db = require("@/server/db");
 export const runtime = "nodejs";
 
+const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export async function POST(request) {
   try {
     if (!process.env.RESEND_API_KEY) {
@@ -23,11 +34,12 @@ export async function POST(request) {
       );
     }
 
-    const safeName = toName || to;
-    const safeMessage = replyMessage.replace(/\n/g, "<br/>");
+    const safeName = escapeHtml(toName || to);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(replyMessage).replace(/\n/g, "<br/>");
 
     const { error } = await resend.emails.send({
-      from: "TaiTai Restaurant <onboarding@resend.dev>",
+      from: fromEmail,
       to: [to],
       subject,
       html: `
@@ -46,7 +58,7 @@ export async function POST(request) {
                   <tr>
                     <td style="background:#ffffff;border-radius:24px;padding:36px 32px;box-shadow:0 30px 60px rgba(0,0,0,0.18);">
                       <div style="font-size:12px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#F4A640;margin-bottom:12px;">Réponse de TaiTai Restaurant</div>
-                      <h2 style="margin:0 0 20px 0;font-size:26px;font-weight:900;line-height:1.1;color:#0f172a;">${subject}</h2>
+                      <h2 style="margin:0 0 20px 0;font-size:26px;font-weight:900;line-height:1.1;color:#0f172a;">${safeSubject}</h2>
                       <p style="margin:0 0 8px 0;font-size:15px;color:#475467;">Bonjour <strong>${safeName}</strong>,</p>
                       <div style="margin:20px 0;padding:20px 24px;background:#fef6ec;border-radius:16px;font-size:15px;line-height:1.8;color:#344054;">
                         ${safeMessage}

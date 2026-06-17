@@ -34,19 +34,30 @@ const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000;
 const SESSION_LAST_ACTIVITY_KEY = "taitai_last_activity_at";
 
-// Fonction utilitaire pour hasher le mot de passe côté client (basique)
+export function getPasswordStrengthError(password: string) {
+  if (password.length < 8) return "Modpas la dwe gen omwen 8 karakte.";
+  if (!/[a-z]/.test(password)) return "Modpas la dwe gen omwen yon ti let.";
+  if (!/[A-Z]/.test(password)) return "Modpas la dwe gen omwen yon gwo let.";
+  if (!/[0-9]/.test(password)) return "Modpas la dwe gen omwen yon chif.";
+  if (!/[^A-Za-z0-9]/.test(password)) return "Modpas la dwe gen omwen yon senbol espesyal.";
+  return "";
+}
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
 async function hashPassword(password: string) {
   const msgBuffer = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<ClientUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Charger la session au démarrage
   useEffect(() => {
     const fetchSession = async () => {
       const storedId = localStorage.getItem("taitai_user_id");
@@ -65,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .select("id, nom, telephone, email, adresse, ville, departement")
           .eq("id", storedId)
           .single();
-        
+
         if (data && !error) {
           setUser(data);
         } else {
@@ -108,16 +119,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const signIn = async (email: string, mot_de_passe: string) => {
+    const normalizedEmail = normalizeEmail(email);
     const hash = await hashPassword(mot_de_passe);
     const { data, error } = await supabase
       .from("clients")
       .select("id, nom, telephone, email, adresse, ville, departement")
-      .eq("email", email)
+      .eq("email", normalizedEmail)
       .eq("mot_de_passe_hash", hash)
       .single();
 
     if (error || !data) {
-      throw new Error("Imel oswa modpas la pa kòrèk.");
+      throw new Error("Imel oswa modpas la pa korek.");
     }
 
     await supabase
@@ -139,32 +151,53 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     ville: string,
     departement: string,
   ) => {
-    // Vérifier si le téléphone existe déjà
-    const { data: existing } = await supabase
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedTelephone = telephone.trim();
+    const passwordError = getPasswordStrengthError(mot_de_passe);
+
+    if (passwordError) {
+      throw new Error(passwordError);
+    }
+
+    const { data: existingEmail } = await supabase
       .from("clients")
       .select("id")
-      .eq("telephone", telephone)
-      .single();
+      .ilike("email", normalizedEmail)
+      .maybeSingle();
 
-    if (existing) {
-      throw new Error("Nimewo telefòn sa a deja itilize.");
+    if (existingEmail) {
+      throw new Error("Gen yon kont ki deja itilize imel sa a.");
+    }
+
+    const { data: existingPhone } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("telephone", normalizedTelephone)
+      .maybeSingle();
+
+    if (existingPhone) {
+      throw new Error("Nimewo telefon sa a deja itilize.");
     }
 
     const hash = await hashPassword(mot_de_passe);
     const { data, error } = await supabase
       .from("clients")
       .insert({
-        nom,
-        telephone,
-        email,
-        adresse,
-        ville,
-        departement,
+        nom: nom.trim(),
+        telephone: normalizedTelephone,
+        email: normalizedEmail,
+        adresse: adresse.trim(),
+        ville: ville.trim(),
+        departement: departement.trim(),
         mot_de_passe_hash: hash,
         last_login_at: new Date().toISOString(),
       })
       .select("id, nom, telephone, email, adresse, ville, departement")
       .single();
+
+    if (error?.code === "23505") {
+      throw new Error("Gen yon kont ki deja itilize imel sa a.");
+    }
 
     if (error || !data) {
       throw new Error("Nou pa ka kreye kont lan.");
@@ -176,7 +209,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const resetPassword = async (email: string, mot_de_passe: string) => {
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = normalizeEmail(email);
+    const passwordError = getPasswordStrengthError(mot_de_passe);
+
+    if (passwordError) {
+      throw new Error(passwordError);
+    }
 
     const { data: existing, error: findError } = await supabase
       .from("clients")
