@@ -66,39 +66,35 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div
-        className={`flex py-6 ${
-          !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-        }`}
-      >
-        <Link href="/dashboard">
+      <div className="flex justify-center py-3">
+        <Link href="/dashboard" className="flex items-center justify-center">
           {isExpanded || isHovered || isMobileOpen ? (
-            <div className="flex items-center">
+            <div className="relative h-9 w-32">
               <Image
-                src="/images/logo/logo-icon.svg"
-                alt="Logo"
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-lg object-contain"
+                src="/images/logo/tailogo.png"
+                alt="TaïTaï"
+                fill
+                className="object-contain"
               />
             </div>
           ) : (
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-lg object-contain"
-            />
+            <div className="relative h-8 w-8">
+              <Image
+                src="/images/logo/tailogo.png"
+                alt="TaïTaï"
+                fill
+                className="object-contain"
+              />
+            </div>
           )}
         </Link>
       </div>
 
       <div className="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
-        <nav className="mb-6">
+        <nav className="mb-2">
           <div>
             <h2
-              className={`mb-4 flex text-xs uppercase leading-[20px] text-gray-400 ${
+              className={`mb-2 flex text-xs uppercase leading-[20px] text-gray-400 ${
                 !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
               }`}
             >

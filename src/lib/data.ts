@@ -174,17 +174,29 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
 }
 
 export function aggregateSalesTrend(orders: RestaurantOrder[]): SalesPoint[] {
-  const days = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-  const trend: Record<string, number> = {};
-  days.forEach(d => trend[d] = 0);
+  const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+
+  // Construire les 7 derniers jours (aujourd'hui inclus)
+  const slots: { start: Date; end: Date; label: string; total: number }[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const start = new Date();
+    start.setDate(start.getDate() - i);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+    slots.push({ start, end, label: dayNames[start.getDay()], total: 0 });
+  }
+
+  const windowStart = slots[0].start;
 
   orders.forEach(order => {
     const d = new Date(order.date);
-    const dayName = days[(d.getDay() + 6) % 7]; // Map 0-6 (Sun-Sat) to 0-6 (Mon-Sun)
-    trend[dayName] += order.total;
+    if (d < windowStart) return;
+    const slot = slots.find(s => d >= s.start && d <= s.end);
+    if (slot) slot.total += order.total;
   });
 
-  return days.map(label => ({ label, total: trend[label] }));
+  return slots.map(s => ({ label: s.label, total: s.total }));
 }
 
 export function aggregateDishSales(orders: RestaurantOrder[]): DishSale[] {
@@ -222,10 +234,10 @@ export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
 
 // Keep mock data for metrics and others to avoid breaks
 export const dashboardMetrics: DashboardMetric[] = [
-  { id: "revenue", label: "Revenu total", value: 0, note: "RÃ©el Supabase", kind: "currency" },
+  { id: "revenue", label: "Revenu (7 jours)", value: 0, note: "Reel Supabase", kind: "currency" },
   { id: "orders", label: "Commandes du jour", value: 0, note: "En direct", kind: "number" },
-  { id: "customers", label: "Nouveaux clients", value: 0, note: "+0% vs hier", kind: "number" },
-  { id: "averageTicket", label: "Panier moyen", value: 0, note: "CalculÃ©", kind: "currency" },
+  { id: "customers", label: "Ventes du jour", value: 0, note: "Aujourd'hui", kind: "currency" },
+  { id: "averageTicket", label: "Panier moyen", value: 0, note: "7 derniers jours", kind: "currency" },
 ];
 
 export const salesTrend: SalesPoint[] = [
