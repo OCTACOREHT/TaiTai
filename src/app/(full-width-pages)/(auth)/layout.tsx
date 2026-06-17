@@ -25,17 +25,17 @@ export default function AuthLayout({
                       width={52}
                       height={52}
                       src="/images/logo/tailogo.png"
-                      alt="TaiTai"
+                      alt="TaïTaï"
                       className="rounded-lg object-contain"
                     />
                     <div>
-                      <p className="text-2xl font-semibold text-white">TaiTai</p>
+                      <p className="text-2xl font-semibold text-white">TaïTaï</p>
                       <p className="text-sm text-gray-300">Restaurant</p>
                     </div>
                   </div>
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Espace de demonstration du back-office TaiTai
+                  Espace de demonstration du back-office TaïTaï
                 </p>
               </div>
             </div>

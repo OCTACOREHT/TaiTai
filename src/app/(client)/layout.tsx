@@ -40,7 +40,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="relative h-20 w-40">
   <Image
     src="/images/logo/tailogo.png"
-    alt="TaiTai"
+    alt="TaïTaï"
     fill
     className="object-contain"
   />
@@ -71,7 +71,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="group flex items-center">
             <div className="relative h-8 w-32 transition-transform group-hover:scale-105">
-              <Image src="/images/logo/tailogo.png" alt="TaiTai" fill className="object-contain object-left" />
+              <Image src="/images/logo/tailogo.png" alt="TaïTaï" fill className="object-contain object-left" />
             </div>
           </Link>
 
@@ -141,7 +141,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <div className="relative h-8 w-32">
           <Image
             src="/images/logo/tailogo.png"
-            alt="TaiTai"
+            alt="TaïTaï"
             fill
             className="object-contain object-left"
           />
@@ -167,7 +167,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <ul className="space-y-4 text-sm text-[#475467]">
           <li>Port-au-Prince, Ayiti</li>
           <li>+509 31 19 1999</li>
-          <li>contact@taitai.ht</li>
+          <li><a href="mailto:info@xn--tata-6pac.com" className="hover:text-[#F4A640]">info@taïtaï.com</a></li>
         </ul>
       </div>
 
@@ -181,7 +181,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
     </div>
 
     <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 md:flex-row">
-      <p className="text-xs text-[#98A2B3]">© 2026 TaiTai Restaurant. Fyète Ayiti.</p>
+      <p className="text-xs text-[#98A2B3]">© 2026 TaïTaï Restaurant. Fyète Ayiti.</p>
       <div className="flex gap-6">
         <span className="cursor-pointer text-xs text-[#98A2B3] hover:text-[#475467]">
           Enfòmasyon legal

@@ -174,7 +174,7 @@ export default function PromotionsPage() {
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
         <p className="text-sm text-brand-500">Codes et reductions</p>
         <h1 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white/90">
-          Gestion des promotions TaiTai
+          Gestion des promotions TaïTaï
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
           Creez une reduction automatique sur un plat ou un code promo a partager pour toute une commande.

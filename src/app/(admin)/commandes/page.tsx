@@ -12,7 +12,7 @@ export default function OrdersPage() {
         <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-gray-900 dark:text-white/90">
-              Orchestration des tickets TaiTai
+              Orchestration des tickets TaïTaï
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
               Gardez la cuisine, la salle et la livraison synchronisees depuis une seule table.

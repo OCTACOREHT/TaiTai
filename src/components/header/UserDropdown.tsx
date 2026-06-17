@@ -6,7 +6,7 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
 const demoUser = {
-  name: "TaiTai Admin",
+  name: "TaïTaï Admin",
   email: "demo@taitai.app",
   avatar: "/images/logo/tailogo.png",
 };
@@ -110,7 +110,7 @@ export default function UserDropdown() {
         </ul>
 
         <p className="mt-3 rounded-lg bg-gray-50 px-3 py-3 text-sm text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-          Interface front-end seule avec donnees fictives TaiTai.
+          Interface front-end seule avec donnees fictives TaïTaï.
         </p>
       </Dropdown>
     </div>

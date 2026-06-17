@@ -40,7 +40,7 @@ export default function NotFound() {
       </div>
 
       <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} - TaiTai
+        &copy; {new Date().getFullYear()} - TaïTaï
       </p>
     </div>
   );

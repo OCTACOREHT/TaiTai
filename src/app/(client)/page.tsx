@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
@@ -40,7 +40,7 @@ type ClientReview = {
 
 const featuredDishes = [
   {
-    name: "Poulet grille TaiTai",
+    name: "Poulet grille TaïTaï",
     category: "Griyay",
     price: 1450,
     image: "https://images.unsplash.com/photo-1598103442097-8b74394b95c7?w=600",
@@ -84,6 +84,22 @@ export default function ClientHomePage() {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewMessage, setReviewMessage] = useState("");
+  const reviewsScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = reviewsScrollRef.current;
+    if (!el || reviews.length === 0) return;
+    let pos = 0;
+    let animId: number;
+    const step = () => {
+      pos += 0.5;
+      const half = el.scrollWidth / 2;
+      if (half > 0 && pos >= half) pos -= half;
+      el.scrollLeft = pos;
+      animId = requestAnimationFrame(step);
+    };
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [reviews]);
 
   useEffect(() => {
     async function fetchFeaturedDishes() {
@@ -221,7 +237,7 @@ export default function ClientHomePage() {
           </Link>
         </div>
 
-        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-0 md:px-0">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 xl:justify-center xl:overflow-visible">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
@@ -253,43 +269,53 @@ export default function ClientHomePage() {
           </div>
         </div>
 
-        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-auto md:grid md:max-w-6xl md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
           {(homeDishes.length > 0 ? homeDishes : []).map((dish) => (
             <div
               key={dish.id}
-              className="group min-w-[82vw] snap-center overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#101828]/10 sm:min-w-[360px] md:min-w-0"
+              className="group flex min-w-[82vw] snap-center flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 hover:border-transparent hover:shadow-xl sm:min-w-[360px] md:min-w-0"
             >
-              <div className="relative h-56 overflow-hidden">
+              <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <img
                   src={dish.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"}
                   alt={dish.nom}
-                  className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
-                <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#C87518] backdrop-blur">
-                  {dish.categorie}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleAddDish(dish)}
-                  title="Ajoute nan panyen"
-                  className="absolute bottom-4 right-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A640] text-white shadow-lg shadow-[#F4A640]/30 transition hover:rotate-90 hover:bg-[#101828] active:scale-95"
-                >
-                  <Plus size={24} strokeWidth={3} />
-                </button>
-                <div className="absolute bottom-4 left-4 right-20">
-                  <h3 className="line-clamp-2 text-xl font-black leading-tight text-white drop-shadow">
-                    {dish.nom}
-                  </h3>
+                {dish.best_seller && (
+                  <div className="absolute left-4 top-4 flex items-center gap-2 rounded-xl bg-[#F4A640] px-3 py-1.5 text-[10px] font-bold text-white">
+                    <Flame size={13} fill="currentColor" />
+                    PI VANN
+                  </div>
+                )}
+                <div className="absolute bottom-4 right-4 rounded-xl bg-white/90 backdrop-blur-md px-4 py-2 text-base font-black text-[#101828] border border-white/20">
+                  {dish.prix} HTG
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-3 p-5">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3]">Pri</p>
-                  <p className="mt-1 text-xl font-black text-[#F4A640]">{dish.prix} HTG</p>
+              <div className="flex flex-1 flex-col space-y-4 p-5 md:p-6">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="break-words text-lg font-bold leading-tight text-[#101828]">{dish.nom}</h3>
+                    <span className="shrink-0 rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#98A2B3]">
+                      {dish.categorie}
+                    </span>
+                  </div>
+                  <p className="line-clamp-2 text-xs leading-relaxed font-medium text-[#667085]">{dish.description}</p>
                 </div>
-                <div className="rounded-2xl bg-[#F4A640]/10 px-3 py-2 text-right">
-                  <p className="text-xs font-black text-[#C87518]">Disponib</p>
+                <div className="mt-auto flex items-center justify-between pt-2">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#667085]">
+                    <div className="rounded-lg bg-gray-50 p-1.5 text-[#98A2B3]">
+                      <Clock size={15} />
+                    </div>
+                    <span>{dish.temps_prep} min</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleAddDish(dish)}
+                    title="Ajoute nan panyen"
+                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F4A640] text-white shadow-lg shadow-[#F4A640]/20 transition-all duration-300 hover:rotate-90 hover:bg-[#101828] active:scale-90"
+                  >
+                    <Plus size={24} strokeWidth={3} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -307,104 +333,118 @@ export default function ClientHomePage() {
         </div>
       </section>
 
-      <section className="grid gap-8 rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:grid-cols-[0.9fr_1.1fr] lg:p-8">
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <p className="text-sm font-black uppercase tracking-widest text-[#F4A640]">Avis kliyan</p>
-            <h2 className="text-3xl font-black tracking-tight text-[#101828] sm:text-4xl">
-              Di nou kijan ou jwenn TaiTai.
-            </h2>
-            <p className="text-base font-medium leading-7 text-[#667085]">
-              Kite yon kòmantè ak yon nòt sou 5 zetwal pou ede lòt kliyan chwazi pi byen.
-            </p>
-          </div>
-
-          {user ? (
-            <form onSubmit={handleSubmitReview} className="space-y-4 rounded-3xl bg-gray-50 p-4 sm:p-5">
-              <input
-                type="text"
-                required
-                value={reviewName}
-                onChange={(event) => setReviewName(event.target.value)}
-                disabled
-                placeholder="Non ou"
-                className="h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-bold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 disabled:text-[#667085]"
-              />
-
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setReviewRating(value)}
-                    className="rounded-xl p-1 transition hover:scale-110"
-                    aria-label={`${value} zetwal`}
-                  >
-                    <Star
-                      className={`h-8 w-8 ${
-                        value <= reviewRating ? "fill-[#F4A640] text-[#F4A640]" : "text-gray-300"
-                      }`}
-                    />
-                  </button>
-                ))}
-                <span className="ml-2 text-sm font-black text-[#101828]">{reviewRating}/5</span>
-              </div>
-
-              <textarea
-                required
-                rows={4}
-                value={reviewComment}
-                onChange={(event) => setReviewComment(event.target.value)}
-                placeholder="Ekri avis ou..."
-                className="w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-semibold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
-              />
-
-              {reviewMessage ? (
-                <p className="rounded-2xl bg-white px-4 py-3 text-sm font-bold text-[#667085]">
-                  {reviewMessage}
-                </p>
-              ) : null}
-
-              <button
-                type="submit"
-                disabled={reviewSubmitting}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-[#101828] px-6 py-4 text-sm font-black text-white transition hover:bg-[#F4A640] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-              >
-                {reviewSubmitting ? "Ap voye..." : "Voye avis mwen"}
-              </button>
-            </form>
-          ) : null}
+      <section className="space-y-8 overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-10">
+        {/* En-tête centré */}
+        <div className="space-y-3 text-center">
+          <p className="text-sm font-black uppercase tracking-widest text-[#F4A640]">Avis kliyan</p>
+          <h2 className="text-3xl font-black tracking-tight text-[#101828] sm:text-4xl">
+            Di nou kijan ou jwenn TaïTaï.
+          </h2>
+          <p className="mx-auto max-w-xl text-base font-medium leading-7 text-[#667085]">
+            Kite yon kòmantè ak yon nòt sou 5 zetwal pou ede lòt kliyan chwazi pi byen.
+          </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {reviews.length > 0 ? (
-            reviews.map((review) => (
-              <article key={review.id} className="rounded-3xl border border-gray-100 bg-[#F9FAFB] p-5">
-                <div className="mb-4 flex items-center gap-1 text-[#F4A640]">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <Star
-                      key={value}
-                      className={`h-4 w-4 ${value <= review.note ? "fill-current" : "text-gray-300"}`}
-                    />
-                  ))}
-                </div>
-                <p className="line-clamp-4 text-sm font-medium leading-7 text-[#475467]">
-                  “{review.commentaire}”
-                </p>
-                <div className="mt-5 border-t border-gray-200 pt-4">
-                  <p className="font-black text-[#101828]">{review.nom}</p>
-                  <p className="mt-1 text-xs font-bold text-[#98A2B3]">
-                    {new Date(review.created_at).toLocaleDateString("fr-FR")}
+        {/* Carousel auto-scroll */}
+        {reviews.length > 0 ? (
+          <div className="relative">
+            {/* Flou gauche */}
+            <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-28 bg-gradient-to-r from-white via-white/80 to-transparent" />
+            {/* Flou droit */}
+            <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-28 bg-gradient-to-l from-white via-white/80 to-transparent" />
+            <div
+              ref={reviewsScrollRef}
+              className="flex gap-4 overflow-x-hidden py-2"
+              style={{ scrollBehavior: "auto" }}
+            >
+              {[...reviews, ...reviews].map((review, idx) => (
+                <article
+                  key={`${review.id}-${idx}`}
+                  className="min-w-[270px] max-w-[270px] shrink-0 rounded-2xl border border-gray-100 bg-[#F9FAFB] p-5 shadow-sm"
+                >
+                  <div className="mb-3 flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((v) => (
+                      <Star
+                        key={v}
+                        className={`h-4 w-4 ${v <= review.note ? "fill-[#F4A640] text-[#F4A640]" : "text-gray-200"}`}
+                      />
+                    ))}
+                  </div>
+                  <p className="line-clamp-3 text-sm font-medium leading-relaxed text-[#475467]">
+                    &ldquo;{review.commentaire}&rdquo;
                   </p>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="flex min-h-56 items-center justify-center rounded-3xl border border-dashed border-gray-200 bg-[#F9FAFB] p-8 text-center text-sm font-bold text-[#98A2B3] sm:col-span-2">
-              Pa gen avis pou kounye a. Se pou ou premye moun ki bay nòt!
+                  <div className="mt-4 flex items-center gap-3 border-t border-gray-100 pt-4">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F4A640] text-xs font-black text-white">
+                      {review.nom.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-black text-[#101828]">{review.nom}</p>
+                      <p className="text-xs font-medium text-[#98A2B3]">
+                        {new Date(review.created_at).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))}
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="flex min-h-40 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-[#F9FAFB] text-center text-sm font-bold text-[#98A2B3]">
+            Pa gen avis pou kounye a. Se pou ou premye moun ki bay nòt!
+          </div>
+        )}
+
+        {/* Formulaire en bas */}
+        {user ? (
+          <form onSubmit={handleSubmitReview} className="space-y-4 rounded-2xl border border-gray-100 bg-[#F9FAFB] p-5 sm:p-6">
+            <p className="text-sm font-black uppercase tracking-widest text-[#101828]">Laisse yon avis</p>
+            <input
+              type="text"
+              required
+              value={reviewName}
+              onChange={(event) => setReviewName(event.target.value)}
+              disabled
+              placeholder="Non ou"
+              className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm font-bold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 disabled:text-[#667085]"
+            />
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setReviewRating(value)}
+                  className="rounded-lg p-0.5 transition hover:scale-110"
+                  aria-label={`${value} zetwal`}
+                >
+                  <Star
+                    className={`h-7 w-7 ${value <= reviewRating ? "fill-[#F4A640] text-[#F4A640]" : "text-gray-300"}`}
+                  />
+                </button>
+              ))}
+              <span className="ml-2 text-sm font-black text-[#101828]">{reviewRating}/5</span>
+            </div>
+            <textarea
+              required
+              rows={3}
+              value={reviewComment}
+              onChange={(event) => setReviewComment(event.target.value)}
+              placeholder="Ekri avis ou..."
+              className="w-full resize-none rounded-xl border border-gray-200 bg-white p-4 text-sm font-semibold text-[#101828] outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+            />
+            {reviewMessage ? (
+              <p className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-[#667085]">
+                {reviewMessage}
+              </p>
+            ) : null}
+            <button
+              type="submit"
+              disabled={reviewSubmitting}
+              className="inline-flex items-center justify-center rounded-xl bg-[#101828] px-8 py-3.5 text-sm font-black text-white transition hover:bg-[#F4A640] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {reviewSubmitting ? "Ap voye..." : "Voye avis mwen"}
+            </button>
+          </form>
+        ) : null}
       </section>
 
       <section className="grid gap-8 md:grid-cols-3">
@@ -432,7 +472,7 @@ export default function ClientHomePage() {
       </section>
 
       <section className="space-y-8 rounded-3xl bg-[#F4A640] p-6 text-center text-white shadow-xl shadow-[#F4A640]/30 sm:p-12">
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Ou pare pou gou TaiTai a ?</h2>
+        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Ou pare pou gou TaïTaï a ?</h2>
         <p className="mx-auto max-w-xl text-lg font-medium opacity-90 sm:text-xl">
           Pase kòmann ou jodi a epi jwi yon eksperyans manje ou pap bliye.
         </p>

@@ -159,7 +159,7 @@ export default function EquipePage() {
               <TeamRow
                 user={{
                   id: "owner-01",
-                  name: "TaiTai Admin",
+                  name: "TaïTaï Admin",
                   email: "taitai@gmail.com",
                   password: "",
                   role: "super_admin",

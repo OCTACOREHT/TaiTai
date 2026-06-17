@@ -283,7 +283,7 @@ export default function AuthModal() {
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-base font-black">{user.nom}</p>
-                    <p className="mt-1 text-xs font-bold text-white/60">Kont kliyan TaiTai</p>
+                    <p className="mt-1 text-xs font-bold text-white/60">Kont kliyan TaïTaï</p>
                   </div>
                 </div>
               </div>
@@ -349,7 +349,7 @@ export default function AuthModal() {
   <div className="mx-auto mb-4 relative h-20 w-40">
     <Image
       src="/images/logo/tailogo.png"
-      alt="TaiTai"
+      alt="TaïTaï"
       fill
       className="object-contain"
     />
@@ -362,7 +362,7 @@ export default function AuthModal() {
   <p className="mt-1 text-sm text-[#667085]">
     {mode === "login"
       ? "Konekte pou pase kòmann"
-      : "Antre nan TaiTai pou kòmande"}
+      : "Antre nan TaïTaï pou kòmande"}
   </p>
 </div>
                 

@@ -16,7 +16,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function buildOrderEmailHtml({ order, items, followUrl }) {
+function buildOrderEmailHtml({ order, items, followUrl, baseUrl }) {
   const itemRows = items
     .map(
       (item) => `
@@ -43,8 +43,8 @@ function buildOrderEmailHtml({ order, items, followUrl }) {
             <td align="center">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #eaecf0;">
                 <tr>
-                  <td style="background:#101828;padding:28px 32px;">
-                    <div style="font-size:24px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:#F4A640;">TAITAI</div>
+                  <td style="background:#101828;padding:24px 32px;text-align:center;">
+                    <img src="${baseUrl}/images/logo/tailogo.png" alt="TaïTaï" height="52" style="display:inline-block;height:52px;width:auto;max-width:160px;" />
                   </td>
                 </tr>
                 <tr>
@@ -131,7 +131,7 @@ export async function POST(request) {
       from: fromEmail,
       to: [email],
       subject: `Confirmation commande ${order.numero_commande}`,
-      html: buildOrderEmailHtml({ order, items, followUrl }),
+      html: buildOrderEmailHtml({ order, items, followUrl, baseUrl: request.nextUrl.origin }),
       text: `Bonjour ${order.client_nom}, votre commande ${order.numero_commande} a bien ete recue. Total: ${order.total} HTG. Suivi: ${followUrl}`,
     });
 

@@ -168,7 +168,7 @@ export default function ClientsPage() {
           Classement des clients
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
-          Les clients sont classes selon le nombre de commandes passees sur le site TaiTai.
+          Les clients sont classes selon le nombre de commandes passees sur le site TaïTaï.
         </p>
       </section>
 

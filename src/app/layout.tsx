@@ -12,8 +12,8 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "TaiTai",
-  description: "Commandes et livraison TaiTai",
+  title: "TaïTaï",
+  description: "Commandes et livraison TaïTaï",
   icons: {
     icon: "/images/logo/tailogo.png",
     shortcut: "/images/logo/tailogo.png",

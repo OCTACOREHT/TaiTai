@@ -91,7 +91,7 @@ export default function HistoriquePage() {
           <div>
             <h1 className="text-4xl font-black tracking-tight text-[#101828] md:text-5xl">Istorik kòmann</h1>
             <p className="mt-3 max-w-2xl text-base font-medium text-[#667085]">
-              Gade tout kòmann ou te pase sou TaiTai ak eta yo.
+              Gade tout kòmann ou te pase sou TaïTaï ak eta yo.
             </p>
           </div>
         </div>

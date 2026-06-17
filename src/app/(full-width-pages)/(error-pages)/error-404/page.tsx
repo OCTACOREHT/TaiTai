@@ -5,8 +5,8 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Erreur 404 | TaiTai",
-  description: "Page non trouvee pour l'interface TaiTai",
+  title: "Erreur 404 | TaïTaï",
+  description: "Page non trouvee pour l'interface TaïTaï",
 };
 
 export default function Error404Page() {
@@ -34,7 +34,7 @@ export default function Error404Page() {
         />
 
         <p className="mb-6 mt-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-          Cette page n'est pas disponible dans la maquette TaiTai.
+          Cette page n'est pas disponible dans la maquette TaïTaï.
         </p>
 
         <Link
@@ -46,7 +46,7 @@ export default function Error404Page() {
       </div>
 
       <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} - TaiTai
+        &copy; {new Date().getFullYear()} - TaïTaï
       </p>
     </div>
   );

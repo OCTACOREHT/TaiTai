@@ -37,6 +37,7 @@ export async function POST(request) {
     const safeName = escapeHtml(toName || to);
     const safeSubject = escapeHtml(subject);
     const safeMessage = escapeHtml(replyMessage).replace(/\n/g, "<br/>");
+    const baseUrl = request.nextUrl.origin;
 
     const { error } = await resend.emails.send({
       from: fromEmail,
@@ -51,8 +52,8 @@ export async function POST(request) {
               <tr><td align="center">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;">
                   <tr>
-                    <td style="padding-bottom:32px;">
-                      <div style="font-size:24px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:#F4A640;">TAITAI</div>
+                    <td style="padding-bottom:32px;text-align:center;">
+                      <img src="${baseUrl}/images/logo/tailogo.png" alt="TaïTaï" height="52" style="display:inline-block;height:52px;width:auto;max-width:160px;" />
                     </td>
                   </tr>
                   <tr>

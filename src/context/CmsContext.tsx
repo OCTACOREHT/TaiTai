@@ -66,7 +66,7 @@ interface CmsContextValue extends CmsDataSnapshot {
 }
 
 const defaultHomePage: HomePageSettings = {
-  heroBadge: "TaiTai CMS",
+  heroBadge: "TaïTaï CMS",
   heroTitle: "Pilotez vos contenus depuis le CMS.",
   heroSubtitle: "Les articles visibles sur cette page sont charges depuis la base de donnees.",
   heroPrimaryCtaLabel: "Voir les articles",
@@ -90,9 +90,9 @@ const defaultHomePage: HomePageSettings = {
 };
 
 const defaultSiteSettings: SiteSettings = {
-  siteName: "TaiTai CMS",
+  siteName: "TaïTaï CMS",
   publicTagline: "Gestion restaurant connectee a PostgreSQL",
-  primaryEmail: "contact@taitai.cms",
+  primaryEmail: "info@taïtaï.com",
   phone: "+509 0000-0000",
   address: "Port-au-Prince",
   footerText: "Le contenu editorial public est synchronise avec la base de donnees.",
@@ -101,7 +101,7 @@ const defaultSiteSettings: SiteSettings = {
   articlePageTitle: "Articles",
   articlePageIntro: "Les articles de cette page proviennent de PostgreSQL.",
   stagePageTitle: "Recrutements",
-  stagePageIntro: "Offres d'emploi et de stage pour TaiTai.",
+  stagePageIntro: "Offres d'emploi et de stage pour TaïTaï.",
 };
 
 const initialData: CmsDataSnapshot = {

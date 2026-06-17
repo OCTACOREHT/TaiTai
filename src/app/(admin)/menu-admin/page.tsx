@@ -218,7 +218,7 @@ export default function MenuPage() {
                   required
                   value={draft.nom}
                   onChange={(event) => setDraft((current) => ({ ...current, nom: event.target.value }))}
-                  placeholder="Ex: Poulet grille TaiTai"
+                  placeholder="Ex: Poulet grille TaïTaï"
                 />
               </div>
               <div className="space-y-2">
