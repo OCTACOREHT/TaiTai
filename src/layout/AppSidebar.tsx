@@ -9,6 +9,7 @@ import { canAccessAdminPath, hasFullAdminAccess } from "@/lib/admin-access";
 import { getAdminSession } from "@/lib/admin-auth";
 import {
   BadgePercent,
+  BarChart3,
   ChefHat,
   ClipboardCheck,
   Globe,
@@ -23,6 +24,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} strokeWidth={2} /> },
+  { name: "Données & Statistiques", path: "/data", icon: <BarChart3 size={20} strokeWidth={2} /> },
   { name: "Commandes", path: "/commandes", icon: <ReceiptText size={20} strokeWidth={2} /> },
   { name: "Validation", path: "/validation-commandes", icon: <ClipboardCheck size={20} strokeWidth={2} /> },
   { name: "Menu", path: "/menu-admin", icon: <ChefHat size={20} strokeWidth={2} /> },
