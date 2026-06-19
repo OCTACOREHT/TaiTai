@@ -8,7 +8,6 @@ import {
   aggregateDishSales,
   aggregatePeakHours,
   getCommandes,
-  getMenuItems,
   formatCurrency,
   formatNumber,
   type RestaurantOrder,
@@ -18,9 +17,16 @@ import {
 import { exportToExcel } from "@/lib/export-excel";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { Download, Filter } from "lucide-react";
+import {
+  Download,
+  Filter,
+  ChevronDown,
+  TrendingUp,
+  RotateCcw,
+  ChefHat,
+  Flame,
+} from "lucide-react";
 
-// Dynamically import ApexCharts to avoid SSR issues
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface DataMetric {
@@ -29,6 +35,7 @@ interface DataMetric {
   formatted: string;
   icon: string;
   trend?: string;
+  color: string;
 }
 
 interface FilterOptions {
@@ -48,6 +55,7 @@ export default function DataPage() {
   const [dishSales, setDishSales] = useState<DishSale[]>([]);
   const [peakHours, setPeakHours] = useState<HourlyVolume[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandFilters, setExpandFilters] = useState(false);
   
   const [filters, setFilters] = useState<FilterOptions>({
     dateFrom: "",
@@ -83,24 +91,28 @@ export default function DataPage() {
           value: totalRevenue,
           formatted: formatCurrency(totalRevenue),
           icon: "💰",
+          color: "from-blue-500 to-blue-600",
         },
         {
-          label: "Commandes",
+          label: "Total Commandes",
           value: totalOrders,
           formatted: formatNumber(totalOrders),
           icon: "📦",
+          color: "from-purple-500 to-purple-600",
         },
         {
-          label: "Commandes Aujourd'hui",
+          label: "Aujourd'hui",
           value: todayOrders,
           formatted: formatNumber(todayOrders),
-          icon: "📅",
+          icon: "🔥",
+          color: "from-orange-500 to-orange-600",
         },
         {
           label: "Panier Moyen",
           value: averageTicket,
           formatted: formatCurrency(averageTicket),
           icon: "🛒",
+          color: "from-green-500 to-green-600",
         },
       ]);
 
@@ -383,344 +395,403 @@ export default function DataPage() {
     <>
       <PageBreadCrumb pageTitle="Données & Statistiques" />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+      {/* Header Section */}
+      <div className="mb-8 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 p-8 text-white shadow-xl">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Dashboard Analytique</h1>
+            <p className="text-slate-300">
+              Aperçu complet de vos données et performances
+            </p>
+          </div>
+          <button
+            onClick={() => loadData()}
+            className="flex items-center gap-2 rounded-lg bg-white/10 hover:bg-white/20 px-4 py-2 transition-colors"
+          >
+            <RotateCcw size={16} />
+            Actualiser
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Cards with Gradients */}
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {metrics.map((metric, idx) => (
           <div
             key={idx}
-            className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
+            className={`bg-gradient-to-br ${metric.color} rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-shadow`}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">{metric.label}</p>
-                <p className="mt-2 text-2xl font-bold text-gray-900">
-                  {metric.formatted}
+                <p className="text-sm font-medium text-white/80 uppercase tracking-wide">
+                  {metric.label}
                 </p>
               </div>
-              <span className="text-4xl">{metric.icon}</span>
+              <span className="text-3xl">{metric.icon}</span>
             </div>
+            <p className="text-3xl font-bold">{metric.formatted}</p>
+            <p className="text-xs text-white/60 mt-2">En temps réel</p>
           </div>
         ))}
       </div>
 
-      {/* Filter Panel */}
-      <SectionCard
-        title={
-          <div className="flex items-center gap-2">
-            <Filter size={20} />
-            <span>Filtres & Exports</span>
+      {/* Filter Section - Collapsible */}
+      <div className="mb-8">
+        <button
+          onClick={() => setExpandFilters(!expandFilters)}
+          className="w-full flex items-center justify-between rounded-xl bg-white border border-gray-200 shadow-sm p-4 hover:shadow-md transition-shadow"
+        >
+          <div className="flex items-center gap-3">
+            <Filter size={20} className="text-blue-600" />
+            <span className="font-semibold text-gray-900">Filtres & Exports</span>
+            {Object.values(filters).some((v) => v !== "" && v !== 0 && v !== 1000000) && (
+              <span className="ml-2 inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                Filtres actifs
+              </span>
+            )}
           </div>
-        }
-        description="Filtrez vos données et exportez-les"
-        className="mb-6"
-      >
-        <div className="space-y-4">
-          {/* Filter Controls */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Du
-              </label>
-              <input
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) =>
-                  setFilters({ ...filters, dateFrom: e.target.value })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          <ChevronDown
+            size={20}
+            className={`text-gray-600 transition-transform ${
+              expandFilters ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+
+        {expandFilters && (
+          <div className="mt-3 rounded-xl bg-white border border-gray-200 shadow-sm p-6 animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Filter Grid */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Depuis le
+                </label>
+                <input
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) =>
+                    setFilters({ ...filters, dateFrom: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Jusqu'au
+                </label>
+                <input
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) =>
+                    setFilters({ ...filters, dateTo: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Statut
+                </label>
+                <select
+                  value={filters.status}
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Tous les statuts</option>
+                  <option value="En attente">En attente</option>
+                  <option value="En préparation">En préparation</option>
+                  <option value="Prêt">Prêt</option>
+                  <option value="Livré">Livré</option>
+                  <option value="Annulee">Annulée</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Montant min (HTG)
+                </label>
+                <input
+                  type="number"
+                  value={filters.minAmount}
+                  onChange={(e) =>
+                    setFilters({ ...filters, minAmount: Number(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Montant max (HTG)
+                </label>
+                <input
+                  type="number"
+                  value={filters.maxAmount}
+                  onChange={(e) =>
+                    setFilters({ ...filters, maxAmount: Number(e.target.value) })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Trier par
+                </label>
+                <select
+                  value={filters.sortBy}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      sortBy: e.target.value as "date" | "amount" | "customer",
+                    })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="date">Date</option>
+                  <option value="amount">Montant</option>
+                  <option value="customer">Client</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Ordre
+                </label>
+                <select
+                  value={filters.sortOrder}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      sortOrder: e.target.value as "asc" | "desc",
+                    })
+                  }
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="desc">↓ Décroissant</option>
+                  <option value="asc">↑ Croissant</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 invisible">
+                  Action
+                </label>
+                <button
+                  onClick={() =>
+                    setFilters({
+                      dateFrom: "",
+                      dateTo: "",
+                      status: "",
+                      sortBy: "date",
+                      sortOrder: "desc",
+                      minAmount: 0,
+                      maxAmount: 1000000,
+                    })
+                  }
+                  className="w-full rounded-lg border-2 border-gray-300 hover:border-gray-400 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors"
+                >
+                  Réinitialiser
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Au
-              </label>
-              <input
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) =>
-                  setFilters({ ...filters, dateTo: e.target.value })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Statut
-              </label>
-              <select
-                value={filters.status}
-                onChange={(e) =>
-                  setFilters({ ...filters, status: e.target.value })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Tous les statuts</option>
-                <option value="En attente">En attente</option>
-                <option value="En préparation">En préparation</option>
-                <option value="Prêt">Prêt</option>
-                <option value="Livré">Livré</option>
-                <option value="Annulee">Annulée</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Montant min
-              </label>
-              <input
-                type="number"
-                value={filters.minAmount}
-                onChange={(e) =>
-                  setFilters({ ...filters, minAmount: Number(e.target.value) })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Montant max
-              </label>
-              <input
-                type="number"
-                value={filters.maxAmount}
-                onChange={(e) =>
-                  setFilters({ ...filters, maxAmount: Number(e.target.value) })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Trier par
-              </label>
-              <select
-                value={filters.sortBy}
-                onChange={(e) =>
-                  setFilters({
-                    ...filters,
-                    sortBy: e.target.value as "date" | "amount" | "customer",
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="date">Date</option>
-                <option value="amount">Montant</option>
-                <option value="customer">Client</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ordre
-              </label>
-              <select
-                value={filters.sortOrder}
-                onChange={(e) =>
-                  setFilters({
-                    ...filters,
-                    sortOrder: e.target.value as "asc" | "desc",
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="desc">Décroissant</option>
-                <option value="asc">Croissant</option>
-              </select>
-            </div>
-
-            <div className="flex items-end">
+            {/* Export Buttons */}
+            <div className="border-t pt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
               <button
-                onClick={() =>
-                  setFilters({
-                    dateFrom: "",
-                    dateTo: "",
-                    status: "",
-                    sortBy: "date",
-                    sortOrder: "desc",
-                    minAmount: 0,
-                    maxAmount: 1000000,
-                  })
-                }
-                className="w-full rounded-lg bg-gray-300 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-400 transition-colors"
+                onClick={exportToCSV}
+                className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 border border-blue-200 hover:bg-blue-100 px-4 py-2.5 text-sm font-semibold text-blue-700 transition-colors"
               >
-                Réinitialiser
+                <Download size={16} />
+                CSV Commandes
+              </button>
+
+              <button
+                onClick={exportToExcelFile}
+                className="flex items-center justify-center gap-2 rounded-lg bg-green-50 border border-green-200 hover:bg-green-100 px-4 py-2.5 text-sm font-semibold text-green-700 transition-colors"
+              >
+                <Download size={16} />
+                Excel Commandes
+              </button>
+
+              <button
+                onClick={exportDishSalesCSV}
+                className="flex items-center justify-center gap-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 px-4 py-2.5 text-sm font-semibold text-purple-700 transition-colors"
+              >
+                <Download size={16} />
+                CSV Plats
+              </button>
+
+              <button
+                onClick={() => {
+                  const headers = ["Plat", "Catégorie", "Quantité", "Revenu"];
+                  const rows = dishSales.map((dish) => [
+                    dish.name,
+                    dish.category,
+                    dish.quantity,
+                    dish.revenue,
+                  ]);
+
+                  exportToExcel({
+                    filename: `plats_vendus_${new Date()
+                      .toISOString()
+                      .split("T")[0]}.xls`,
+                    sheetName: "Plats Vendus",
+                    headers,
+                    rows,
+                  });
+                }}
+                className="flex items-center justify-center gap-2 rounded-lg bg-orange-50 border border-orange-200 hover:bg-orange-100 px-4 py-2.5 text-sm font-semibold text-orange-700 transition-colors"
+              >
+                <Download size={16} />
+                Excel Plats
               </button>
             </div>
           </div>
-
-          {/* Export Buttons */}
-          <div className="border-t pt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <button
-              onClick={exportToCSV}
-              className="flex items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 transition-colors"
-            >
-              <Download size={16} />
-              CSV Commandes
-            </button>
-
-            <button
-              onClick={exportToExcelFile}
-              className="flex items-center justify-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium text-white hover:bg-green-600 transition-colors"
-            >
-              <Download size={16} />
-              Excel Commandes
-            </button>
-
-            <button
-              onClick={exportDishSalesCSV}
-              className="flex items-center justify-center gap-2 rounded-lg bg-purple-500 px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 transition-colors"
-            >
-              <Download size={16} />
-              CSV Plats
-            </button>
-
-            <button
-              onClick={() => {
-                const headers = ["Plat", "Catégorie", "Quantité", "Revenu"];
-                const rows = dishSales.map((dish) => [
-                  dish.name,
-                  dish.category,
-                  dish.quantity,
-                  dish.revenue,
-                ]);
-
-                exportToExcel({
-                  filename: `plats_vendus_${new Date()
-                    .toISOString()
-                    .split("T")[0]}.xls`,
-                  sheetName: "Plats Vendus",
-                  headers,
-                  rows,
-                });
-              }}
-              className="flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors"
-            >
-              <Download size={16} />
-              Excel Plats
-            </button>
-          </div>
-        </div>
-      </SectionCard>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Sales by Day */}
-        <SectionCard title="Ventes par Jour" description="Revenu quotidien de la semaine">
-          <div className="h-80">
-            {typeof window !== "undefined" && (
-              <Chart
-                options={barChartOptions}
-                series={barChartSeries}
-                type="bar"
-                height={350}
-              />
-            )}
-          </div>
-        </SectionCard>
-
-        {/* Top Dishes */}
-        <SectionCard title="Top 5 Plats Vendus" description="Par quantité">
-          <div className="h-80">
-            {typeof window !== "undefined" && (
-              <Chart
-                options={pieChartOptions}
-                series={pieChartSeries}
-                type="pie"
-                height={350}
-              />
-            )}
-          </div>
-        </SectionCard>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-6">
-        {/* Peak Hours */}
-        <SectionCard title="Heures de Pointe" description="Volume de commandes par heure">
-          <div className="h-80">
-            {typeof window !== "undefined" && (
-              <Chart
-                options={areaChartOptions}
-                series={areaChartSeries}
-                type="area"
-                height={350}
-              />
-            )}
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-8">
+        {/* Sales by Day */}
+        <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <TrendingUp size={20} className="text-blue-600" />
+              Ventes par Jour
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">Revenu quotidien de la semaine</p>
           </div>
-        </SectionCard>
+          <div className="p-6">
+            <div className="h-80">
+              {typeof window !== "undefined" && (
+                <Chart
+                  options={barChartOptions}
+                  series={barChartSeries}
+                  type="bar"
+                  height={350}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Dishes */}
+        <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <ChefHat size={20} className="text-purple-600" />
+              Top 5 Plats Vendus
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">Classement par quantité</p>
+          </div>
+          <div className="p-6">
+            <div className="h-80">
+              {typeof window !== "undefined" && (
+                <Chart
+                  options={pieChartOptions}
+                  series={pieChartSeries}
+                  type="pie"
+                  height={350}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-8">
+        {/* Peak Hours */}
+        <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Flame size={20} className="text-orange-600" />
+              Heures de Pointe
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">Volume de commandes par heure</p>
+          </div>
+          <div className="p-6">
+            <div className="h-80">
+              {typeof window !== "undefined" && (
+                <Chart
+                  options={areaChartOptions}
+                  series={areaChartSeries}
+                  type="area"
+                  height={350}
+                />
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Revenue by Dish */}
-        <SectionCard
-          title="Top 10 Revenus"
-          description="Revenu généré par plat"
-        >
-          <div className="h-96">
-            {typeof window !== "undefined" && (
-              <Chart
-                options={horizontalBarOptions}
-                series={horizontalBarSeries}
-                type="bar"
-                height={400}
-              />
-            )}
+        <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+          <div className="border-b border-gray-200 px-6 py-4">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              💵 Top 10 Revenus
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">Revenu généré par plat</p>
           </div>
-        </SectionCard>
+          <div className="p-6">
+            <div className="h-96">
+              {typeof window !== "undefined" && (
+                <Chart
+                  options={horizontalBarOptions}
+                  series={horizontalBarSeries}
+                  type="bar"
+                  height={400}
+                />
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Dish Sales Table */}
-      <SectionCard
-        title="Détails des Ventes de Plats"
-        description="Tous les plats vendus"
-        className="mt-6"
-      >
+      <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden mb-8">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h3 className="text-lg font-bold text-gray-900">Détails des Ventes de Plats</h3>
+          <p className="text-sm text-gray-500 mt-1">Tous les plats vendus - {dishSales.length} plat(s)</p>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  Plat
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  Catégorie
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
-                  Quantité
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
-                  Revenu
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-900">
-                  Tendance
-                </th>
+              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Plat</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Catégorie</th>
+                <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">Quantité</th>
+                <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">Revenu</th>
+                <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Tendance</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {dishSales.map((dish, idx) => (
                 <tr
                   key={idx}
-                  className="border-b border-gray-200 hover:bg-gray-50"
+                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {dish.name}
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">{dish.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{dish.category}</td>
+                  <td className="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                    <span className="inline-block bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                      {formatNumber(dish.quantity)}
+                    </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {dish.category}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-900">
-                    {formatNumber(dish.quantity)}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                  <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
                     {formatCurrency(dish.revenue)}
                   </td>
-                  <td className="px-4 py-3 text-center text-sm">
+                  <td className="px-6 py-4 text-center">
                     <span
-                      className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                         dish.trend === "up"
-                          ? "bg-green-100 text-green-800"
+                          ? "bg-green-100 text-green-700"
                           : dish.trend === "down"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-700"
                       }`}
                     >
                       {dish.trend === "up"
@@ -735,69 +806,55 @@ export default function DataPage() {
             </tbody>
           </table>
         </div>
-      </SectionCard>
+      </div>
 
       {/* Recent Orders */}
-      <SectionCard
-        title="Commandes Récentes"
-        description={`${filteredOrders.length} commande(s) selon les filtres appliqués`}
-        className="mt-6"
-      >
+      <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h3 className="text-lg font-bold text-gray-900">Commandes Récentes</h3>
+          <p className="text-sm text-gray-500 mt-1">{filteredOrders.length} commande(s) selon les filtres appliqués</p>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse">
+          <table className="w-full">
             <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  N° Commande
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  Client
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
-                  Montant
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  Statut
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">
-                  Date
-                </th>
+              <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">N° Commande</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Client</th>
+                <th className="px-6 py-4 text-right text-sm font-bold text-gray-900">Montant</th>
+                <th className="px-6 py-4 text-center text-sm font-bold text-gray-900">Statut</th>
+                <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">Date</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order, idx) => (
                   <tr
                     key={idx}
-                    className="border-b border-gray-200 hover:bg-gray-50"
+                    className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {order.numero}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {order.customer}
-                    </td>
-                    <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-900">{order.numero}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{order.customer}</td>
+                    <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">
                       {formatCurrency(order.total)}
                     </td>
-                    <td className="px-4 py-3 text-sm">
+                    <td className="px-6 py-4 text-center text-sm">
                       <span
-                        className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                           order.status === "Livré"
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-green-100 text-green-700"
                             : order.status === "Prêt"
-                            ? "bg-blue-100 text-blue-800"
+                            ? "bg-blue-100 text-blue-700"
                             : order.status === "En préparation"
-                            ? "bg-yellow-100 text-yellow-800"
+                            ? "bg-yellow-100 text-yellow-700"
                             : order.status === "Annulee"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                       >
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-600">
                       {new Date(order.date).toLocaleDateString("fr-FR", {
                         year: "numeric",
                         month: "short",
@@ -810,15 +867,16 @@ export default function DataPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
-                    Aucune commande ne correspond à vos critères de filtrage
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <p className="text-lg font-medium">Aucune commande</p>
+                    <p className="text-sm">Aucune commande ne correspond à vos critères de filtrage</p>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      </SectionCard>
+      </div>
     </>
   );
 }
