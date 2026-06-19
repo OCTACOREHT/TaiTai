@@ -8,6 +8,7 @@ export const runtime = "nodejs";
 const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
 
 function escapeHtml(value) {
+  // Escape HTML special characters while preserving UTF-8 characters (é, è, ç, à, etc.)
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -35,9 +36,13 @@ function buildOrderEmailHtml({ order, items, followUrl, baseUrl }) {
 
   return `
     <!DOCTYPE html>
-    <html lang="fr">
-      <head><meta charset="UTF-8" /></head>
-      <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#101828;">
+    <html lang="fr-HT">
+      <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#101828;">`
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px;">
           <tr>
             <td align="center">
@@ -127,12 +132,20 @@ export async function POST(request) {
 
     const followUrl = `${request.nextUrl.origin}/suivi?numero=${encodeURIComponent(order.numero_commande)}`;
     const resend = new Resend(process.env.RESEND_API_KEY);
+    
+    // Ensure UTF-8 encoding for email content
+    const emailHtml = buildOrderEmailHtml({ order, items, followUrl, baseUrl: request.nextUrl.origin });
+    const emailText = `Bonjour ${order.client_nom}, votre commande ${order.numero_commande} a bien été reçue. Total: ${order.total} HTG. Suivi: ${followUrl}`;
+    
     const { error } = await resend.emails.send({
       from: fromEmail,
       to: [email],
       subject: `Confirmation commande ${order.numero_commande}`,
-      html: buildOrderEmailHtml({ order, items, followUrl, baseUrl: request.nextUrl.origin }),
-      text: `Bonjour ${order.client_nom}, votre commande ${order.numero_commande} a bien ete recue. Total: ${order.total} HTG. Suivi: ${followUrl}`,
+      html: emailHtml,
+      text: emailText,
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+      },
     });
 
     if (error) {

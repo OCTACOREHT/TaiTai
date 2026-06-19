@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
 
 function escapeHtml(value) {
+  // Escape HTML special characters while preserving UTF-8 characters (é, è, ç, à, etc.)
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -45,8 +46,12 @@ export async function POST(request) {
       subject,
       html: `
         <!DOCTYPE html>
-        <html lang="fr">
-          <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+        <html lang="fr-HT">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          </head>
           <body style="margin:0;padding:0;background:#0f172a;font-family:Arial,sans-serif;">
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:40px 16px;">
               <tr><td align="center">
@@ -76,6 +81,9 @@ export async function POST(request) {
         </html>
       `,
       text: replyMessage,
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+      },
     });
 
     if (error) {

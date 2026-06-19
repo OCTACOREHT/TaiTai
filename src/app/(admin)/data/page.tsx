@@ -48,7 +48,6 @@ export default function DataPage() {
   const [dishSales, setDishSales] = useState<DishSale[]>([]);
   const [peakHours, setPeakHours] = useState<HourlyVolume[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
   
   const [filters, setFilters] = useState<FilterOptions>({
     dateFrom: "",
@@ -166,7 +165,7 @@ export default function DataPage() {
     setFilteredOrders(filtered);
   };
 
-  useAutoRefresh(loadData, 30000);
+  useAutoRefresh(() => loadData(false), { intervalMs: 30000 });
 
   useEffect(() => {
     loadData();
@@ -382,7 +381,7 @@ export default function DataPage() {
 
   return (
     <>
-      <PageBreadCrumb pageName="Données & Statistiques" />
+      <PageBreadCrumb pageTitle="Données & Statistiques" />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
         {metrics.map((metric, idx) => (
