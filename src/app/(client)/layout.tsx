@@ -183,12 +183,12 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 md:flex-row">
       <p className="text-xs text-[#98A2B3]">© 2026 TaïTaï Restaurant. Fyète Ayiti.</p>
       <div className="flex gap-6">
-        <span className="cursor-pointer text-xs text-[#98A2B3] hover:text-[#475467]">
+        <Link href="/legal" className="text-xs text-[#98A2B3] transition hover:text-[#F4A640]">
           Enfòmasyon legal
-        </span>
-        <span className="cursor-pointer text-xs text-[#98A2B3] hover:text-[#475467]">
+        </Link>
+        <Link href="/konfidansyalite" className="text-xs text-[#98A2B3] transition hover:text-[#F4A640]">
           Konfidansyalite
-        </span>
+        </Link>
       </div>
     </div>
   </div>
