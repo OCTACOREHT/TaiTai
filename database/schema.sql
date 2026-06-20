@@ -132,12 +132,22 @@ CREATE TABLE public.avis_clients (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table fournisseurs
+CREATE TABLE public.fournisseurs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nom TEXT NOT NULL,
+  telephone TEXT NOT NULL,
+  adresse TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- [5] SECURITY (RLS Policies)
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commandes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commande_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promotions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.avis_clients ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fournisseurs ENABLE ROW LEVEL SECURITY;
 
 -- Menu : lecture publique
 CREATE POLICY "menu_public_read" ON public.menu_items
@@ -176,6 +186,16 @@ CREATE POLICY "avis_public_read" ON public.avis_clients
   FOR SELECT USING (active = true);
 CREATE POLICY "avis_public_insert" ON public.avis_clients
   FOR INSERT WITH CHECK (true);
+
+-- Fournisseurs : lecture publique, gestion admin
+CREATE POLICY "fournisseurs_public_read" ON public.fournisseurs
+  FOR SELECT USING (true);
+CREATE POLICY "fournisseurs_admin_insert" ON public.fournisseurs
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "fournisseurs_admin_update" ON public.fournisseurs
+  FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "fournisseurs_admin_delete" ON public.fournisseurs
+  FOR DELETE USING (true);
 
 -- [6] REALTIME
 -- Note: If publication doesn't exist, this might need manual setup in Supabase, 

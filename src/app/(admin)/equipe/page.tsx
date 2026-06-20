@@ -4,7 +4,7 @@ import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SelectInput, TextInput } from "@/components/common/CmsShared";
 import { createTeamUser, getStoredTeamUsers, roleLabels, saveStoredTeamUsers, type StoredTeamUser } from "@/lib/admin-team";
 import { getAdminSession } from "@/lib/admin-auth";
-import { CheckCircle2, ShieldCheck, Trash2, UserPlus, UsersRound } from "lucide-react";
+import { CheckCircle2, KeyRound, ShieldCheck, Trash2, UserPlus, UsersRound, X } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 const emptyDraft = {
@@ -18,6 +18,10 @@ export default function EquipePage() {
   const [users, setUsers] = useState<StoredTeamUser[]>([]);
   const [draft, setDraft] = useState(emptyDraft);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<StoredTeamUser | null>(null);
+  const [resetTarget, setResetTarget] = useState<StoredTeamUser | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setUsers(getStoredTeamUsers());
@@ -63,11 +67,21 @@ export default function EquipePage() {
     setDraft(emptyDraft);
   };
 
-  const deleteUser = (user: StoredTeamUser) => {
-    const confirmed = window.confirm(`Supprimer le compte de ${user.name} ?`);
-    if (!confirmed) return;
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    persistUsers(users.filter((item) => item.id !== deleteTarget.id));
+    setDeleteTarget(null);
+  };
 
-    persistUsers(users.filter((item) => item.id !== user.id));
+  const confirmResetPassword = () => {
+    if (!resetTarget || !newPassword.trim()) return;
+    const updated = users.map((u) =>
+      u.id === resetTarget.id ? { ...u, password: newPassword.trim() } : u
+    );
+    persistUsers(updated);
+    setResetTarget(null);
+    setNewPassword("");
+    setShowPassword(false);
   };
 
   return (
@@ -152,14 +166,14 @@ export default function EquipePage() {
                 <th className="px-5 py-4">Email</th>
                 <th className="px-5 py-4">Role</th>
                 <th className="px-5 py-4">Acces</th>
-                <th className="px-5 py-4 text-right">Action</th>
+                <th className="px-5 py-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               <TeamRow
                 user={{
                   id: "owner-01",
-                  name: "TaiTai Admin",
+                  name: "TaïTaï Admin",
                   email: "taitai@gmail.com",
                   password: "",
                   role: "super_admin",
@@ -176,13 +190,108 @@ export default function EquipePage() {
                   key={user.id}
                   user={user}
                   currentUserId={currentUserId}
-                  onDelete={() => deleteUser(user)}
+                  onDelete={() => setDeleteTarget(user)}
+                  onResetPassword={() => { setResetTarget(user); setNewPassword(""); setShowPassword(false); }}
                 />
               ))}
             </tbody>
           </table>
         </div>
       </section>
+
+      {/* Modal — Confirmer suppression */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <Trash2 className="h-5 w-5" />
+                </span>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Supprimer le compte</h2>
+              </div>
+              <button onClick={() => setDeleteTarget(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Voulez-vous vraiment supprimer le compte de{" "}
+              <span className="font-semibold text-gray-900 dark:text-white">{deleteTarget.name}</span> ?
+              Cette action est irréversible.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal — Réinitialiser le mot de passe */}
+      {resetTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                  <KeyRound className="h-5 w-5" />
+                </span>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">Nouveau mot de passe</h2>
+                  <p className="text-xs text-gray-500">{resetTarget.name}</p>
+                </div>
+              </div>
+              <button onClick={() => setResetTarget(null)} className="text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+              Saisissez un nouveau mot de passe pour ce compte. La personne pourra se connecter immédiatement avec ce mot de passe.
+            </p>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Nouveau mot de passe"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-24 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-brand-500 hover:text-brand-700"
+              >
+                {showPassword ? "Masquer" : "Afficher"}
+              </button>
+            </div>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setResetTarget(null)}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmResetPassword}
+                disabled={!newPassword.trim()}
+                className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -191,10 +300,12 @@ function TeamRow({
   user,
   currentUserId,
   onDelete,
+  onResetPassword,
 }: {
   user: StoredTeamUser;
   currentUserId: string | null;
   onDelete?: () => void;
+  onResetPassword?: () => void;
 }) {
   const isFullAccess = user.role === "super_admin" || user.role === "admin";
 
@@ -213,19 +324,31 @@ function TeamRow({
       <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">
         {isFullAccess ? "Toutes les pages admin" : "Commandes, Validation, Menu"}
       </td>
-      <td className="px-5 py-4 text-right">
-        {onDelete ? (
-          <button
-            type="button"
-            onClick={onDelete}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-red-50 px-3 text-sm font-bold text-red-600 transition hover:bg-red-100"
-          >
-            <Trash2 className="h-4 w-4" />
-            Supprimer
-          </button>
-        ) : (
-          <span className="text-xs font-bold text-gray-400">Protege</span>
-        )}
+      <td className="px-5 py-4">
+        <div className="flex items-center justify-end gap-2">
+          {onResetPassword && (
+            <button
+              type="button"
+              onClick={onResetPassword}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-3 text-sm font-bold text-amber-600 transition hover:bg-amber-100"
+            >
+              <KeyRound className="h-4 w-4" />
+              Mot de passe
+            </button>
+          )}
+          {onDelete ? (
+            <button
+              type="button"
+              onClick={onDelete}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-red-50 px-3 text-sm font-bold text-red-600 transition hover:bg-red-100"
+            >
+              <Trash2 className="h-4 w-4" />
+              Supprimer
+            </button>
+          ) : (
+            <span className="text-xs font-bold text-gray-400">Protégé</span>
+          )}
+        </div>
       </td>
     </tr>
   );

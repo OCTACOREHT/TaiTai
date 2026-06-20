@@ -13,13 +13,13 @@ export function SalesPerformanceChart({ data }: { data: SalesPoint[] }) {
     chart: {
       type: "area",
       height: 320,
-      toolbar: {
-        show: false,
-      },
+      toolbar: { show: false },
       fontFamily: "Outfit, sans-serif",
-      sparkline: {
+      animations: {
         enabled: false,
       },
+      zoom: { enabled: false },
+      selection: { enabled: false },
     },
     colors: ["#f4a640"],
     stroke: {
@@ -29,38 +29,32 @@ export function SalesPerformanceChart({ data }: { data: SalesPoint[] }) {
     fill: {
       type: "gradient",
       gradient: {
-        opacityFrom: 0.24,
-        opacityTo: 0.04,
+        opacityFrom: 0.22,
+        opacityTo: 0.02,
       },
     },
     markers: {
       size: 5,
+      colors: ["#f4a640"],
       strokeColors: "#ffffff",
       strokeWidth: 2,
       hover: {
         size: 7,
+        sizeOffset: 0,
       },
     },
-    dataLabels: {
-      enabled: false,
-    },
+    dataLabels: { enabled: false },
     grid: {
       borderColor: "#e4e7ec",
       strokeDashArray: 5,
-      xaxis: {
-        lines: {
-          show: false,
-        },
-      },
+      xaxis: { lines: { show: false } },
+      padding: { left: 4, right: 4 },
     },
     xaxis: {
       categories: data.map((point) => point.label),
-      axisBorder: {
-        show: false,
-      },
-      axisTicks: {
-        show: false,
-      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
     },
     yaxis: {
       labels: {
@@ -68,13 +62,18 @@ export function SalesPerformanceChart({ data }: { data: SalesPoint[] }) {
       },
     },
     tooltip: {
+      fixed: { enabled: false },
+      x: { show: true },
       y: {
         formatter: (value) => formatCurrency(value),
       },
+      marker: { show: true },
     },
-    legend: {
-      show: false,
+    states: {
+      hover: { filter: { type: "none" } },
+      active: { filter: { type: "none" } },
     },
+    legend: { show: false },
   };
 
   const series = [

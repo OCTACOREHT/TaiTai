@@ -4,6 +4,18 @@ import { Resend } from "resend";
 const db = require("@/server/db");
 export const runtime = "nodejs";
 
+const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
+
+function escapeHtml(value) {
+  // Escape HTML special characters while preserving UTF-8 characters (é, è, ç, à, etc.)
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export async function POST(request) {
   try {
     if (!process.env.RESEND_API_KEY) {
@@ -23,30 +35,36 @@ export async function POST(request) {
       );
     }
 
-    const safeName = toName || to;
-    const safeMessage = replyMessage.replace(/\n/g, "<br/>");
+    const safeName = escapeHtml(toName || to);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(replyMessage).replace(/\n/g, "<br/>");
+    const baseUrl = request.nextUrl.origin;
 
     const { error } = await resend.emails.send({
-      from: "TaiTai Restaurant <onboarding@resend.dev>",
+      from: fromEmail,
       to: [to],
       subject,
       html: `
         <!DOCTYPE html>
-        <html lang="fr">
-          <head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+        <html lang="fr-HT">
+          <head>
+            <meta charset="UTF-8" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          </head>
           <body style="margin:0;padding:0;background:#0f172a;font-family:Arial,sans-serif;">
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:40px 16px;">
               <tr><td align="center">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:600px;">
                   <tr>
-                    <td style="padding-bottom:32px;">
-                      <div style="font-size:24px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:#F4A640;">TAITAI</div>
+                    <td style="padding-bottom:32px;text-align:center;">
+                      <img src="${baseUrl}/images/logo/tailogo.png" alt="TaïTaï" height="52" style="display:inline-block;height:52px;width:auto;max-width:160px;" />
                     </td>
                   </tr>
                   <tr>
                     <td style="background:#ffffff;border-radius:24px;padding:36px 32px;box-shadow:0 30px 60px rgba(0,0,0,0.18);">
                       <div style="font-size:12px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#F4A640;margin-bottom:12px;">Réponse de TaiTai Restaurant</div>
-                      <h2 style="margin:0 0 20px 0;font-size:26px;font-weight:900;line-height:1.1;color:#0f172a;">${subject}</h2>
+                      <h2 style="margin:0 0 20px 0;font-size:26px;font-weight:900;line-height:1.1;color:#0f172a;">${safeSubject}</h2>
                       <p style="margin:0 0 8px 0;font-size:15px;color:#475467;">Bonjour <strong>${safeName}</strong>,</p>
                       <div style="margin:20px 0;padding:20px 24px;background:#fef6ec;border-radius:16px;font-size:15px;line-height:1.8;color:#344054;">
                         ${safeMessage}
@@ -63,6 +81,9 @@ export async function POST(request) {
         </html>
       `,
       text: replyMessage,
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+      },
     });
 
     if (error) {

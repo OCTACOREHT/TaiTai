@@ -118,23 +118,23 @@ function MenuContent() {
               placeholder="Chèche yon plat..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-6 text-sm font-medium shadow-sm transition-all focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 sm:w-80"
+              className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-6 text-sm font-medium shadow-sm transition-all focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 sm:w-[28rem]"
             />
           </div>
         </div>
       </div>
 
       {/* Categories - Sticky on Mobile */}
-      <div className="sticky top-20 z-40 -mx-4 bg-[#F9FAFB]/95 px-4 py-4 backdrop-blur-md md:static md:mx-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <div className="sticky top-20 z-40 -mx-4 bg-[#F9FAFB]/95 px-4 py-2 backdrop-blur-md md:static md:mx-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar md:justify-center">
            {categories.map(cat => (
              <button
                key={cat}
                onClick={() => setSelectedCategory(cat)}
-               className={`whitespace-nowrap rounded-xl px-5 py-3 text-xs md:text-sm font-bold transition-all ${
-                 selectedCategory === cat 
-                 ? "bg-[#101828] text-white shadow-lg" 
-                 : "bg-white text-[#667085] border border-gray-100 hover:border-[#F4A640] hover:text-[#F4A640] shadow-sm"
+               className={`whitespace-nowrap rounded-full px-5 py-2.5 text-xs md:text-sm font-bold transition-all ${
+                 selectedCategory === cat
+                 ? "bg-[#101828] text-white"
+                 : "bg-white text-[#667085] border border-gray-300 hover:border-[#F4A640] hover:text-[#F4A640]"
                }`}
              >
                {categoryLabels[cat] || cat}

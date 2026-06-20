@@ -41,7 +41,7 @@ export function OrderReceiptPreview({ order }: { order: RestaurantOrder | null }
           <div className="relative h-10 w-32 grayscale brightness-0">
              <Image
                 src="/images/logo/tailogo.png"
-                alt="TaiTai"
+                alt="TaïTaï"
                 fill
                 className="object-contain"
               />

@@ -2,8 +2,8 @@ import SignInForm from "@/components/auth/SignInForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Connexion | TaiTai",
-  description: "Acces de demonstration pour l'interface TaiTai",
+  title: "Connexion | TaïTaï",
+  description: "Acces de demonstration pour l'interface TaïTaï",
 };
 
 export default function SignIn() {

@@ -1,9 +1,7 @@
 "use client";
 
-import { SectionCard } from "@/components/common/CmsShared";
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { MetricGrid } from "@/components/dashboard/MetricGrid";
-import { OrdersTable } from "@/components/dashboard/OrdersTable";
 import { SalesPerformanceChart } from "@/components/dashboard/SalesPerformanceChart";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import {
@@ -12,14 +10,12 @@ import {
   getCommandes,
   salesTrend as initialSalesTrend,
   type DashboardMetric,
-  type RestaurantOrder,
   type SalesPoint,
 } from "@/lib/data";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
-  const [orders, setOrders] = useState<RestaurantOrder[]>([]);
   const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
   const [salesTrendData, setSalesTrendData] = useState<SalesPoint[]>(initialSalesTrend);
   const [loading, setLoading] = useState(true);
@@ -30,15 +26,28 @@ export default function DashboardPage() {
     try {
       const ordersData = await getCommandes();
 
-      setOrders(ordersData);
       setSalesTrendData(aggregateSalesTrend(ordersData));
 
-      const totalRevenue = ordersData.reduce((acc, curr) => acc + curr.total, 0);
+      // Filtrer les commandes du jour
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayOrders = ordersData.filter(o => new Date(o.date) >= todayStart);
+
+      // Filtrer les 7 derniers jours pour le revenu hebdomadaire
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 6);
+      weekStart.setHours(0, 0, 0, 0);
+      const weekOrders = ordersData.filter(o => new Date(o.date) >= weekStart);
+
+      const weekRevenue = weekOrders.reduce((acc, curr) => acc + curr.total, 0);
+      const todayRevenue = todayOrders.reduce((acc, curr) => acc + curr.total, 0);
+
       const updatedMetrics = [...initialMetrics];
-      updatedMetrics[0].value = totalRevenue;
-      updatedMetrics[1].value = ordersData.length;
+      updatedMetrics[0].value = weekRevenue;
+      updatedMetrics[1].value = todayOrders.length;
+      updatedMetrics[2].value = todayRevenue;
       updatedMetrics[3].value =
-        ordersData.length > 0 ? Math.round(totalRevenue / ordersData.length) : 0;
+        weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0;
 
       setMetrics(updatedMetrics);
     } catch (error) {
@@ -59,11 +68,11 @@ export default function DashboardPage() {
       <PageBreadCrumb pageTitle="Dashboard restaurant" />
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-        <p className="text-sm text-brand-500">TaiTai</p>
+        <p className="text-sm text-brand-500">TaïTaï</p>
         <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-gray-900 dark:text-white/90">
-              Pilotage complet du restaurant TaiTai
+              Pilotage complet du restaurant TaïTaï
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-500 dark:text-gray-400">
               Interface connectee a Supabase.{" "}
@@ -89,24 +98,7 @@ export default function DashboardPage() {
 
       <MetricGrid metrics={metrics} />
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <SalesPerformanceChart data={salesTrendData} />
-
-        <SectionCard
-          title="Commandes recentes"
-          description="Les derniers tickets arrives du site client."
-          actions={
-            <Link
-              href="/commandes"
-              className="text-sm font-medium text-brand-500 transition hover:text-brand-600"
-            >
-              Ouvrir le module
-            </Link>
-          }
-        >
-          <OrdersTable orders={orders.slice(0, 5)} />
-        </SectionCard>
-      </div>
+      <SalesPerformanceChart data={salesTrendData} />
     </div>
   );
 }

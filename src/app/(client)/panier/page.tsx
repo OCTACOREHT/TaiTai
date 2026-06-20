@@ -405,7 +405,7 @@ export default function PanierPage() {
               <Tag size={14} />
               Kod promo
             </label>
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="flex gap-2">
               <input
                 type="text"
                 value={promoCode}
@@ -416,7 +416,7 @@ export default function PanierPage() {
               <button
                 type="button"
                 onClick={applyPromoCode}
-                className="rounded-xl bg-[#F4A640] px-4 py-3 text-sm font-black text-white transition hover:bg-[#db8923] sm:py-0"
+                className="h-11 shrink-0 rounded-xl bg-[#F4A640] px-5 text-sm font-black text-white transition hover:bg-[#db8923]"
               >
                 Aplike
               </button>
@@ -501,7 +501,7 @@ export default function PanierPage() {
 
             {!livraisonDisponible ? (
               <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-black text-red-600">
-                Livrezon indisponib nan zon sa a. TaiTai livre pou kounye a selman nan Ouest.
+                Livrezon indisponib nan zon sa a. TaïTaï livre pou kounye a selman nan Ouest.
               </div>
             ) : (
               <div className="relative">

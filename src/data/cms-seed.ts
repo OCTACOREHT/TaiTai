@@ -1,7 +1,7 @@
 import { CmsDataSnapshot } from "@/types/cms";
 
 const articleOneBody = `
-  <p>Le programme editorial TaiTai CMS centralise les publications du restaurant, de la communaute et des offres de recrutement dans un seul espace. L'objectif est de publier plus vite, avec un rendu propre et un suivi clair.</p>
+  <p>Le programme editorial TaïTaï CMS centralise les publications du restaurant, de la communaute et des offres de recrutement dans un seul espace. L'objectif est de publier plus vite, avec un rendu propre et un suivi clair.</p>
   <h2>Ce que couvre le nouveau dispositif</h2>
   <p>Chaque article peut etre mis en brouillon, envoye en revue ou publie. Les auteurs disposent d'un espace simple pour structurer leurs textes, ajouter des liens, mettre des passages en valeur et preparer une couverture.</p>
   <ul>
@@ -9,7 +9,7 @@ const articleOneBody = `
     <li>Validation plus rapide avant publication</li>
     <li>Suivi des vues et des clics sur les liens</li>
   </ul>
-  <p>Le site public affiche ensuite le contenu sur une interface coherent avec la marque TaiTai.</p>
+  <p>Le site public affiche ensuite le contenu sur une interface coherent avec la marque TaïTaï.</p>
 `;
 
 const articleTwoBody = `
@@ -87,7 +87,7 @@ export const seedCmsData: CmsDataSnapshot = {
     {
       id: "article-cms-launch",
       slug: "nouveau-cms-editorial-taitai",
-      title: "TaiTai centralise ses contenus avec un nouveau CMS editorial",
+      title: "TaïTaï centralise ses contenus avec un nouveau CMS editorial",
       excerpt:
         "Articles, stages, partenaires et page d'accueil sont maintenant pilotes depuis un seul tableau de bord.",
       body: articleOneBody,
@@ -97,9 +97,9 @@ export const seedCmsData: CmsDataSnapshot = {
       authorId: "user-admin",
       featured: true,
       status: "published",
-      seoTitle: "Nouveau CMS editorial TaiTai",
+      seoTitle: "Nouveau CMS editorial TaïTaï",
       seoDescription:
-        "Decouvrez la nouvelle organisation editoriale du site TaiTai et son tableau de bord de suivi.",
+        "Decouvrez la nouvelle organisation editoriale du site TaïTaï et son tableau de bord de suivi.",
       createdAt: "2026-03-08T08:00:00.000Z",
       updatedAt: "2026-03-15T14:10:00.000Z",
       publishedAt: "2026-03-15T14:10:00.000Z",

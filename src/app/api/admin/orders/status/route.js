@@ -5,32 +5,38 @@ const db = require("@/server/db");
 
 export const runtime = "nodejs";
 
+const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
+
 const allowedStatuses = new Set(["En attente", "En préparation", "Prêt", "Livré", "Annulee"]);
 
 const statusMessages = {
-  "En attente": "Votre commande a bien ete recue et attend confirmation.",
-  "En préparation": "Votre commande est maintenant en preparation.",
-  "Prêt": "Votre commande est prete.",
-  "Livré": "Votre commande a ete livree. Merci pour votre confiance.",
+  "En attente": "Votre commande a bien été reçue et attend confirmation.",
+  "En préparation": "Votre commande est maintenant en préparation.",
+  "Prêt": "Votre commande est prête.",
+  "Livré": "Votre commande a été livrée. Merci pour votre confiance.",
   Annulee:
-    "Votre commande a ete annulee apres verification. Si vous pensez qu'il s'agit d'une erreur, contactez TaiTai.",
+    "Votre commande a été annulée après vérification. Si vous pensez qu'il s'agit d'une erreur, contactez TaiTai.",
 };
 
-function buildEmailHtml({ clientName, orderNumber, status }) {
-  const message = statusMessages[status] || "Le statut de votre commande a changÃ©.";
+function buildEmailHtml({ clientName, orderNumber, status, baseUrl }) {
+  const message = statusMessages[status] || "Le statut de votre commande a changé.";
 
   return `
     <!DOCTYPE html>
-    <html lang="fr">
-      <head><meta charset="UTF-8" /></head>
+    <html lang="fr-HT">
+      <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
       <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#101828;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px;">
           <tr>
             <td align="center">
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #eaecf0;">
                 <tr>
-                  <td style="background:#101828;padding:28px 32px;">
-                    <div style="font-size:24px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:#F4A640;">TAITAI</div>
+                  <td style="background:#101828;padding:24px 32px;text-align:center;">
+                    <img src="${baseUrl}/images/logo/tailogo.png" alt="TaïTaï" height="52" style="display:inline-block;height:52px;width:auto;max-width:160px;" />
                   </td>
                 </tr>
                 <tr>
@@ -40,7 +46,7 @@ function buildEmailHtml({ clientName, orderNumber, status }) {
                     <p style="margin:0 0 18px 0;font-size:15px;line-height:1.7;color:#475467;">Bonjour ${clientName || ""},</p>
                     <p style="margin:0;font-size:16px;line-height:1.8;color:#344054;">${message}</p>
                     <div style="margin-top:28px;padding:18px 20px;background:#fff7ed;border-radius:16px;color:#9a3412;font-size:14px;line-height:1.6;">
-                      Vous pouvez aussi suivre votre commande depuis la page de suivi TaiTai avec le numÃ©ro <strong>${orderNumber}</strong>.
+                      Vous pouvez aussi suivre votre commande depuis la page de suivi TaiTai avec le numéro <strong>${orderNumber}</strong>.
                     </div>
                   </td>
                 </tr>
@@ -134,16 +140,25 @@ export async function PATCH(request) {
 
     if (email && process.env.RESEND_API_KEY) {
       const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      // Prepare email with UTF-8 encoding
+      const emailHtml = buildEmailHtml({
+        clientName: order.client_nom,
+        orderNumber: order.numero_commande,
+        status,
+        baseUrl: request.nextUrl.origin,
+      });
+      const emailText = `Bonjour ${order.client_nom}, votre commande ${order.numero_commande} est maintenant: ${status}.`;
+      
       const { error } = await resend.emails.send({
-        from: "TaiTai Restaurant <onboarding@resend.dev>",
+        from: fromEmail,
         to: [email],
         subject: `Votre commande ${order.numero_commande} est ${status}`,
-        html: buildEmailHtml({
-          clientName: order.client_nom,
-          orderNumber: order.numero_commande,
-          status,
-        }),
-        text: `Bonjour ${order.client_nom}, votre commande ${order.numero_commande} est maintenant: ${status}.`,
+        html: emailHtml,
+        text: emailText,
+        headers: {
+          "Content-Type": "text/html; charset=UTF-8",
+        },
       });
 
       if (error) {

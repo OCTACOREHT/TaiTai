@@ -17,18 +17,21 @@ const contactCards = [
     value: "+509 31 19 1999",
     note: "Rele nou pou kesyon rapid.",
     icon: Phone,
+    href: "tel:+50931191999",
   },
   {
     title: "Email",
-    value: "contact@taitai.ht",
+    value: "info@taïtaï.com",
     note: "Nou reponn mesaj yo pi vit posib.",
     icon: Mail,
+    href: "mailto:info@xn--tata-6pac.com",
   },
   {
     title: "Adrès",
     value: "Pòtoprens, Ayiti",
     note: "Livrezon disponib nan depatman Lwès.",
     icon: MapPin,
+    href: undefined,
   },
 ];
 
@@ -39,7 +42,7 @@ export default function ContactPage() {
         <div className="space-y-6">
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-[#F4A640]">
             <MessageCircle className="h-4 w-4" />
-            Kontakte TaiTai
+            Kontakte TaïTaï
           </span>
           <div className="space-y-4">
             <h1 className="text-3xl font-black leading-tight sm:text-4xl md:text-5xl">
@@ -84,7 +87,11 @@ export default function ContactPage() {
                 <Icon className="h-6 w-6" />
               </div>
               <h2 className="text-lg font-black text-[#101828]">{card.title}</h2>
-              <p className="mt-2 font-bold text-[#344054]">{card.value}</p>
+              {card.href ? (
+                <a href={card.href} className="mt-2 block font-bold text-[#344054] transition hover:text-[#F4A640]">{card.value}</a>
+              ) : (
+                <p className="mt-2 font-bold text-[#344054]">{card.value}</p>
+              )}
               <p className="mt-2 text-sm leading-6 text-[#667085]">{card.note}</p>
             </article>
           );
@@ -96,7 +103,7 @@ export default function ContactPage() {
           <h2 className="text-2xl font-black text-[#101828]">Enfòmasyon itil</h2>
           <div className="mt-6 space-y-4 text-sm leading-7 text-[#667085]">
             <p>
-              Pou livrezon, TaiTai sèvi kounye a sèlman zòn ki nan depatman Lwès.
+              Pou livrezon, TaïTaï sèvi kounye a sèlman zòn ki nan depatman Lwès.
               Si adrès ou deyò Lwès, sit la ap montre livrezon pa disponib.
             </p>
             <p>
@@ -109,7 +116,7 @@ export default function ContactPage() {
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            alert("Mèsi! Mesaj ou a pare pou ekip TaiTai la.");
+            alert("Mèsi! Mesaj ou a pare pou ekip TaïTaï la.");
           }}
           className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7"
         >
