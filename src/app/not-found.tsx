@@ -1,46 +1,67 @@
-import GridShape from "@/components/common/GridShape";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 export default function NotFound() {
   return (
-    <div className="relative z-1 flex min-h-screen flex-col items-center justify-center overflow-hidden p-6">
-      <GridShape />
-      <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
-        <h1 className="mb-8 text-title-md font-bold text-gray-800 dark:text-white/90 xl:text-title-2xl">
-          ERROR
-        </h1>
-
-        <Image
-          src="/images/error/404.svg"
-          alt="404"
-          className="dark:hidden"
-          width={472}
-          height={152}
-        />
-        <Image
-          src="/images/error/404-dark.svg"
-          alt="404"
-          className="hidden dark:block"
-          width={472}
-          height={152}
-        />
-
-        <p className="mb-6 mt-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-          La page demandee n'existe pas ou n'est pas encore maquettée.
-        </p>
-
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-3.5 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
-        >
-          Retour au dashboard
-        </Link>
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#101828] px-6 py-12">
+      {/* Background pattern */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#F4A640]/5 blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#F4A640]/8 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F4A640]/3 blur-3xl" />
       </div>
 
-      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-sm text-gray-500 dark:text-gray-400">
-        &copy; {new Date().getFullYear()} - TaïTaï
+      <div className="relative z-10 flex flex-col items-center gap-10 text-center">
+        {/* Logo */}
+        <div className="relative h-12 w-48">
+          <Image
+            src="/images/logo/tailogo.png"
+            alt="TaïTaï"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+
+        {/* 404 number */}
+        <div className="space-y-1">
+          <p className="text-[120px] font-black leading-none text-[#F4A640] sm:text-[160px]">
+            404
+          </p>
+          <div className="h-1 w-24 rounded-full bg-[#F4A640]/40 mx-auto" />
+        </div>
+
+        {/* Message */}
+        <div className="space-y-3">
+          <h1 className="text-2xl font-black text-white sm:text-3xl">
+            Paj sa a pa egziste
+          </h1>
+          <p className="max-w-sm text-base text-[#98A2B3]">
+            Li sanble ou pèdi chemen ou. Paj ou ap chèche a pa disponib oswa deplase.
+          </p>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center rounded-xl bg-[#F4A640] px-6 py-3 text-sm font-black text-[#101828] transition hover:bg-[#e09530]"
+          >
+            ← Retounen akèy
+          </Link>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+          >
+            Dashboard admin
+          </Link>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center text-xs text-[#475467]">
+        © {new Date().getFullYear()} TaïTaï · Fyète Ayiti
       </p>
     </div>
   );
