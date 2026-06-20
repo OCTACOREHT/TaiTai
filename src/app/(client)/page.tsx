@@ -471,11 +471,7 @@ export default function ClientHomePage() {
       </section>
 
       <section className="space-y-8 rounded-3xl bg-[#F4A640] p-6 text-center text-white shadow-xl shadow-[#F4A640]/30 sm:p-12">
-<<<<<<< HEAD
         <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Ou pare po gou TaiTai la ?</h2>
-=======
-        <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Ou pare pou gou TaïTaï a ?</h2>
->>>>>>> a0ec55ca4c182d964094daf1ace999292807abcd
         <p className="mx-auto max-w-xl text-lg font-medium opacity-90 sm:text-xl">
           Pase kòmann ou jodi a epi jwi yon eksperyans manje ou pap bliye.
         </p>
