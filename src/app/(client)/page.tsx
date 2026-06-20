@@ -265,15 +265,14 @@ export default function ClientHomePage() {
           <div className="space-y-3">
             <h2 className="text-3xl font-bold tracking-tight text-[#101828] sm:text-4xl">Kèk plat popilè</h2>
             <p className="text-lg font-medium text-[#667085]">Chwazi youn nan plat kliyan yo renmen anpil.</p>
-            <p className="text-sm font-bold text-[#98A2B3] md:hidden">Glise a goch oswa adwat pou wè lòt plat yo.</p>
           </div>
         </div>
 
-        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-auto md:grid md:max-w-6xl md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(homeDishes.length > 0 ? homeDishes : []).map((dish) => (
             <div
               key={dish.id}
-              className="group flex min-w-[82vw] snap-center flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 hover:border-transparent hover:shadow-xl sm:min-w-[360px] md:min-w-0"
+              className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 hover:border-transparent hover:shadow-xl"
             >
               <div className="relative h-56 md:h-64 w-full overflow-hidden">
                 <img

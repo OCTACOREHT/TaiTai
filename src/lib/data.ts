@@ -161,11 +161,11 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     channel: cmd.canal as OrderChannel,
     placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
     date: cmd.created_at,
-    items: cmd.commande_items.map((item: any) => ({
+    items: (cmd.commande_items ?? []).map((item: any) => ({
       name: item.nom_plat,
-      quantity: item.quantite,
-      price: item.prix_unitaire,
-      category: "Divers" // This would ideally come from the join
+      quantity: Number(item.quantite) || 0,
+      price: Number(item.prix_unitaire) || 0,
+      category: "Divers",
     })),
     paymentMethod: cmd.payment_method ?? null,
     paymentProofUrl: cmd.payment_proof_url ?? null,
@@ -213,7 +213,7 @@ export function aggregateDishSales(orders: RestaurantOrder[]): DishSale[] {
   });
 
   return Object.values(sales)
-    .sort((a, b) => b.revenue - a.revenue)
+    .sort((a, b) => b.quantity - a.quantity)
     .map(s => ({ ...s, trend: "stable" as const }));
 }
 

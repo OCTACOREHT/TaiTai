@@ -6,7 +6,9 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import { canAccessAdminPath, hasFullAdminAccess } from "@/lib/admin-access";
-import { getAdminSession } from "@/lib/admin-auth";
+import { clearAdminSession, getAdminSession } from "@/lib/admin-auth";
+import { roleLabels } from "@/lib/admin-team";
+import type { CmsUser } from "@/types/cms";
 import {
   BadgePercent,
   BarChart3,
@@ -14,6 +16,7 @@ import {
   ClipboardCheck,
   Globe,
   LayoutDashboard,
+  LogOut,
   PackageSearch,
   ReceiptText,
   Store,
@@ -21,6 +24,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} strokeWidth={2} /> },
@@ -39,11 +43,20 @@ const navItems = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<CmsUser | null>(null);
 
   useEffect(() => {
-    setRole(getAdminSession()?.user.role || null);
+    const session = getAdminSession();
+    setRole(session?.user.role || null);
+    setUser(session?.user || null);
   }, [pathname]);
+
+  const handleLogout = () => {
+    clearAdminSession();
+    router.push("/signin");
+  };
 
   const visibleNavItems = useMemo(
     () =>
@@ -126,6 +139,42 @@ const AppSidebar: React.FC = () => {
             </ul>
           </div>
         </nav>
+      </div>
+
+      {/* User block — bottom of sidebar */}
+      <div className="mt-auto border-t border-gray-200 px-3 py-4 dark:border-gray-800">
+        {isExpanded || isHovered || isMobileOpen ? (
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-xs font-bold text-brand-600">
+              {user?.name
+                ? user.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+                : "?"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                {user?.name ?? "Utilisateur"}
+              </p>
+              <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                {user?.role ? (roleLabels[user.role as keyof typeof roleLabels] ?? user.role) : ""}
+              </p>
+            </div>
+            <button
+              onClick={handleLogout}
+              title="Se déconnecter"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleLogout}
+            title="Se déconnecter"
+            className="flex w-full items-center justify-center rounded-lg py-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10"
+          >
+            <LogOut size={18} />
+          </button>
+        )}
       </div>
     </aside>
   );

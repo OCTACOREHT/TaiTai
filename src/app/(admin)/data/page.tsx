@@ -15,7 +15,7 @@ import {
   type HourlyVolume,
 } from "@/lib/data";
 import { exportToExcel } from "@/lib/export-excel";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Download,
@@ -24,7 +24,12 @@ import {
   TrendingUp,
   RotateCcw,
   ChefHat,
-  Flame,
+  CalendarDays,
+  Clock,
+  DollarSign,
+  Package,
+  ShoppingCart,
+  Banknote,
 } from "lucide-react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -33,7 +38,7 @@ interface DataMetric {
   label: string;
   value: number;
   formatted: string;
-  icon: string;
+  icon: React.ReactNode;
   trend?: string;
   color: string;
 }
@@ -90,28 +95,28 @@ export default function DataPage() {
           label: "Revenu Total",
           value: totalRevenue,
           formatted: formatCurrency(totalRevenue),
-          icon: "💰",
+          icon: <DollarSign size={28} />,
           color: "from-blue-500 to-blue-600",
         },
         {
           label: "Total Commandes",
           value: totalOrders,
           formatted: formatNumber(totalOrders),
-          icon: "📦",
+          icon: <Package size={28} />,
           color: "from-purple-500 to-purple-600",
         },
         {
           label: "Aujourd'hui",
           value: todayOrders,
           formatted: formatNumber(todayOrders),
-          icon: "🔥",
+          icon: <CalendarDays size={28} />,
           color: "from-orange-500 to-orange-600",
         },
         {
           label: "Panier Moyen",
           value: averageTicket,
           formatted: formatCurrency(averageTicket),
-          icon: "🛒",
+          icon: <ShoppingCart size={28} />,
           color: "from-green-500 to-green-600",
         },
       ]);
@@ -256,11 +261,20 @@ export default function DataPage() {
     URL.revokeObjectURL(url);
   };
 
+  const hasActiveFilters =
+    filters.dateFrom !== "" ||
+    filters.dateTo !== "" ||
+    filters.status !== "" ||
+    filters.minAmount !== 0 ||
+    filters.maxAmount !== 1000000;
+
+  const displayedOrders = hasActiveFilters ? filteredOrders : filteredOrders.slice(0, 10);
+
   // Chart data - Sales by day
   const salesTrendData = aggregateSalesTrend(orders);
   const barChartOptions = {
     chart: {
-      type: "bar",
+      type: "bar" as const,
       height: 350,
       toolbar: { show: true },
     },
@@ -300,12 +314,10 @@ export default function DataPage() {
   // Pie chart - Top dishes
   const topDishes = dishSales.slice(0, 5);
   const pieChartOptions = {
-    chart: { height: 350 },
+    chart: { type: "pie" as const, height: 350 },
     colors: ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"],
     labels: topDishes.map((d) => d.name),
-    legend: {
-      position: "bottom",
-    },
+    legend: { position: "bottom" as const },
     tooltip: {
       y: {
         formatter: (val: number) => formatNumber(val),
@@ -318,13 +330,13 @@ export default function DataPage() {
   // Area chart - Peak hours
   const areaChartOptions = {
     chart: {
-      type: "area",
+      type: "area" as const,
       height: 350,
       toolbar: { show: true },
     },
     colors: ["#10b981"],
     dataLabels: { enabled: false },
-    stroke: { curve: "smooth", width: 2 },
+    stroke: { curve: "smooth" as const, width: 2 },
     xaxis: {
       categories: peakHours.map((h) => h.hour),
       axisBorder: { show: false },
@@ -334,7 +346,7 @@ export default function DataPage() {
       title: { text: "Nombre de commandes" },
     },
     fill: {
-      type: "gradient",
+      type: "gradient" as const,
       gradient: {
         shadeIntensity: 1,
         opacityFrom: 0.45,
@@ -360,7 +372,7 @@ export default function DataPage() {
   const topDishes10 = dishSales.slice(0, 10);
   const horizontalBarOptions = {
     chart: {
-      type: "bar",
+      type: "bar" as const,
       height: 400,
       toolbar: { show: true },
     },
@@ -368,7 +380,7 @@ export default function DataPage() {
     plotOptions: {
       bar: {
         horizontal: true,
-        dataLabels: { position: "top" },
+        dataLabels: { position: "top" as const },
       },
     },
     dataLabels: { enabled: false },
@@ -427,7 +439,7 @@ export default function DataPage() {
                   {metric.label}
                 </p>
               </div>
-              <span className="text-3xl">{metric.icon}</span>
+              <span className="p-2 rounded-xl bg-white/20">{metric.icon}</span>
             </div>
             <p className="text-3xl font-bold">{metric.formatted}</p>
             <p className="text-xs text-white/60 mt-2">En temps réel</p>
@@ -691,14 +703,23 @@ export default function DataPage() {
           </div>
           <div className="p-6">
             <div className="h-80">
-              {typeof window !== "undefined" && (
+              {loading ? (
+                <div className="flex h-full items-center justify-center">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+                </div>
+              ) : topDishes.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-400">
+                  <ChefHat size={36} className="text-gray-300" />
+                  <p className="text-sm font-medium">Aucun plat vendu pour l'instant</p>
+                </div>
+              ) : typeof window !== "undefined" ? (
                 <Chart
                   options={pieChartOptions}
                   series={pieChartSeries}
                   type="pie"
                   height={350}
                 />
-              )}
+              ) : null}
             </div>
           </div>
         </div>
@@ -709,7 +730,7 @@ export default function DataPage() {
         <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
           <div className="border-b border-gray-200 px-6 py-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <Flame size={20} className="text-orange-600" />
+              <Clock size={20} className="text-orange-600" />
               Heures de Pointe
             </h3>
             <p className="text-sm text-gray-500 mt-1">Volume de commandes par heure</p>
@@ -732,7 +753,8 @@ export default function DataPage() {
         <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
           <div className="border-b border-gray-200 px-6 py-4">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              💵 Top 10 Revenus
+              <Banknote size={20} className="text-yellow-600" />
+              Top 10 Revenus
             </h3>
             <p className="text-sm text-gray-500 mt-1">Revenu généré par plat</p>
           </div>
@@ -785,21 +807,37 @@ export default function DataPage() {
                     {formatCurrency(dish.revenue)}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                        dish.trend === "up"
-                          ? "bg-green-100 text-green-700"
-                          : dish.trend === "down"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {dish.trend === "up"
-                        ? "📈 Hausse"
-                        : dish.trend === "down"
-                        ? "📉 Baisse"
-                        : "➡️ Stable"}
-                    </span>
+                    {dish.trend === "up" ? (
+                      <span className="inline-flex flex-col items-center gap-1">
+                        <span className="inline-flex items-end gap-[3px] h-6">
+                          <span className="w-2 rounded-t-sm bg-green-300" style={{ height: "6px" }} />
+                          <span className="w-2 rounded-t-sm bg-green-400" style={{ height: "10px" }} />
+                          <span className="w-2 rounded-t-sm bg-green-500" style={{ height: "14px" }} />
+                          <span className="w-2 rounded-t-sm bg-green-600" style={{ height: "20px" }} />
+                        </span>
+                        <span className="text-[10px] font-bold text-green-600">▲ Hausse</span>
+                      </span>
+                    ) : dish.trend === "down" ? (
+                      <span className="inline-flex flex-col items-center gap-1">
+                        <span className="inline-flex items-end gap-[3px] h-6">
+                          <span className="w-2 rounded-t-sm bg-red-600" style={{ height: "20px" }} />
+                          <span className="w-2 rounded-t-sm bg-red-500" style={{ height: "14px" }} />
+                          <span className="w-2 rounded-t-sm bg-red-400" style={{ height: "10px" }} />
+                          <span className="w-2 rounded-t-sm bg-red-300" style={{ height: "6px" }} />
+                        </span>
+                        <span className="text-[10px] font-bold text-red-600">▼ Baisse</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex flex-col items-center gap-1">
+                        <span className="inline-flex items-end gap-[3px] h-6">
+                          <span className="w-2 rounded-t-sm bg-gray-300" style={{ height: "10px" }} />
+                          <span className="w-2 rounded-t-sm bg-gray-400" style={{ height: "14px" }} />
+                          <span className="w-2 rounded-t-sm bg-gray-300" style={{ height: "10px" }} />
+                          <span className="w-2 rounded-t-sm bg-gray-400" style={{ height: "14px" }} />
+                        </span>
+                        <span className="text-[10px] font-bold text-gray-500">— Stable</span>
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -810,9 +848,20 @@ export default function DataPage() {
 
       {/* Recent Orders */}
       <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h3 className="text-lg font-bold text-gray-900">Commandes Récentes</h3>
-          <p className="text-sm text-gray-500 mt-1">{filteredOrders.length} commande(s) selon les filtres appliqués</p>
+        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Commandes Récentes</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              {hasActiveFilters
+                ? `${filteredOrders.length} commande(s) selon les filtres appliqués`
+                : `10 dernières commandes sur ${filteredOrders.length} au total`}
+            </p>
+          </div>
+          {hasActiveFilters && (
+            <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+              Filtres actifs
+            </span>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -826,12 +875,9 @@ export default function DataPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
+              {displayedOrders.length > 0 ? (
+                displayedOrders.map((order, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 text-sm font-bold text-gray-900">{order.numero}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{order.customer}</td>
                     <td className="px-6 py-4 text-right text-sm font-bold text-gray-900">

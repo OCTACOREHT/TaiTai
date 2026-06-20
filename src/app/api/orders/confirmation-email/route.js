@@ -42,7 +42,7 @@ function buildOrderEmailHtml({ order, items, followUrl, baseUrl }) {
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#101828;">`
+      <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#101828;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px;">
           <tr>
             <td align="center">
