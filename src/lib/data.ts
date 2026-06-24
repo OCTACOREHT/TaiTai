@@ -76,6 +76,8 @@ export interface RestaurantOrder {
   paymentStatus?: string | null;
 }
 
+export type PeriodType = "day" | "week" | "month" | "year" | "all";
+
 export interface StockItem {
   id: string;
   name: string;
@@ -230,6 +232,172 @@ export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
   });
 
   return Object.entries(hours).map(([hour, orders]) => ({ hour, orders }));
+}
+
+// Période-based aggregation functions
+export function aggregateSalesByPeriod(orders: RestaurantOrder[], period: PeriodType): { revenue: number; label: string; orders: number } {
+  const now = new Date();
+  let startDate = new Date();
+  let label = "";
+
+  switch (period) {
+    case "day":
+      startDate.setHours(0, 0, 0, 0);
+      label = "Aujourd'hui";
+      break;
+    case "week":
+      startDate.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+      startDate.setHours(0, 0, 0, 0);
+      label = "Cette semaine";
+      break;
+    case "month":
+      startDate.setDate(1);
+      startDate.setHours(0, 0, 0, 0);
+      label = "Ce mois";
+      break;
+    case "year":
+      startDate.setMonth(0, 1);
+      startDate.setHours(0, 0, 0, 0);
+      label = "Cette année";
+      break;
+    case "all":
+      startDate = new Date(0);
+      label = "Tout le temps";
+      break;
+  }
+
+  const filteredOrders = orders.filter(order => new Date(order.date) >= startDate);
+  const revenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+
+  return {
+    revenue,
+    label,
+    orders: filteredOrders.length,
+  };
+}
+
+export function aggregateSalesTrendByPeriod(orders: RestaurantOrder[], period: PeriodType): SalesPoint[] {
+  if (period === "day") {
+    // Par heure pour le jour
+    const hours: Record<string, number> = {};
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 24; i++) {
+      hours[`${i}h`] = 0;
+    }
+
+    orders.forEach(order => {
+      const orderDate = new Date(order.date);
+      if (orderDate.toDateString() === now.toDateString()) {
+        const hour = orderDate.getHours();
+        hours[`${hour}h`] += order.total;
+      }
+    });
+
+    return Object.entries(hours).map(([label, total]) => ({ label, total }));
+  } else if (period === "week") {
+    // Par jour pour la semaine
+    const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+    const slots: { start: Date; end: Date; label: string; total: number }[] = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const start = new Date();
+      start.setDate(start.getDate() - i);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setHours(23, 59, 59, 999);
+      slots.push({ start, end, label: dayNames[start.getDay()], total: 0 });
+    }
+
+    const windowStart = slots[0].start;
+
+    orders.forEach(order => {
+      const d = new Date(order.date);
+      if (d < windowStart) return;
+      const slot = slots.find(s => d >= s.start && d <= s.end);
+      if (slot) slot.total += order.total;
+    });
+
+    return slots.map(s => ({ label: s.label, total: s.total }));
+  } else if (period === "month") {
+    // Par semaine pour le mois
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const weeks: { start: Date; end: Date; label: string; total: number }[] = [];
+
+    let weekStart = new Date(monthStart);
+    let weekNumber = 1;
+
+    while (weekStart <= monthEnd) {
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      if (weekEnd > monthEnd) weekEnd.setTime(monthEnd.getTime());
+
+      weeks.push({
+        start: new Date(weekStart),
+        end: new Date(weekEnd),
+        label: `Sem ${weekNumber}`,
+        total: 0,
+      });
+
+      weekStart.setDate(weekStart.getDate() + 7);
+      weekNumber++;
+    }
+
+    orders.forEach(order => {
+      const d = new Date(order.date);
+      const week = weeks.find(w => d >= w.start && d <= w.end);
+      if (week) week.total += order.total;
+    });
+
+    return weeks.map(w => ({ label: w.label, total: w.total }));
+  } else if (period === "year") {
+    // Par mois pour l'année
+    const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+    const months: { start: Date; end: Date; label: string; total: number }[] = [];
+
+    for (let i = 0; i < 12; i++) {
+      const start = new Date(new Date().getFullYear(), i, 1);
+      const end = new Date(new Date().getFullYear(), i + 1, 0);
+      months.push({ start, end, label: monthNames[i], total: 0 });
+    }
+
+    orders.forEach(order => {
+      const d = new Date(order.date);
+      const month = months.find(m => d >= m.start && d <= m.end);
+      if (month) month.total += order.total;
+    });
+
+    return months.map(m => ({ label: m.label, total: m.total }));
+  } else {
+    // "all" - par mois sur toute l'historique
+    const monthMap: Record<string, { start: Date; label: string; total: number }> = {};
+
+    orders.forEach(order => {
+      const date = new Date(order.date);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const key = `${year}-${month}`;
+
+      if (!monthMap[key]) {
+        const monthStart = new Date(year, month, 1);
+        const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+        monthMap[key] = {
+          start: monthStart,
+          label: `${monthNames[month]} ${year}`,
+          total: 0,
+        };
+      }
+
+      monthMap[key].total += order.total;
+    });
+
+    return Object.values(monthMap)
+      .sort((a, b) => a.start.getTime() - b.start.getTime())
+      .map(m => ({ label: m.label, total: m.total }));
+  }
 }
 
 // Keep mock data for metrics and others to avoid breaks

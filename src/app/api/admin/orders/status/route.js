@@ -41,7 +41,7 @@ function buildEmailHtml({ clientName, orderNumber, status, baseUrl }) {
                 </tr>
                 <tr>
                   <td style="padding:32px;">
-                    <p style="margin:0 0 8px 0;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#F4A640;">Commande ${orderNumber}</p>
+                    <p style="margin:0 0 8px 0;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#FF9000;">Commande ${orderNumber}</p>
                     <h1 style="margin:0 0 16px 0;font-size:26px;line-height:1.2;color:#101828;">Statut: ${status}</h1>
                     <p style="margin:0 0 18px 0;font-size:15px;line-height:1.7;color:#475467;">Bonjour ${clientName || ""},</p>
                     <p style="margin:0;font-size:16px;line-height:1.8;color:#344054;">${message}</p>

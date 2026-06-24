@@ -21,7 +21,7 @@ export function SalesPerformanceChart({ data }: { data: SalesPoint[] }) {
       zoom: { enabled: false },
       selection: { enabled: false },
     },
-    colors: ["#f4a640"],
+    colors: ["#ff9000"],
     stroke: {
       curve: "smooth",
       width: 3,
@@ -35,7 +35,7 @@ export function SalesPerformanceChart({ data }: { data: SalesPoint[] }) {
     },
     markers: {
       size: 5,
-      colors: ["#f4a640"],
+      colors: ["#ff9000"],
       strokeColors: "#ffffff",
       strokeWidth: 2,
       hover: {

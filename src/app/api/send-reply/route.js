@@ -63,7 +63,7 @@ export async function POST(request) {
                   </tr>
                   <tr>
                     <td style="background:#ffffff;border-radius:24px;padding:36px 32px;box-shadow:0 30px 60px rgba(0,0,0,0.18);">
-                      <div style="font-size:12px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#F4A640;margin-bottom:12px;">Réponse de TaiTai Restaurant</div>
+                      <div style="font-size:12px;font-weight:800;letter-spacing:0.2em;text-transform:uppercase;color:#FF9000;margin-bottom:12px;">Réponse de TaiTai Restaurant</div>
                       <h2 style="margin:0 0 20px 0;font-size:26px;font-weight:900;line-height:1.1;color:#0f172a;">${safeSubject}</h2>
                       <p style="margin:0 0 8px 0;font-size:15px;color:#475467;">Bonjour <strong>${safeName}</strong>,</p>
                       <div style="margin:20px 0;padding:20px 24px;background:#fef6ec;border-radius:16px;font-size:15px;line-height:1.8;color:#344054;">

@@ -40,7 +40,7 @@ export default function ContactPage() {
     <div className="space-y-14 pb-16">
       <section className="grid gap-8 rounded-3xl bg-[#101828] p-6 text-white shadow-2xl sm:p-8 md:grid-cols-[1.1fr_0.9fr] md:p-12">
         <div className="space-y-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-[#F4A640]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-[#FF9000]">
             <MessageCircle className="h-4 w-4" />
             Kontakte TaïTaï
           </span>
@@ -56,7 +56,7 @@ export default function ContactPage() {
           <div className="flex flex-wrap gap-4">
             <Link
               href="/menu"
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#F4A640] px-6 py-4 text-sm font-black text-white transition hover:bg-[#db8923] sm:w-auto"
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-[#FF9000] px-6 py-4 text-sm font-black text-white transition hover:bg-[#E68000] sm:w-auto"
             >
               Gade meni an
             </Link>
@@ -83,12 +83,12 @@ export default function ContactPage() {
           const Icon = card.icon;
           return (
             <article key={card.title} className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F4A640]/10 text-[#F4A640]">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF9000]/10 text-[#FF9000]">
                 <Icon className="h-6 w-6" />
               </div>
               <h2 className="text-lg font-black text-[#101828]">{card.title}</h2>
               {card.href ? (
-                <a href={card.href} className="mt-2 block font-bold text-[#344054] transition hover:text-[#F4A640]">{card.value}</a>
+                <a href={card.href} className="mt-2 block font-bold text-[#344054] transition hover:text-[#FF9000]">{card.value}</a>
               ) : (
                 <p className="mt-2 font-bold text-[#344054]">{card.value}</p>
               )}
@@ -129,25 +129,25 @@ export default function ContactPage() {
             <input
               required
               placeholder="Non ou"
-              className="h-12 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+              className="h-12 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#FF9000] focus:ring-4 focus:ring-[#FF9000]/10"
             />
             <input
               required
               type="tel"
               placeholder="Telefòn"
-              className="h-12 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+              className="h-12 rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#FF9000] focus:ring-4 focus:ring-[#FF9000]/10"
             />
           </div>
           <input
             type="email"
             placeholder="Email"
-            className="mt-4 h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+            className="mt-4 h-12 w-full rounded-2xl border border-gray-200 bg-white px-4 text-sm font-semibold outline-none transition focus:border-[#FF9000] focus:ring-4 focus:ring-[#FF9000]/10"
           />
           <textarea
             required
             rows={5}
             placeholder="Ekri mesaj ou..."
-            className="mt-4 w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-semibold outline-none transition focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10"
+            className="mt-4 w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-sm font-semibold outline-none transition focus:border-[#FF9000] focus:ring-4 focus:ring-[#FF9000]/10"
           />
           <button
             type="submit"
@@ -173,7 +173,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex items-start gap-4 rounded-2xl bg-white/5 p-4">
-      <span className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-[#F4A640]/15 text-[#F4A640]">
+      <span className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-[#FF9000]/15 text-[#FF9000]">
         {icon}
       </span>
       <div>

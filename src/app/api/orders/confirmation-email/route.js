@@ -54,7 +54,7 @@ function buildOrderEmailHtml({ order, items, followUrl, baseUrl }) {
                 </tr>
                 <tr>
                   <td style="padding:32px;">
-                    <p style="margin:0 0 8px 0;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#F4A640;">Commande ${escapeHtml(order.numero_commande)}</p>
+                    <p style="margin:0 0 8px 0;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#FF9000;">Commande ${escapeHtml(order.numero_commande)}</p>
                     <h1 style="margin:0 0 16px 0;font-size:26px;line-height:1.2;color:#101828;">Nou resevwa komann ou.</h1>
                     <p style="margin:0 0 18px 0;font-size:15px;line-height:1.7;color:#475467;">Bonjour ${escapeHtml(order.client_nom)},</p>
                     <p style="margin:0 0 24px 0;font-size:16px;line-height:1.8;color:#344054;">
@@ -77,7 +77,7 @@ function buildOrderEmailHtml({ order, items, followUrl, baseUrl }) {
 
                     <div style="margin-top:24px;color:#667085;font-size:14px;line-height:1.7;">
                       Ou ka swiv komann nan isit la:
-                      <a href="${escapeHtml(followUrl)}" style="color:#F4A640;font-weight:800;">${escapeHtml(followUrl)}</a>
+                      <a href="${escapeHtml(followUrl)}" style="color:#FF9000;font-weight:800;">${escapeHtml(followUrl)}</a>
                     </div>
                   </td>
                 </tr>

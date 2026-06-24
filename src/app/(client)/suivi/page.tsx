@@ -141,7 +141,7 @@ export default function SuiviPage() {
               placeholder="Antre nimewo ou (egzanp: TT-1234)"
               value={numero}
               onChange={e => setNumero(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-14 pr-4 text-base font-bold uppercase text-[#101828] transition-all placeholder:text-gray-300 focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 sm:py-5 sm:pr-6 sm:text-xl"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-14 pr-4 text-base font-bold uppercase text-[#101828] transition-all placeholder:text-gray-300 focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10 sm:py-5 sm:pr-6 sm:text-xl"
             />
           </div>
           <button 

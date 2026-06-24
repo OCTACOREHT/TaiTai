@@ -2,14 +2,18 @@
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { MetricGrid } from "@/components/dashboard/MetricGrid";
+import { PeriodFilter } from "@/components/dashboard/PeriodFilter";
 import { SalesPerformanceChart } from "@/components/dashboard/SalesPerformanceChart";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import {
   aggregateSalesTrend,
+  aggregateSalesTrendByPeriod,
+  aggregateSalesByPeriod,
   dashboardMetrics as initialMetrics,
   getCommandes,
   salesTrend as initialSalesTrend,
   type DashboardMetric,
+  type PeriodType,
   type SalesPoint,
 } from "@/lib/data";
 import Link from "next/link";
@@ -19,6 +23,7 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
   const [salesTrendData, setSalesTrendData] = useState<SalesPoint[]>(initialSalesTrend);
   const [loading, setLoading] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("week");
 
   const loadData = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -26,14 +31,18 @@ export default function DashboardPage() {
     try {
       const ordersData = await getCommandes();
 
-      setSalesTrendData(aggregateSalesTrend(ordersData));
+      // Update trend data based on selected period
+      setSalesTrendData(aggregateSalesTrendByPeriod(ordersData, selectedPeriod));
+
+      // Calculate metrics for the selected period
+      const periodStats = aggregateSalesByPeriod(ordersData, selectedPeriod);
 
       // Filtrer les commandes du jour
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       const todayOrders = ordersData.filter(o => new Date(o.date) >= todayStart);
 
-      // Filtrer les 7 derniers jours pour le revenu hebdomadaire
+      // Filtrer les 7 derniers jours pour le revenu hebdomadaire (pour la métrique par défaut)
       const weekStart = new Date();
       weekStart.setDate(weekStart.getDate() - 6);
       weekStart.setHours(0, 0, 0, 0);
@@ -43,11 +52,12 @@ export default function DashboardPage() {
       const todayRevenue = todayOrders.reduce((acc, curr) => acc + curr.total, 0);
 
       const updatedMetrics = [...initialMetrics];
-      updatedMetrics[0].value = weekRevenue;
-      updatedMetrics[1].value = todayOrders.length;
-      updatedMetrics[2].value = todayRevenue;
+      updatedMetrics[0].value = periodStats.revenue; // Revenue for selected period
+      updatedMetrics[0].label = `Revenu (${periodStats.label.toLowerCase()})`; // Update label based on period
+      updatedMetrics[1].value = todayOrders.length; // Today's orders
+      updatedMetrics[2].value = todayRevenue; // Today's sales
       updatedMetrics[3].value =
-        weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0;
+        weekOrders.length > 0 ? Math.round(weekRevenue / weekOrders.length) : 0; // Average ticket
 
       setMetrics(updatedMetrics);
     } catch (error) {
@@ -59,7 +69,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [selectedPeriod]);
 
   useAutoRefresh(() => loadData(false));
 
@@ -93,6 +103,20 @@ export default function DashboardPage() {
               Gerer le menu
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white/90">
+              Filtrer les revenus par période
+            </h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Visualisez vos revenus par jour, semaine, mois, année ou tout le temps
+            </p>
+          </div>
+          <PeriodFilter selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
         </div>
       </section>
 
