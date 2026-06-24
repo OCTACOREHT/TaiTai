@@ -337,11 +337,9 @@ export default function ClientHomePage() {
         <div className="space-y-3 text-center">
           <p className="text-sm font-black uppercase tracking-widest text-[#F4A640]">Avis kliyan</p>
           <h2 className="text-3xl font-black tracking-tight text-[#101828] sm:text-4xl">
-            Di nou kijan ou jwenn TaïTaï.
+            Koman sa te ye
           </h2>
-          <p className="mx-auto max-w-xl text-base font-medium leading-7 text-[#667085]">
-            Kite yon kòmantè ak yon nòt sou 5 zetwal pou ede lòt kliyan chwazi pi byen.
-          </p>
+          <p className="text-lg font-medium text-[#667085]">Kite yon komantè</p>
         </div>
 
         {/* Carousel auto-scroll */}

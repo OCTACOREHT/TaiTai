@@ -9,6 +9,7 @@ export interface MenuItem {
   stock_quantity: number;
   temps_prep: number;
   best_seller: boolean;
+  jour: string | null;
   created_at: string;
   deleted_at?: string | null;
 }

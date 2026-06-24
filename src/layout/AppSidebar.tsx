@@ -17,6 +17,7 @@ import {
   Globe,
   LayoutDashboard,
   LogOut,
+  MessageSquare,
   PackageSearch,
   ReceiptText,
   Store,
@@ -36,6 +37,7 @@ const navItems = [
   { name: "Stocks", path: "/stocks", icon: <PackageSearch size={20} strokeWidth={2} /> },
   { name: "Fournisseurs", path: "/fournisseurs", icon: <Store size={20} strokeWidth={2} /> },
   { name: "Clients", path: "/clients", icon: <UsersRound size={20} strokeWidth={2} /> },
+  { name: "Modération", path: "/moderation", icon: <MessageSquare size={20} strokeWidth={2} /> },
   { name: "Equipe", path: "/equipe", icon: <UserCog size={20} strokeWidth={2} /> },
   { name: "Site Public", path: "/", icon: <Globe size={20} strokeWidth={2} /> },
 ];

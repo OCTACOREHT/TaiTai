@@ -533,6 +533,7 @@ export default function DataPage() {
                     setFilters({ ...filters, minAmount: Number(e.target.value) })
                   }
                   className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0"
                 />
               </div>
 
@@ -547,6 +548,7 @@ export default function DataPage() {
                     setFilters({ ...filters, maxAmount: Number(e.target.value) })
                   }
                   className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="1000000"
                 />
               </div>
 

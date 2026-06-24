@@ -175,7 +175,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <h4 className="mb-6 font-bold text-[#101828]">Orè</h4>
         <ul className="space-y-4 text-sm text-[#475467]">
           <li>Livrezon: apati 12h midi</li>
-          <li>Lendi - Dimanch: 12h - 22h</li>
+          <li>Lendi - Samdi: 12h - 22h</li>
         </ul>
       </div>
     </div>

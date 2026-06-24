@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { MenuItem } from "@/types/restaurant";
 import { useCart } from "@/context/CartContext";
-import { Plus, ShoppingBasket, Search, Clock, Flame } from "lucide-react";
+import { Plus, ShoppingBasket, Search, Clock, Flame, CalendarDays } from "lucide-react";
 
 type Promotion = {
   id: string;
@@ -37,8 +37,10 @@ function MenuContent() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>(catParam || "Tous");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDay, setSelectedDay] = useState<string>("Tous");
 
   const categories = ["Tous", "Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
+  const daysOfWeek = ["Tous", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
   const categoryLabels: Record<string, string> = {
     Tous: "Tout",
     Grillades: "Griyay",
@@ -87,7 +89,8 @@ function MenuContent() {
     const matchesCategory = selectedCategory === "Tous" || item.categorie === selectedCategory;
     const matchesSearch = item.nom.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesDay = selectedDay === "Tous" || item.jour === selectedDay || item.jour === null || item.jour === "";
+    return matchesCategory && matchesSearch && matchesDay;
   });
 
   const handleAddToCart = (item: MenuItem) => {
@@ -121,6 +124,29 @@ function MenuContent() {
               className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-6 text-sm font-medium shadow-sm transition-all focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10 sm:w-[28rem]"
             />
           </div>
+        </div>
+      </div>
+
+      {/* Day Selector */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-4">
+          <CalendarDays className="text-[#F4A640]" size={24} />
+          <h2 className="text-lg md:text-xl font-bold text-[#101828]">Menu par jour</h2>
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+          {daysOfWeek.map(day => (
+            <button
+              key={day}
+              onClick={() => setSelectedDay(day)}
+              className={`whitespace-nowrap rounded-xl px-4 py-2.5 text-xs md:text-sm font-bold transition-all ${
+                selectedDay === day
+                  ? "bg-[#F4A640] text-white shadow-lg"
+                  : "bg-gray-50 text-[#667085] border border-gray-200 hover:border-[#F4A640] hover:text-[#F4A640]"
+              }`}
+            >
+              {day}
+            </button>
+          ))}
         </div>
       </div>
 

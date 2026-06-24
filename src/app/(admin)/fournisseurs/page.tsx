@@ -6,7 +6,7 @@ import { Modal } from "@/components/ui/modal";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { exportToExcel } from "@/lib/export-excel";
 import { supabase } from "@/lib/supabase-client";
-import { Download, Loader2, MapPin, Phone, PlusIcon, RefreshCcw, Store } from "lucide-react";
+import { Download, Loader2, MapPin, Phone, PlusIcon, RefreshCcw, Store, Upload } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 type Supplier = {
@@ -14,6 +14,7 @@ type Supplier = {
   nom: string;
   telephone: string;
   adresse: string;
+  photo_url: string | null;
   created_at: string | null;
 };
 
@@ -26,13 +27,15 @@ export default function FournisseursPage() {
     nom: "",
     telephone: "",
     adresse: "",
+    photo_url: null as string | null,
   });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const loadSuppliers = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from("fournisseurs")
-      .select("id, nom, telephone, adresse, created_at")
+      .select("id, nom, telephone, adresse, photo_url, created_at")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -59,12 +62,13 @@ export default function FournisseursPage() {
       nom: draft.nom.trim(),
       telephone: draft.telephone.trim(),
       adresse: draft.adresse.trim(),
+      photo_url: draft.photo_url,
     });
 
     if (error) {
       alert("Erreur lors de l'ajout du fournisseur : " + error.message);
     } else {
-      setDraft({ nom: "", telephone: "", adresse: "" });
+      setDraft({ nom: "", telephone: "", adresse: "", photo_url: null });
       setIsModalOpen(false);
       await loadSuppliers();
     }
@@ -159,6 +163,7 @@ export default function FournisseursPage() {
                   <th className="px-5 py-4">Fournisseur</th>
                   <th className="px-5 py-4">Telephone</th>
                   <th className="px-5 py-4">Adresse</th>
+                  <th className="px-5 py-4">Document</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -183,6 +188,20 @@ export default function FournisseursPage() {
                         <MapPin className="h-4 w-4 text-gray-400" />
                         {supplier.adresse}
                       </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      {supplier.photo_url ? (
+                        <a
+                          href={supplier.photo_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400"
+                        >
+                          Voir document
+                        </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">-</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -215,6 +234,54 @@ export default function FournisseursPage() {
               value={draft.adresse}
               onChange={(event) => setDraft((current) => ({ ...current, adresse: event.target.value }))}
             />
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Photo / Justificatif (optionnel)
+              </label>
+              <div className="flex items-center gap-3">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-white/5">
+                  <Upload className="h-4 w-4" />
+                  {uploadingPhoto ? "Upload..." : "Choisir fichier"}
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingPhoto(true);
+                      try {
+                        const fileExt = file.name.split(".").pop();
+                        const fileName = `fournisseurs/${Date.now()}.${fileExt}`;
+                        const { error: uploadError } = await supabase.storage
+                          .from("documents")
+                          .upload(fileName, file);
+                        if (uploadError) throw uploadError;
+                        const { data: { publicUrl } } = supabase.storage
+                          .from("documents")
+                          .getPublicUrl(fileName);
+                        setDraft((current) => ({ ...current, photo_url: publicUrl }));
+                      } catch (err) {
+                        alert("Erreur lors de l'upload: " + (err instanceof Error ? err.message : "Erreur inconnue"));
+                      } finally {
+                        setUploadingPhoto(false);
+                      }
+                    }}
+                    disabled={uploadingPhoto}
+                  />
+                </label>
+                {draft.photo_url && (
+                  <a
+                    href={draft.photo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-brand-500 hover:underline"
+                  >
+                    Voir fichier
+                  </a>
+                )}
+              </div>
+            </div>
             <div className="mt-6 flex justify-end gap-3">
               <button
                 type="button"

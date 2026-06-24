@@ -115,6 +115,64 @@ export default function StocksPage() {
         </button>
       </div>
 
+      {metrics.lowStock > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/50 dark:bg-amber-900/20">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                Attention: Stock faible detecte
+              </h3>
+              <p className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                {metrics.lowStock} plat(s) ont 5 unites ou moins en stock. Reassortez rapidement pour eviter les ruptures.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {items
+                  .filter((item) => item.stock_quantity > 0 && item.stock_quantity <= 5)
+                  .map((item) => (
+                    <span
+                      key={item.id}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
+                    >
+                      {item.nom}
+                      <span className="font-bold text-amber-600 dark:text-amber-400">({item.stock_quantity})</span>
+                    </span>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {metrics.outOfStock > 0 && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-900/20">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-red-800 dark:text-red-300">
+                Critique: Rupture de stock
+              </h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                {metrics.outOfStock} plat(s) sont en rupture de stock. Ces plats ne sont plus disponibles a la vente.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {items
+                  .filter((item) => item.stock_quantity <= 0)
+                  .map((item) => (
+                    <span
+                      key={item.id}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-red-800 dark:bg-red-900/40 dark:text-red-200"
+                    >
+                      {item.nom}
+                      <span className="font-bold text-red-600 dark:text-red-400">(0)</span>
+                    </span>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
         <p className="text-sm text-brand-500">Stock par plat</p>
         <h1 className="mt-4 text-3xl font-semibold text-gray-900 dark:text-white/90">
