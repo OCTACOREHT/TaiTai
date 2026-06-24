@@ -39,7 +39,7 @@ export default function ConfirmationPage() {
   if (loading) {
     return (
       <div className="flex h-96 items-center justify-center">
-        <Loader2 className="animate-spin text-[#F4A640]" size={48} />
+        <Loader2 className="animate-spin text-brand-500" size={48} />
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function ConfirmationPage() {
     return (
       <div className="py-20 text-center space-y-4">
         <h1 className="text-2xl font-bold">Nou pa jwenn komann nan</h1>
-        <button onClick={() => router.push("/")} className="text-[#F4A640] hover:underline">
+        <button onClick={() => router.push("/")} className="text-brand-500 hover:underline">
           Retounen akey la
         </button>
       </div>
@@ -67,21 +67,21 @@ export default function ConfirmationPage() {
           <p className="text-[#667085] text-lg font-medium">
             Nimewo komann ou se:
           </p>
-          <div className="mx-auto inline-flex max-w-full break-all rounded-2xl bg-[#101828] px-5 py-4 text-2xl font-black tracking-widest text-[#F4A640] sm:px-8 sm:text-3xl">
+          <div className="mx-auto inline-flex max-w-full break-all rounded-2xl bg-[#101828] px-5 py-4 text-2xl font-black tracking-widest text-brand-500 sm:px-8 sm:text-3xl">
             {commande.numero_commande}
           </div>
         </div>
         <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
           <Link
             href={`/suivi?numero=${commande.numero_commande}`}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#F4A640] px-8 py-4 font-black text-white shadow-lg shadow-[#F4A640]/20 transition hover:bg-[#101828]"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-500 px-8 py-4 font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-[#101828]"
           >
             <Search size={18} strokeWidth={3} />
             Swiv komann nan
           </Link>
           <Link
             href="/menu"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-8 py-4 font-black text-[#101828] shadow-sm transition hover:border-[#F4A640] hover:text-[#F4A640]"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-8 py-4 font-black text-[#101828] shadow-sm transition hover:border-brand-500 hover:text-brand-500"
           >
             Retounen nan meni an
           </Link>
@@ -96,7 +96,7 @@ export default function ConfirmationPage() {
         <div className="flex flex-col items-center justify-between gap-6 border-b border-gray-50 pb-8 md:flex-row md:gap-8 md:pb-10">
           <div className="space-y-1">
             <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Eta aktyel</p>
-            <div className="flex items-center gap-3 text-2xl font-black text-[#F4A640] sm:text-3xl">
+            <div className="flex items-center gap-3 text-2xl font-black text-brand-500 sm:text-3xl">
               <Package size={28} />
               {statusLabels[commande.statut] || commande.statut}
             </div>
@@ -110,7 +110,7 @@ export default function ConfirmationPage() {
         <div className="grid gap-8 md:grid-cols-2">
           <div className="space-y-5">
             <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
-              <Navigation size={18} className="text-[#F4A640]" /> Fason pou resevwa
+              <Navigation size={18} className="text-brand-500" /> Fason pou resevwa
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
               <p className="font-bold text-lg text-[#101828]">Livrezon</p>
@@ -119,7 +119,7 @@ export default function ConfirmationPage() {
 
           <div className="space-y-5">
             <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
-              <MapPin size={18} className="text-[#F4A640]" /> Destinasyon
+              <MapPin size={18} className="text-brand-500" /> Destinasyon
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
               <p className="text-[#667085] font-medium leading-relaxed italic">{commande.adresse_livraison}</p>
@@ -128,7 +128,7 @@ export default function ConfirmationPage() {
 
           <div className="space-y-5 md:col-span-2">
             <h3 className="font-black text-[#101828] flex items-center gap-3 uppercase text-xs tracking-widest">
-              <CreditCard size={18} className="text-[#F4A640]" /> Peman
+              <CreditCard size={18} className="text-brand-500" /> Peman
             </h3>
             <div className="rounded-2xl bg-gray-50 p-6 border border-gray-100">
               <p className="font-bold text-lg text-[#101828]">{commande.payment_method || "Peman sou plas"}</p>
@@ -148,7 +148,7 @@ export default function ConfirmationPage() {
       <div className="flex flex-col gap-6 sm:flex-row sm:justify-center pt-4">
         <button
           onClick={() => router.push("/suivi")}
-          className="rounded-2xl bg-[#101828] px-12 py-6 font-black text-white transition-all hover:bg-[#F4A640] hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10"
+          className="rounded-2xl bg-[#101828] px-12 py-6 font-black text-white transition-all hover:bg-brand-500 hover:scale-[1.02] active:scale-95 shadow-xl shadow-black/10"
         >
           Swiv komann mwen
         </button>

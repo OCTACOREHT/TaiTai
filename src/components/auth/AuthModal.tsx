@@ -255,9 +255,9 @@ export default function AuthModal() {
       <div className="relative">
         <button
           onClick={() => setShowUserMenu((value) => !value)}
-          className="group flex items-center gap-3 rounded-2xl border border-[#FF9000]/20 bg-white px-2.5 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#FF9000] hover:shadow-lg hover:shadow-[#FF9000]/10 sm:px-3"
+          className="group flex items-center gap-3 rounded-2xl border border-brand-500/20 bg-white px-2.5 py-2 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 sm:px-3"
         >
-          <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-[#101828] text-sm font-black uppercase text-[#FF9000] shadow-inner">
+          <span className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-[#101828] text-sm font-black uppercase text-brand-500 shadow-inner">
             {initials}
             <span className="absolute -right-0.5 -top-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500" />
           </span>
@@ -265,11 +265,11 @@ export default function AuthModal() {
             <span className="max-w-28 truncate text-xs font-black uppercase tracking-wider text-[#98A2B3]">
               Konekte
             </span>
-            <span className="max-w-32 truncate text-sm font-black text-[#101828] group-hover:text-[#FF9000]">
+            <span className="max-w-32 truncate text-sm font-black text-[#101828] group-hover:text-brand-500">
               {firstName}
             </span>
           </span>
-          <ChevronRight className="hidden h-4 w-4 rotate-90 text-[#98A2B3] transition group-hover:text-[#FF9000] sm:block" />
+          <ChevronRight className="hidden h-4 w-4 rotate-90 text-[#98A2B3] transition group-hover:text-brand-500 sm:block" />
         </button>
 
         {showUserMenu && (
@@ -278,7 +278,7 @@ export default function AuthModal() {
             <div className="absolute right-0 top-full z-50 mt-3 w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl">
               <div className="bg-[#101828] p-5 text-white">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FF9000] text-sm font-black uppercase text-white">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-sm font-black uppercase text-white">
                     {initials}
                   </span>
                   <div className="min-w-0">
@@ -295,8 +295,8 @@ export default function AuthModal() {
                   {user.email ? <p className="mt-1 truncate text-xs font-medium text-[#667085]">{user.email}</p> : null}
                 </div>
                 {user.ville || user.departement ? (
-                  <div className="rounded-2xl bg-[#FF9000]/10 p-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-[#C87518]">AdrÃ¨s</p>
+                  <div className="rounded-2xl bg-brand-500/10 p-4">
+                    <p className="text-xs font-black uppercase tracking-widest text-brand-700">AdrÃ¨s</p>
                     <p className="mt-2 text-sm font-bold text-[#101828]">
                       {[user.ville, user.departement].filter(Boolean).join(", ")}
                     </p>
@@ -323,7 +323,7 @@ export default function AuthModal() {
      <>
       <button
         onClick={() => openModal("login")}
-        className="flex items-center gap-2 rounded-2xl bg-[#FF9000] px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-[#FF9000]/30 transition hover:bg-[#101828] hover:scale-105 active:scale-95"
+        className="flex items-center gap-2 rounded-2xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-brand-500/30 transition hover:bg-[#101828] hover:scale-105 active:scale-95"
       >
         <LogIn size={16} strokeWidth={2.5} />
         <span>Konekte</span>
@@ -399,31 +399,31 @@ export default function AuthModal() {
       <div className="grid grid-cols-2 gap-3">
         <div className="relative">
           <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="text" required placeholder="Non konple" value={nom} onChange={(event) => setNom(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+          <input type="text" required placeholder="Non konple" value={nom} onChange={(event) => setNom(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         </div>
 
         <div className="relative">
           <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="tel" required placeholder="TelefÃ²n" value={telephone} onChange={(event) => setTelephone(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+          <input type="tel" required placeholder="TelefÃ²n" value={telephone} onChange={(event) => setTelephone(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="relative">
           <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+          <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         </div>
 
         <div className="relative">
           <MapPin size={18} className="absolute left-4 top-5 text-[#98A2B3]" />
-          <textarea required placeholder="Adres konplÃ¨" value={adresse} onChange={(event) => setAdresse(event.target.value)} className="h-[58px] w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+          <textarea required placeholder="Adres konplÃ¨" value={adresse} onChange={(event) => setAdresse(event.target.value)} className="h-[58px] w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="relative">
           <Building2 size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <select required value={ville} onChange={(event) => setVille(event.target.value)} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-10 text-sm font-medium text-[#101828] focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10">
+          <select required value={ville} onChange={(event) => setVille(event.target.value)} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-10 text-sm font-medium text-[#101828] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10">
             {selectedCities.map((city) => (
               <option key={city} value={city}>{city}</option>
             ))}
@@ -436,7 +436,7 @@ export default function AuthModal() {
             const nextDepartment = event.target.value;
             setDepartement(nextDepartment);
             setVille(CITIES_BY_DEPARTMENT[nextDepartment]?.[0] || "");
-          }} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-5 pr-10 text-sm font-medium text-[#101828] focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10">
+          }} className="w-full appearance-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-5 pr-10 text-sm font-medium text-[#101828] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10">
             {DEPARTMENTS.map((item) => (
               <option key={item} value={item}>{item}</option>
             ))}
@@ -448,12 +448,12 @@ export default function AuthModal() {
       <div className="grid grid-cols-2 gap-3">
         <div className="relative">
           <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type={showPassword ? "text" : "password"} required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+          <input type={showPassword ? "text" : "password"} required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
           <button
             type="button"
             onClick={() => setShowPassword((value) => !value)}
             aria-label={showPassword ? "Kache modpas la" : "Montre modpas la"}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#FF9000]"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-brand-500"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -461,12 +461,12 @@ export default function AuthModal() {
 
         <div className="relative">
           <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type={showConfirmPassword ? "text" : "password"} required placeholder="Konfime modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+          <input type={showConfirmPassword ? "text" : "password"} required placeholder="Konfime modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
           <button
             type="button"
             onClick={() => setShowConfirmPassword((value) => !value)}
             aria-label={showConfirmPassword ? "Kache konfimasyon modpas la" : "Montre konfimasyon modpas la"}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#FF9000]"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-brand-500"
           >
             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
@@ -477,17 +477,17 @@ export default function AuthModal() {
     <>
       <div className="relative">
         <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-        <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+        <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
       </div>
 
       <div className="relative">
         <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-        <input type={showPassword ? "text" : "password"} required placeholder="Nouvo modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+        <input type={showPassword ? "text" : "password"} required placeholder="Nouvo modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         <button
           type="button"
           onClick={() => setShowPassword((value) => !value)}
           aria-label={showPassword ? "Kache modpas la" : "Montre modpas la"}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#FF9000]"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-brand-500"
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
@@ -495,12 +495,12 @@ export default function AuthModal() {
 
       <div className="relative">
         <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-        <input type={showConfirmPassword ? "text" : "password"} required placeholder="Konfime nouvo modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+        <input type={showConfirmPassword ? "text" : "password"} required placeholder="Konfime nouvo modpas" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         <button
           type="button"
           onClick={() => setShowConfirmPassword((value) => !value)}
           aria-label={showConfirmPassword ? "Kache konfimasyon modpas la" : "Montre konfimasyon modpas la"}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#FF9000]"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-brand-500"
         >
           {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
@@ -512,7 +512,7 @@ export default function AuthModal() {
           reset();
           setMode("login");
         }}
-        className="text-sm font-bold text-[#667085] transition hover:text-[#FF9000]"
+        className="text-sm font-bold text-[#667085] transition hover:text-brand-500"
       >
         Retounen konekte
       </button>
@@ -521,17 +521,17 @@ export default function AuthModal() {
     <>
       <div className="relative">
         <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-        <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+        <input type="email" required placeholder="Adres imel" value={email} onChange={(event) => setEmail(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
       </div>
 
       <div className="relative">
         <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-        <input type={showPassword ? "text" : "password"} required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-[#FF9000] focus:outline-none focus:ring-4 focus:ring-[#FF9000]/10" />
+        <input type={showPassword ? "text" : "password"} required placeholder="Modpas" value={password} onChange={(event) => setPassword(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-12 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         <button
           type="button"
           onClick={() => setShowPassword((value) => !value)}
           aria-label={showPassword ? "Kache modpas la" : "Montre modpas la"}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-[#FF9000]"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-[#98A2B3] transition hover:text-brand-500"
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>
@@ -544,7 +544,7 @@ export default function AuthModal() {
             reset();
             setMode("reset");
           }}
-          className="text-sm font-bold text-[#FF9000] transition hover:text-[#101828]"
+          className="text-sm font-bold text-brand-500 transition hover:text-[#101828]"
         >
           Ou bliye modpas ou ?
         </button>
@@ -564,7 +564,7 @@ export default function AuthModal() {
     </div>
   )}
 
-  <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#FF9000] py-4 text-base font-black text-white shadow-lg shadow-[#FF9000]/20 transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-60">
+  <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 py-4 text-base font-black text-white shadow-lg shadow-brand-500/20 transition-all hover:bg-[#101828] hover:scale-[1.02] active:scale-95 disabled:opacity-60">
     {loading ? (
       <Loader2 size={20} className="animate-spin" />
     ) : (
@@ -582,4 +582,3 @@ export default function AuthModal() {
     </>
   );
 }
-

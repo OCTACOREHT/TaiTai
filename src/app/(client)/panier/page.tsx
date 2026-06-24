@@ -329,7 +329,7 @@ export default function PanierPage() {
         </div>
         <button
           onClick={() => router.push("/menu")}
-          className="rounded-2xl bg-[#F4A640] px-10 py-5 font-bold text-white shadow-lg shadow-[#F4A640]/20 transition hover:scale-105 active:scale-95"
+          className="rounded-2xl bg-brand-500 px-10 py-5 font-bold text-white shadow-lg shadow-brand-500/20 transition hover:scale-105 active:scale-95"
         >
           Gade meni an
         </button>
@@ -364,7 +364,7 @@ export default function PanierPage() {
               </div>
               <div className="w-full min-w-0 flex-grow space-y-2">
                 <h3 className="break-words text-lg font-bold text-[#101828]">{item.nom}</h3>
-                <p className="text-sm font-black text-[#F4A640]">
+                <p className="text-sm font-black text-brand-500">
                   {item.prix} HTG
                   {"original_prix" in item && item.original_prix ? (
                     <span className="ml-2 text-xs text-gray-400 line-through">{item.original_prix} HTG</span>
@@ -377,14 +377,14 @@ export default function PanierPage() {
               <div className="flex w-full items-center justify-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-1.5 sm:w-auto">
                 <button
                   onClick={() => updateQuantity(item.id, -1)}
-                  className="p-1.5 rounded-lg bg-white shadow-sm text-[#101828] hover:text-[#F4A640] transition"
+                  className="p-1.5 rounded-lg bg-white shadow-sm text-[#101828] hover:text-brand-500 transition"
                 >
                   <Minus size={16} strokeWidth={3} />
                 </button>
                 <span className="w-6 text-center font-black text-sm">{item.quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.id, 1)}
-                  className="p-1.5 rounded-lg bg-white shadow-sm text-[#101828] hover:text-[#F4A640] transition"
+                  className="p-1.5 rounded-lg bg-white shadow-sm text-[#101828] hover:text-brand-500 transition"
                 >
                   <Plus size={16} strokeWidth={3} />
                 </button>
@@ -411,12 +411,12 @@ export default function PanierPage() {
                 value={promoCode}
                 onChange={(event) => setPromoCode(event.target.value.toUpperCase())}
                 placeholder="TAITAI10"
-                className="h-11 min-w-0 flex-1 rounded-xl border border-white/10 bg-white px-4 text-sm font-bold uppercase text-[#101828] outline-none focus:ring-4 focus:ring-[#F4A640]/20"
+                className="h-11 min-w-0 flex-1 rounded-xl border border-white/10 bg-white px-4 text-sm font-bold uppercase text-[#101828] outline-none focus:ring-4 focus:ring-brand-500/20"
               />
               <button
                 type="button"
                 onClick={applyPromoCode}
-                className="h-11 shrink-0 rounded-xl bg-[#F4A640] px-5 text-sm font-black text-white transition hover:bg-[#db8923]"
+                className="h-11 shrink-0 rounded-xl bg-brand-500 px-5 text-sm font-black text-white transition hover:bg-brand-600"
               >
                 Aplike
               </button>
@@ -442,14 +442,14 @@ export default function PanierPage() {
               <MapPin size={15} />
               Fre livrezon{selectedZone ? ` (${selectedZone.zone})` : ""}
             </span>
-            <span className={selectedZone ? "text-[#F4A640]" : "text-gray-500"}>
+            <span className={selectedZone ? "text-brand-500" : "text-gray-500"}>
               {selectedZone ? `${selectedZone.frais} HTG` : "Chwazi yon zon"}
             </span>
           </div>
           <div className="h-px bg-white/10" />
           <div className="flex flex-col gap-1 text-2xl font-black sm:flex-row sm:justify-between">
             <span>Total pou peye</span>
-            <span className="text-[#F4A640]">{total} HTG</span>
+            <span className="text-brand-500">{total} HTG</span>
           </div>
           {selectedZone?.zone && ["Tabarre", "Clercine", "Thomassin"].includes(selectedZone.zone) && (
             <p className="text-xs text-gray-400 italic">
@@ -475,7 +475,7 @@ export default function PanierPage() {
 
           <div className="space-y-4 rounded-3xl border border-orange-100 bg-orange-50/50 p-4 sm:p-6">
             <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
-              <MapPin size={16} className="text-[#F4A640]" />
+              <MapPin size={16} className="text-brand-500" />
               Adres livrezon
             </label>
 
@@ -487,7 +487,7 @@ export default function PanierPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, departement: e.target.value, zone_livraison: "" })
                   }
-                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
+                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
                 >
                   {DEPARTMENTS.map((department) => (
                     <option key={department} value={department}>
@@ -509,7 +509,7 @@ export default function PanierPage() {
                   required
                   value={formData.zone_livraison}
                   onChange={(e) => setFormData({ ...formData, zone_livraison: e.target.value })}
-                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
+                  className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
                 >
                   <option value="">Chwazi zon ou...</option>
                   {ZONES_LIVRAISON.map((z) => (
@@ -523,7 +523,7 @@ export default function PanierPage() {
             )}
 
             {selectedZone && (
-              <p className="text-sm font-bold text-[#F4A640]">Fre livrezon : {selectedZone.frais} HTG</p>
+              <p className="text-sm font-bold text-brand-500">Fre livrezon : {selectedZone.frais} HTG</p>
             )}
           </div>
 
@@ -537,7 +537,7 @@ export default function PanierPage() {
                   placeholder="Egzanp: Jean Dupont"
                   value={formData.client_nom}
                   onChange={(e) => setFormData({ ...formData, client_nom: e.target.value })}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-medium"
                 />
               </div>
               <div className="space-y-3">
@@ -548,14 +548,14 @@ export default function PanierPage() {
                   placeholder="+509 ..."
                   value={formData.client_tel}
                   onChange={(e) => setFormData({ ...formData, client_tel: e.target.value })}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-medium"
                 />
               </div>
             </div>
 
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-sm font-bold text-[#101828]">
-                <Mail size={16} className="text-[#F4A640]" />
+                <Mail size={16} className="text-brand-500" />
                 Email pou konfimasyon
               </label>
               <input
@@ -564,7 +564,7 @@ export default function PanierPage() {
                 placeholder="Egzanp: jean@email.com"
                 value={formData.client_email}
                 onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 font-medium transition-all focus:border-[#F4A640] focus:outline-none focus:ring-4 focus:ring-[#F4A640]/10"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 font-medium transition-all focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
               />
             </div>
 
@@ -575,7 +575,7 @@ export default function PanierPage() {
                 placeholder="Ri, katye, referans presi..."
                 value={formData.adresse_livraison}
                 onChange={(e) => setFormData({ ...formData, adresse_livraison: e.target.value })}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium min-h-[100px]"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-medium min-h-[100px]"
               />
             </div>
 
@@ -586,14 +586,14 @@ export default function PanierPage() {
                 placeholder="Egzanp: San zonyon, sos apa..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-[#F4A640] focus:ring-4 focus:ring-[#F4A640]/10 focus:outline-none transition-all font-medium"
+                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-medium"
               />
             </div>
           </div>
 
           <div className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50 p-4 sm:p-6">
             <label className="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#98A2B3]">
-              <CreditCard size={16} className="text-[#F4A640]" />
+              <CreditCard size={16} className="text-brand-500" />
               Mwayen peman
             </label>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -608,7 +608,7 @@ export default function PanierPage() {
                   className={`rounded-2xl border px-4 py-4 text-sm font-black transition ${
                     formData.payment_method === method
                       ? "border-[#101828] bg-[#101828] text-white shadow-lg"
-                      : "border-gray-200 bg-white text-[#667085] hover:border-[#F4A640]"
+                      : "border-gray-200 bg-white text-[#667085] hover:border-brand-500"
                   }`}
                 >
                   {paymentLabels[method]}
@@ -617,11 +617,11 @@ export default function PanierPage() {
             </div>
 
             {proofRequired ? (
-              <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 bg-white px-5 py-6 text-center transition hover:border-[#F4A640]">
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-gray-200 bg-white px-5 py-6 text-center transition hover:border-brand-500">
                 {paymentProofFile ? (
                   <CheckCircle2 className="text-green-600" size={28} />
                 ) : (
-                  <UploadCloud className="text-[#F4A640]" size={30} />
+                  <UploadCloud className="text-brand-500" size={30} />
                 )}
                 <span className="text-sm font-black text-[#101828]">
                   {paymentProofFile ? paymentProofFile.name : "Ajoute jistifikatif peman an"}
@@ -644,7 +644,7 @@ export default function PanierPage() {
           <button
             type="submit"
             disabled={loading || !livraisonDisponible}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#F4A640] px-4 py-5 text-base font-black text-white shadow-xl shadow-[#F4A640]/20 transition-all hover:bg-[#101828] hover:shadow-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:py-6 sm:text-xl"
+            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-brand-500 px-4 py-5 text-base font-black text-white shadow-xl shadow-brand-500/20 transition-all hover:bg-[#101828] hover:shadow-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:py-6 sm:text-xl"
           >
             {loading ? (
               "Konfimasyon ap fet..."

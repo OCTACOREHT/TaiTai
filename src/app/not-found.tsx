@@ -7,9 +7,9 @@ export default function NotFound() {
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#101828] px-6 py-12">
       {/* Background pattern */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-[#F4A640]/5 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-[#F4A640]/8 blur-3xl" />
-        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F4A640]/3 blur-3xl" />
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-brand-500/5 blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-brand-500/8 blur-3xl" />
+        <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-500/3 blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-10 text-center">
@@ -26,10 +26,10 @@ export default function NotFound() {
 
         {/* 404 number */}
         <div className="space-y-1">
-          <p className="text-[120px] font-black leading-none text-[#F4A640] sm:text-[160px]">
+          <p className="text-[120px] font-black leading-none text-brand-500 sm:text-[160px]">
             404
           </p>
-          <div className="h-1 w-24 rounded-full bg-[#F4A640]/40 mx-auto" />
+          <div className="h-1 w-24 rounded-full bg-brand-500/40 mx-auto" />
         </div>
 
         {/* Message */}
@@ -46,7 +46,7 @@ export default function NotFound() {
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl bg-[#F4A640] px-6 py-3 text-sm font-black text-[#101828] transition hover:bg-[#e09530]"
+            className="inline-flex items-center justify-center rounded-xl bg-brand-500 px-6 py-3 text-sm font-black text-[#101828] transition hover:bg-brand-600"
           >
             ← Retounen akèy
           </Link>

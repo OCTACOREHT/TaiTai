@@ -66,7 +66,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] pb-20 text-[#101828] selection:bg-[#F4A640] selection:text-white md:pb-0`}>
+    <div className={`${outfit.className} min-h-screen bg-[#F9FAFB] pb-20 text-[#101828] selection:bg-brand-500 selection:text-white md:pb-0`}>
       <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
           <Link href="/" className="group flex items-center">
@@ -81,8 +81,8 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "whitespace-nowrap text-sm font-semibold transition hover:text-[#F4A640]",
-                  pathname === link.href ? "text-[#F4A640]" : "text-[#475467]",
+                  "whitespace-nowrap text-sm font-semibold transition hover:text-brand-500",
+                  pathname === link.href ? "text-brand-500" : "text-[#475467]",
                 )}
               >
                 {link.label}
@@ -94,12 +94,12 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
             <AuthModal />
             <Link
               href="/panier"
-              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#475467] shadow-sm transition hover:border-[#F4A640] hover:text-[#F4A640]"
+              className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-[#475467] shadow-sm transition hover:border-brand-500 hover:text-brand-500"
               title="Panyen"
             >
               <ShoppingCart size={20} />
               {totalItems > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-[#F4A640] text-[10px] font-black text-white shadow-lg ring-4 ring-white animate-in zoom-in duration-300">
+                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-brand-500 text-[10px] font-black text-white shadow-lg ring-4 ring-white animate-in zoom-in duration-300">
                   {totalItems}
                 </span>
               )}
@@ -122,10 +122,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
               href={link.href}
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 transition-all duration-300",
-                isActive ? "scale-110 text-[#F4A640]" : "text-[#98A2B3] hover:text-[#475467]",
+                isActive ? "scale-110 text-brand-500" : "text-[#98A2B3] hover:text-[#475467]",
               )}
             >
-              <div className={cn("flex h-9 w-9 items-center justify-center rounded-2xl transition-all", isActive ? "bg-[#F4A640]/10" : "")}>
+              <div className={cn("flex h-9 w-9 items-center justify-center rounded-2xl transition-all", isActive ? "bg-brand-500/10" : "")}>
                 <Icon size={isActive ? 21 : 19} strokeWidth={isActive ? 2.5 : 2} />
               </div>
               <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-wide sm:text-[10px]">{link.label.split(" ")[0]}</span>
@@ -154,11 +154,11 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
       <div>
         <h4 className="mb-6 font-bold text-[#101828]">Navigasyon</h4>
         <ul className="space-y-4 text-sm text-[#475467]">
-          <li><Link href="/" className="hover:text-[#F4A640]">Akèy</Link></li>
-          <li><Link href="/menu" className="hover:text-[#F4A640]">Meni</Link></li>
-          <li><Link href="/historique" className="hover:text-[#F4A640]">Istorik</Link></li>
-          <li><Link href="/contact" className="hover:text-[#F4A640]">Kontak</Link></li>
-          <li><Link href="/suivi" className="hover:text-[#F4A640]">Swivi kòmann</Link></li>
+          <li><Link href="/" className="hover:text-brand-500">Akèy</Link></li>
+          <li><Link href="/menu" className="hover:text-brand-500">Meni</Link></li>
+          <li><Link href="/historique" className="hover:text-brand-500">Istorik</Link></li>
+          <li><Link href="/contact" className="hover:text-brand-500">Kontak</Link></li>
+          <li><Link href="/suivi" className="hover:text-brand-500">Swivi kòmann</Link></li>
         </ul>
       </div>
 
@@ -167,7 +167,7 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
         <ul className="space-y-4 text-sm text-[#475467]">
           <li>Port-au-Prince, Ayiti</li>
           <li>+509 31 19 1999</li>
-          <li><a href="mailto:info@xn--tata-6pac.com" className="hover:text-[#F4A640]">info@taïtaï.com</a></li>
+          <li><a href="mailto:info@xn--tata-6pac.com" className="hover:text-brand-500">info@taïtaï.com</a></li>
         </ul>
       </div>
 
@@ -183,10 +183,10 @@ function ClientLayoutContent({ children }: { children: React.ReactNode }) {
     <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 md:flex-row">
       <p className="text-xs text-[#98A2B3]">© 2026 TaïTaï Restaurant. Fyète Ayiti.</p>
       <div className="flex gap-6">
-        <Link href="/legal" className="text-xs text-[#98A2B3] transition hover:text-[#F4A640]">
+        <Link href="/legal" className="text-xs text-[#98A2B3] transition hover:text-brand-500">
           Enfòmasyon legal
         </Link>
-        <Link href="/konfidansyalite" className="text-xs text-[#98A2B3] transition hover:text-[#F4A640]">
+        <Link href="/konfidansyalite" className="text-xs text-[#98A2B3] transition hover:text-brand-500">
           Konfidansyalite
         </Link>
       </div>

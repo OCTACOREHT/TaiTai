@@ -84,7 +84,7 @@ export default function HistoriquePage() {
     <div className="mx-auto max-w-5xl space-y-10 py-8">
       <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full bg-[#F4A640]/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#C87518]">
+          <div className="inline-flex items-center gap-2 rounded-full bg-brand-500/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-brand-700">
             <ReceiptText size={15} />
             Kont mwen
           </div>
@@ -98,7 +98,7 @@ export default function HistoriquePage() {
 
         <Link
           href="/suivi"
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#101828] px-6 py-4 text-sm font-black text-white shadow-lg shadow-black/10 transition hover:bg-[#F4A640]"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#101828] px-6 py-4 text-sm font-black text-white shadow-lg shadow-black/10 transition hover:bg-brand-500"
         >
           Swiv yon kòmann
           <ChevronRight size={18} strokeWidth={3} />
@@ -107,7 +107,7 @@ export default function HistoriquePage() {
 
       {loading ? (
         <div className="flex h-72 items-center justify-center rounded-3xl border border-gray-100 bg-white shadow-sm">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#F4A640] border-t-transparent" />
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
         </div>
       ) : error ? (
         <div className="rounded-3xl border border-red-100 bg-red-50 p-8 text-center font-bold text-red-600">
@@ -122,7 +122,7 @@ export default function HistoriquePage() {
           <p className="mt-2 font-medium text-[#667085]">Lè ou pase yon kòmann, l ap parèt isit la.</p>
           <Link
             href="/menu"
-            className="mt-8 inline-flex items-center justify-center rounded-2xl bg-[#F4A640] px-8 py-4 font-black text-white shadow-lg shadow-[#F4A640]/20 transition hover:bg-[#101828]"
+            className="mt-8 inline-flex items-center justify-center rounded-2xl bg-brand-500 px-8 py-4 font-black text-white shadow-lg shadow-brand-500/20 transition hover:bg-[#101828]"
           >
             Gade meni an
           </Link>
@@ -154,7 +154,7 @@ export default function HistoriquePage() {
 
                 <div className="text-left md:text-right">
                   <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3]">Total</p>
-                  <p className="text-3xl font-black text-[#F4A640]">{order.total} HTG</p>
+                  <p className="text-3xl font-black text-brand-500">{order.total} HTG</p>
                 </div>
               </div>
 
@@ -179,7 +179,7 @@ export default function HistoriquePage() {
 
                 <Link
                   href={`/suivi?numero=${order.numero_commande}`}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-gray-200 px-5 text-sm font-black text-[#101828] transition hover:border-[#F4A640] hover:text-[#F4A640]"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-gray-200 px-5 text-sm font-black text-[#101828] transition hover:border-brand-500 hover:text-brand-500"
                 >
                   Swiv
                   <ChevronRight size={17} strokeWidth={3} />

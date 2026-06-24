@@ -147,7 +147,7 @@ export default function SuiviPage() {
           <button 
             type="submit"
             disabled={loading}
-            className="min-w-[160px] rounded-2xl bg-[#101828] px-8 py-4 font-bold text-white shadow-lg shadow-black/10 transition-all hover:bg-[#F4A640] active:scale-95 disabled:opacity-50 sm:min-w-[180px] sm:px-10 sm:py-5"
+            className="min-w-[160px] rounded-2xl bg-[#101828] px-8 py-4 font-bold text-white shadow-lg shadow-black/10 transition-all hover:bg-brand-500 active:scale-95 disabled:opacity-50 sm:min-w-[180px] sm:px-10 sm:py-5"
           >
             {loading ? <Loader2 className="animate-spin mx-auto" size={24} /> : "Swiv"}
           </button>
@@ -172,7 +172,7 @@ export default function SuiviPage() {
                 <button
                   key={h.id}
                   onClick={() => handleSearch(undefined, h.numero)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-[#F4A640]/10 border border-transparent hover:border-[#F4A640]/20 transition-all text-left group"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 hover:bg-brand-500/10 border border-transparent hover:border-brand-500/20 transition-all text-left group"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-[#101828] shadow-sm">
@@ -183,7 +183,7 @@ export default function SuiviPage() {
                       <p className="text-xs text-[#667085]">{new Date(h.date).toLocaleDateString()} • {h.total} HTG</p>
                     </div>
                   </div>
-                  <ArrowRight size={18} className="text-[#98A2B3] group-hover:text-[#F4A640] transition-transform group-hover:translate-x-1" />
+                    <ArrowRight size={18} className="text-[#98A2B3] group-hover:text-brand-500 transition-transform group-hover:translate-x-1" />
                 </button>
               ))}
             </div>
@@ -206,7 +206,7 @@ export default function SuiviPage() {
               <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-2xl border border-gray-100">
                 <div className="text-center md:text-right space-y-1">
                   <p className="text-[10px] font-black text-[#98A2B3] uppercase tracking-[0.2em]">Total kòmann</p>
-                  <h3 className="text-2xl font-black text-[#F4A640]">{commande.total} HTG</h3>
+                  <h3 className="text-2xl font-black text-brand-500">{commande.total} HTG</h3>
                 </div>
               </div>
             </div>
@@ -223,7 +223,7 @@ export default function SuiviPage() {
                     <div key={step.label} className={`relative flex items-center gap-4 transition-all duration-500 sm:gap-8 ${!isDone && !isCurrent ? 'opacity-30 scale-95 grayscale' : 'opacity-100'}`}>
                       <div className={`z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.5rem] border-4 shadow-xl transition-all duration-500 sm:h-20 sm:w-20 sm:rounded-[2.5rem] ${
                         isDone || isCurrent 
-                        ? "border-[#F4A640]/20 bg-[#F4A640] text-white rotate-[360deg]" 
+                        ? "border-brand-500/20 bg-brand-500 text-white rotate-[360deg]" 
                         : "border-gray-50 bg-white text-[#98A2B3]"
                       }`}>
                         <Icon size={24} strokeWidth={isCurrent ? 2.5 : 2} />
@@ -231,7 +231,7 @@ export default function SuiviPage() {
                       <div className="space-y-2 pt-2">
                         <div className="flex items-center gap-3">
                            <h4 className={`text-xl font-black sm:text-2xl ${isCurrent ? 'text-[#101828]' : 'text-[#667085]'}`}>{step.label}</h4>
-                           {isCurrent && <span className="flex h-3 w-3 rounded-full bg-[#F4A640] animate-ping" />}
+                           {isCurrent && <span className="flex h-3 w-3 rounded-full bg-brand-500 animate-ping" />}
                         </div>
                         <p className="text-base font-medium leading-relaxed text-[#667085] sm:text-lg">{step.desc}</p>
                       </div>
