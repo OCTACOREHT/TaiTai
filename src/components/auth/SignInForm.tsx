@@ -3,6 +3,7 @@
 import { canAccessAdminPath, getDefaultAdminPath } from "@/lib/admin-access";
 import { setAdminSession } from "@/lib/admin-auth";
 import { getStoredTeamUsers } from "@/lib/admin-team";
+import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 export default function SignInForm() {
@@ -28,13 +29,13 @@ export default function SignInForm() {
     const normalizedEmail = email.trim().toLowerCase();
     const ownerUser = {
       id: "owner-01",
-      name: "TaïTaï Admin",
+      name: "Ta\u00efta\u00ef Admin",
       email: normalizedEmail,
       password: "",
       role: "super_admin" as const,
       title: "Proprietaire",
       avatar: "/images/user/owner.jpg",
-      bio: "Gestionnaire principal TaïTaï",
+      bio: "Gestionnaire principal Ta\u00efta\u00ef",
       active: true,
       lastLoginAt: new Date().toISOString(),
     };
@@ -61,16 +62,19 @@ export default function SignInForm() {
   };
 
   return (
-    <div className="flex w-full flex-1 flex-col lg:w-1/2">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
-        <div className="mb-5 sm:mb-8">
-          <h1 className="mb-2 text-title-sm font-semibold text-gray-800 dark:text-white/90 sm:text-title-md">
-            Acces admin TaïTaï
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Connectez-vous avec le compte principal ou un compte equipe.
-          </p>
+    <div className="w-full">
+      <div className="mx-auto flex w-full max-w-md flex-col justify-center">
+        <div className="mb-8 flex justify-center">
+          <Image
+            src="/images/logo/tailogo.png"
+            alt="Ta\u00efta\u00ef"
+            width={180}
+            height={72}
+            priority
+            className="h-auto w-44 object-contain"
+          />
         </div>
+        <h1 className="sr-only">Connexion Ta\u00efta\u00ef</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
