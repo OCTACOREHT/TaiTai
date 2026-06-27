@@ -1,117 +1,43 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { buildReceiptPdfBytes } from "@/lib/receipt-server";
 
 const db = require("@/server/db");
 
 export const runtime = "nodejs";
 
-const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
-
-function escapeHtml(value) {
-  // Escape HTML special characters while preserving UTF-8 characters (é, è, ç, à, etc.)
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function buildOrderEmailHtml({ order, items, followUrl, baseUrl }) {
-  const itemRows = items
-    .map(
-      (item) => `
-        <tr>
-          <td style="padding:12px 0;border-bottom:1px solid #f2f4f7;color:#101828;font-weight:700;">
-            ${escapeHtml(item.nom_plat)}
-            <div style="margin-top:4px;color:#667085;font-size:12px;font-weight:600;">Quantite: ${item.quantite}</div>
-          </td>
-          <td align="right" style="padding:12px 0;border-bottom:1px solid #f2f4f7;color:#101828;font-weight:800;">
-            ${item.sous_total} HTG
-          </td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  return `
-    <!DOCTYPE html>
-    <html lang="fr-HT">
-      <head>
-        <meta charset="UTF-8" />
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      </head>
-      <body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;color:#101828;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px;">
-          <tr>
-            <td align="center">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #eaecf0;">
-                <tr>
-                  <td style="background:#101828;padding:24px 32px;text-align:center;">
-                    <img src="${baseUrl}/images/logo/tailogo.png" alt="TaïTaï" height="52" style="display:inline-block;height:52px;width:auto;max-width:160px;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:32px;">
-                    <p style="margin:0 0 8px 0;font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#FF9000;">Commande ${escapeHtml(order.numero_commande)}</p>
-                    <h1 style="margin:0 0 16px 0;font-size:26px;line-height:1.2;color:#101828;">Nou resevwa komann ou.</h1>
-                    <p style="margin:0 0 18px 0;font-size:15px;line-height:1.7;color:#475467;">Bonjour ${escapeHtml(order.client_nom)},</p>
-                    <p style="margin:0 0 24px 0;font-size:16px;line-height:1.8;color:#344054;">
-                      Komann ou pase avek sikse. N ap verifye detay yo epi n ap prepare livrezon an.
-                    </p>
-
-                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 22px 0;">
-                      ${itemRows}
-                    </table>
-
-                    <div style="margin-top:20px;padding:18px 20px;background:#fff7ed;border-radius:16px;">
-                      <div style="display:flex;justify-content:space-between;gap:16px;font-size:16px;font-weight:900;color:#101828;">
-                        <span>Total</span>
-                        <span>${order.total} HTG</span>
-                      </div>
-                      <div style="margin-top:10px;color:#9a3412;font-size:13px;line-height:1.6;">
-                        Nimewo komann: <strong>${escapeHtml(order.numero_commande)}</strong>
-                      </div>
-                    </div>
-
-                    <div style="margin-top:24px;color:#667085;font-size:14px;line-height:1.7;">
-                      Ou ka swiv komann nan isit la:
-                      <a href="${escapeHtml(followUrl)}" style="color:#FF9000;font-weight:800;">${escapeHtml(followUrl)}</a>
-                    </div>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-  `;
-}
+const fromEmail = process.env.RESEND_FROM_EMAIL || "TaïTaï <info@xn--tata-6pac.com>";
 
 export async function POST(request) {
   try {
     if (!process.env.RESEND_API_KEY) {
-      return NextResponse.json({ error: "RESEND_API_KEY n'est pas configuree." }, { status: 500 });
+      return NextResponse.json({ error: "RESEND_API_KEY manquant." }, { status: 500 });
     }
 
-    const { orderId, email, clientTel } = await request.json();
-
-    if (!orderId || !email) {
-      return NextResponse.json({ error: "Commande et email requis." }, { status: 400 });
+    const { orderId, clientTel, email: emailFromRequest } = await request.json();
+    if (!orderId) {
+      return NextResponse.json({ error: "orderId requis." }, { status: 400 });
     }
 
     const { rows } = await db.query(
-      `
-        SELECT id, numero_commande, client_nom, client_tel, adresse_livraison, total
-        FROM public.commandes
-        WHERE id = $1
-      `,
+      `SELECT
+         o.id,
+         o.numero_commande,
+         o.client_nom,
+         o.client_tel,
+         o.client_user_id,
+         o.adresse_livraison,
+         o.canal,
+         o.total,
+         o.created_at,
+         c.email AS joined_email
+       FROM public.commandes o
+       LEFT JOIN public.clients c ON c.id = o.client_user_id
+       WHERE o.id = $1`,
       [orderId],
     );
-    const order = rows[0];
 
+    const order = rows[0];
     if (!order) {
       return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
     }
@@ -120,42 +46,79 @@ export async function POST(request) {
       return NextResponse.json({ error: "Commande invalide." }, { status: 403 });
     }
 
+    const recipientEmail = String(emailFromRequest || order.joined_email || "").trim();
+    if (!recipientEmail) {
+      return NextResponse.json({ error: "Email du client introuvable." }, { status: 404 });
+    }
+
     const { rows: items } = await db.query(
-      `
-        SELECT nom_plat, quantite, sous_total
-        FROM public.commande_items
-        WHERE commande_id = $1
-        ORDER BY id
-      `,
+      `SELECT nom_plat, quantite, prix_unitaire, sous_total
+       FROM public.commande_items
+       WHERE commande_id = $1
+       ORDER BY id`,
       [orderId],
     );
 
-    const followUrl = `${request.nextUrl.origin}/suivi?numero=${encodeURIComponent(order.numero_commande)}`;
+    const document = {
+      orderNumber: String(order.numero_commande),
+      createdAt: order.created_at,
+      dueAt: order.created_at,
+      customerName: String(order.client_nom || ""),
+      customerPhone: order.client_tel || null,
+      customerEmail: recipientEmail,
+      customerAddress: order.adresse_livraison || null,
+      serviceLabel: order.canal || null,
+      items: items.map((item) => ({
+        name: String(item.nom_plat || ""),
+        quantity: Number(item.quantite) || 0,
+        unitPrice: Number(item.prix_unitaire) || 0,
+        amount: Number(item.sous_total) || 0,
+      })),
+      total: Number(order.total) || 0,
+    };
+
+    const emailHtml = `
+      <div style="font-family: sans-serif; color: #101828; padding: 24px; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+        <h2 style="color: #FF9000; margin-bottom: 16px;">Mèsi pou komann ou an !</h2>
+        <p>Bonswa <strong>${document.customerName}</strong>,</p>
+        <p>Tanpri jwenn resi ou a nan dokiman ki atache anba a.</p>
+        <p style="margin-top: 24px; font-size: 14px; color: #667085;">
+          Mèsi anpil pou konfyans ou nan TaïTaï. Si ou bezwen asistans, kontakte nou dirèkteman.
+        </p>
+      </div>
+    `;
+    
+    const emailText = `Mèsi pou komann ou an !\n\nBonswa ${document.customerName},\n\nTanpri jwenn resi ou a nan dokiman ki atache anba a.\n\nMèsi anpil pou konfyans ou nan TaïTaï.`;
+
+    const pdfBytes = await buildReceiptPdfBytes(document);
+
     const resend = new Resend(process.env.RESEND_API_KEY);
-    
-    // Ensure UTF-8 encoding for email content
-    const emailHtml = buildOrderEmailHtml({ order, items, followUrl, baseUrl: request.nextUrl.origin });
-    const emailText = `Bonjour ${order.client_nom}, votre commande ${order.numero_commande} a bien été reçue. Total: ${order.total} HTG. Suivi: ${followUrl}`;
-    
-    const { error } = await resend.emails.send({
+    const { error: sendError } = await resend.emails.send({
       from: fromEmail,
-      to: [email],
-      subject: `Confirmation commande ${order.numero_commande}`,
+      to: [recipientEmail],
+      subject: `Fakti TaïTaï — ${order.numero_commande}`,
       html: emailHtml,
       text: emailText,
-      headers: {
-        "Content-Type": "text/html; charset=UTF-8",
-      },
+      attachments: [
+        {
+          filename: `fakti-${order.numero_commande}.pdf`,
+          content: Buffer.from(pdfBytes),
+          contentType: "application/pdf",
+        },
+      ],
     });
 
-    if (error) {
-      console.error("[Resend order confirmation]", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (sendError) {
+      console.error("[Resend]", JSON.stringify(sendError));
+      return NextResponse.json(
+        { error: sendError.message || JSON.stringify(sendError) },
+        { status: 500 },
+      );
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, recipientEmail });
   } catch (err) {
-    console.error("[POST /api/orders/confirmation-email]", err.message);
-    return NextResponse.json({ error: "Impossible d'envoyer l'email de confirmation." }, { status: 500 });
+    console.error("[POST /api/orders/confirmation-email]", err.message, err);
+    return NextResponse.json({ error: err.message || "Erreur inattendue." }, { status: 500 });
   }
 }

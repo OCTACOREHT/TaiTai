@@ -187,7 +187,7 @@ export default function PromotionsPage() {
             Nouvelle promotion
           </h3>
         </div>
-        <form onSubmit={createPromotion} className="grid gap-4 p-5 sm:p-6 xl:grid-cols-6">
+        <form onSubmit={createPromotion} className="grid gap-4 p-5 sm:p-6 xl:grid-cols-7">
           <TextInput
             className="xl:col-span-2"
             placeholder="Titre de la promotion"
@@ -236,12 +236,15 @@ export default function PromotionsPage() {
             <option value="percent">Pourcentage</option>
             <option value="fixed">Reduction fixe</option>
           </SelectInput>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row xl:col-span-2">
             <TextInput
               type="number"
               min={1}
               placeholder={draft.discount_type === "percent" ? "10" : "250"}
               value={draft.discount_value}
+              inputMode="numeric"
+              step={1}
+              className="sm:flex-1 sm:min-w-0"
               onChange={(event) =>
                 setDraft((current) => ({ ...current, discount_value: event.target.value }))
               }
@@ -249,7 +252,7 @@ export default function PromotionsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600 disabled:bg-brand-300"
+              className="inline-flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600 disabled:bg-brand-300 sm:min-w-32 sm:w-auto"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusIcon className="h-4 w-4" />}
               Ajouter

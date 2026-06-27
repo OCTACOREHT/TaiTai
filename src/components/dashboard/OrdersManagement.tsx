@@ -6,9 +6,9 @@ import {
   type RestaurantOrder,
 } from "@/lib/data";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
-import { useEffect, useRef, useState } from "react";
-import { OrderReceiptPreview } from "./OrderReceiptPreview";
+import { useEffect, useState } from "react";
 import { OrdersTable } from "./OrdersTable";
+import { Toast } from "@/components/ui/toast/Toast";
 import { supabase } from "@/lib/supabase-client";
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
@@ -26,16 +26,34 @@ const filters: Array<"Tous" | OrderStatus> = [
 export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantOrder[] }) {
   const [orders, setOrders] = useState<RestaurantOrder[]>(initialOrders);
   const [statusFilter, setStatusFilter] = useState<"Tous" | OrderStatus>("Tous");
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const receiptRef = useRef<HTMLDivElement>(null);
+  const [sendingReceiptOrderId, setSendingReceiptOrderId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [sentReceiptIds, setSentReceiptIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("sentReceipts");
+      if (saved) setSentReceiptIds(JSON.parse(saved));
+    } catch (e) {}
+  }, []);
+
+  const markReceiptAsSent = (orderId: string) => {
+    setSentReceiptIds((prev) => {
+      if (prev.includes(orderId)) return prev;
+      const next = [...prev, orderId];
+      try {
+        localStorage.setItem("sentReceipts", JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  };
 
   const loadOrders = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const data = await getCommandes();
       setOrders(data);
-      if (data.length > 0 && !selectedOrderId) setSelectedOrderId(data[0].id);
     } catch (e) {
       console.error(e);
     } finally {
@@ -67,13 +85,17 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     };
   }, []);
 
-  const filteredOrders =
+  const filteredOrders = (
     statusFilter === "Tous"
       ? orders
-      : orders.filter((order) => order.status === statusFilter);
-
-  const selectedOrder =
-    orders.find((order) => order.id === selectedOrderId) ?? null;
+      : orders.filter((order) => order.status === statusFilter)
+  ).sort((a, b) => {
+    const aSent = sentReceiptIds.includes(a.id);
+    const bSent = sentReceiptIds.includes(b.id);
+    if (aSent && !bSent) return 1;
+    if (!aSent && bSent) return -1;
+    return 0;
+  });
 
   const counts = {
     pending: orders.filter((order) => order.status === "En attente").length,
@@ -108,15 +130,35 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     }
   };
 
-  const handleSelectOrder = (order: RestaurantOrder) => {
-    setSelectedOrderId(order.id);
-    if (window.innerWidth < 1280) {
-      receiptRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleSendReceipt = async (order: RestaurantOrder) => {
+    setSendingReceiptOrderId(order.id);
+
+    try {
+      const response = await fetch("/api/orders/confirmation-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        alert("Impossible d'envoyer le reçu : " + (payload.error || "Erreur inconnue."));
+        return;
+      }
+
+      setToast(`Reçu envoyé à ${payload.recipientEmail || order.clientEmail || "client"}`);
+      markReceiptAsSent(order.id);
+    } catch (error) {
+      alert("Impossible d'envoyer le reçu : " + (error as Error).message);
+    } finally {
+      setSendingReceiptOrderId(null);
     }
   };
 
   return (
     <div className="space-y-6">
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       <div className="grid gap-4 md:grid-cols-5">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-sm text-gray-500 dark:text-gray-400">En attente</p>
@@ -150,60 +192,52 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.45fr_0.85fr]">
-        <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-          <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
-                Suivi des commandes en direct
-              </h3>
-              <p className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                Les nouvelles commandes apparaissent automatiquement ici.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filter) => (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => setStatusFilter(filter)}
-                  className={cn(
-                    "rounded-full border px-4 py-2 text-xs font-bold transition-all",
-                    statusFilter === filter
-                      ? "border-[#101828] bg-[#101828] text-white shadow-lg"
-                      : "border-gray-200 text-gray-600 hover:bg-gray-50",
-                  )}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
+      <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
+        <div className="flex flex-col gap-4 border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
+              Suivi des commandes en direct
+            </h3>
+            <p className="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">
+              Les nouvelles commandes apparaissent automatiquement ici. Le recu special part
+              vers le client par email.
+            </p>
           </div>
-
-          <div className="p-5 sm:p-6">
-            {loading && orders.length === 0 ? (
-              <div className="py-20 text-center font-medium text-gray-500">
-                Chargement des commandes...
-              </div>
-            ) : (
-              <OrdersTable
-                orders={filteredOrders}
-                selectedOrderId={selectedOrderId}
-                onReceiptClick={handleSelectOrder}
-                onPrintClick={(order) => {
-                  setSelectedOrderId(order.id);
-                  setTimeout(() => window.print(), 100);
-                }}
-                onStatusChange={handleStatusChange}
-              />
-            )}
+          <div className="flex flex-wrap gap-2">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                onClick={() => setStatusFilter(filter)}
+                className={cn(
+                  "rounded-full border px-4 py-2 text-xs font-bold transition-all",
+                  statusFilter === filter
+                    ? "border-[#101828] bg-[#101828] text-white shadow-lg"
+                    : "border-gray-200 text-gray-600 hover:bg-gray-50",
+                )}
+              >
+                {filter}
+              </button>
+            ))}
           </div>
-        </section>
-
-        <div ref={receiptRef} className="h-fit xl:sticky xl:top-24">
-          <OrderReceiptPreview order={selectedOrder} />
         </div>
-      </div>
+
+        <div className="p-5 sm:p-6">
+          {loading && orders.length === 0 ? (
+            <div className="py-20 text-center font-medium text-gray-500">
+              Chargement des commandes...
+            </div>
+          ) : (
+            <OrdersTable
+              orders={filteredOrders}
+              onSendReceipt={handleSendReceipt}
+              sendingReceiptOrderId={sendingReceiptOrderId}
+              onStatusChange={handleStatusChange}
+              sentReceiptIds={sentReceiptIds}
+            />
+          )}
+        </div>
+      </section>
     </div>
   );
 }

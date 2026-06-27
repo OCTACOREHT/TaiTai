@@ -3,7 +3,7 @@
 import { Modal } from "@/components/ui/modal";
 import { MenuItem, formatCurrency } from "@/lib/data";
 import { supabase } from "@/lib/supabase-client";
-import { Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { CalendarDays, Loader2, PencilLine, Trash2, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const gradients = [
@@ -17,10 +17,12 @@ export function MenuGrid({
   items: initialItems,
   allowDelete = false,
   onItemsChange,
+  onEditItem,
 }: {
   items: MenuItem[];
   allowDelete?: boolean;
   onItemsChange?: (items: MenuItem[]) => void;
+  onEditItem?: (item: MenuItem) => void;
 }) {
   const [items, setItems] = useState(initialItems);
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
@@ -103,6 +105,12 @@ export function MenuGrid({
                   <p className="mt-2 line-clamp-2 text-sm leading-5 text-gray-600 dark:text-gray-300">
                     {item.description}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-gray-600 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-300">
+                      <CalendarDays className="h-3.5 w-3.5 text-brand-500" />
+                      {item.jour || "Tous les jours"}
+                    </span>
+                  </div>
                 </div>
 
                 {item.image ? (
@@ -138,7 +146,18 @@ export function MenuGrid({
                   {item.disponible ? "Disponible" : "Indisponible"}
                 </span>
                 <div className="flex items-center gap-2">
+                  {onEditItem ? (
+                    <button
+                      type="button"
+                      onClick={() => onEditItem(item)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300"
+                      title="Modifier le plat"
+                    >
+                      <PencilLine size={15} />
+                    </button>
+                  ) : null}
                   <button
+                    type="button"
                     onClick={() => toggleAvailability(item.id, item.disponible ?? true)}
                     className={`rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition ${
                       item.disponible

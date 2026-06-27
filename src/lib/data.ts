@@ -58,12 +58,15 @@ export interface MenuItem {
   image?: string;
   disponible?: boolean;
   stockQuantity: number;
+  jour?: string | null;
 }
 
 export interface RestaurantOrder {
   id: string;
   numero: string;
   customer: string;
+  clientEmail?: string | null;
+  clientUserId?: string | null;
   table: string;
   total: number;
   status: OrderStatus;
@@ -126,14 +129,15 @@ export async function getMenuItems(): Promise<MenuItem[]> {
   const { data, error } = await supabase
     .from("menu_items")
     .select("*")
-    .is("deleted_at", null);
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
   if (error) throw error;
   
   return (data || []).map(item => ({
     id: item.id,
     name: item.nom,
     category: item.categorie,
-    description: item.description,
+    description: item.description || "",
     price: item.prix,
     stock: 10,
     maxStock: 20,
@@ -142,6 +146,7 @@ export async function getMenuItems(): Promise<MenuItem[]> {
     image: item.image_url,
     disponible: item.disponible,
     stockQuantity: item.stock_quantity ?? 0,
+    jour: item.jour ?? null,
   }));
 }
 
@@ -152,11 +157,33 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     .order("created_at", { ascending: false });
   
   if (error) throw error;
-  
-  return (data || []).map(cmd => ({
+
+  const orders = data || [];
+  const missing = orders.filter((cmd: any) => !cmd.client_email && cmd.client_user_id);
+  const clientEmails: Record<string, string> = {};
+
+  if (missing.length > 0) {
+    const userIds = [...new Set(missing.map((cmd: any) => cmd.client_user_id as string))];
+    const { data: clients, error: clientsError } = await supabase
+      .from("clients")
+      .select("id, email")
+      .in("id", userIds);
+
+    if (!clientsError && clients) {
+      clients.forEach((client: { id: string; email: string | null }) => {
+        clientEmails[client.id] = String(client.email || "");
+      });
+    }
+  }
+
+  return orders.map((cmd: any) => ({
     id: cmd.id,
     numero: cmd.numero_commande,
     customer: cmd.client_nom,
+    clientEmail:
+      (cmd.client_email as string | null) ??
+      (cmd.client_user_id ? clientEmails[cmd.client_user_id] ?? null : null),
+    clientUserId: cmd.client_user_id ?? null,
     table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
     total: cmd.total,
     status: cmd.statut as OrderStatus,

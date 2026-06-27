@@ -87,9 +87,11 @@ function MenuContent() {
 
   const filteredItems = items.filter(item => {
     const matchesCategory = selectedCategory === "Tous" || item.categorie === selectedCategory;
-    const matchesSearch = item.nom.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDay = selectedDay === "Tous" || item.jour === selectedDay || item.jour === null || item.jour === "";
+    const description = item.description || "";
+    const itemDay = item.jour || "";
+    const matchesSearch = item.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDay = selectedDay === "Tous" || itemDay === selectedDay || itemDay === "";
     return matchesCategory && matchesSearch && matchesDay;
   });
 
@@ -221,20 +223,23 @@ function MenuContent() {
                     <h3 className="break-words text-xl font-bold leading-tight text-[#101828] md:text-2xl">{item.nom}</h3>
                     <span className="shrink-0 text-[10px] font-black text-[#98A2B3] uppercase tracking-widest bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">{categoryLabels[item.categorie] || item.categorie}</span>
                   </div>
-                  {promotion && (
-                    <p className="text-xs font-bold text-red-600">
-                      {promotion.title} <span className="text-gray-400 line-through">{item.prix} HTG</span>
-                    </p>
-                  )}
-                  <p className="text-[#667085] line-clamp-2 text-xs md:text-sm leading-relaxed font-medium">{item.description}</p>
+                  <p className="text-[#667085] line-clamp-2 text-xs md:text-sm leading-relaxed font-medium">{item.description || ""}</p>
                 </div>
                 
                 <div className="mt-auto flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#667085]">
-                    <div className="p-1.5 rounded-lg bg-gray-50 text-[#98A2B3]">
-                      <Clock size={16} />
-                    </div>
-                    <span>{item.temps_prep} min</span>
+                  <div className="flex items-center gap-3 text-xs font-bold text-[#667085]">
+                    <span className="inline-flex items-center gap-1.5">
+                      <div className="p-1.5 rounded-lg bg-gray-50 text-[#98A2B3]">
+                        <Clock size={16} />
+                      </div>
+                      {item.temps_prep} min
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <div className="p-1.5 rounded-lg bg-gray-50 text-[#F4A640]">
+                        <CalendarDays size={16} />
+                      </div>
+                      {item.jour || "Tout jou"}
+                    </span>
                   </div>
                   <button 
                     onClick={() => handleAddToCart(item)}

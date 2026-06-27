@@ -71,6 +71,7 @@ CREATE TABLE public.menu_items (
   stock_quantity INTEGER NOT NULL DEFAULT 10,
   temps_prep INTEGER DEFAULT 15,
   best_seller BOOLEAN DEFAULT false,
+  jour TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   deleted_at TIMESTAMPTZ
 );
@@ -81,6 +82,7 @@ CREATE TABLE public.commandes (
   numero_commande TEXT UNIQUE NOT NULL,
   client_nom TEXT NOT NULL,
   client_tel TEXT,
+  client_email TEXT,
   canal TEXT NOT NULL DEFAULT 'Livraison' CHECK (canal IN ('Livraison')),
   table_numero TEXT,
   adresse_livraison TEXT,

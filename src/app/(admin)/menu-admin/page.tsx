@@ -19,7 +19,19 @@ import { ImagePlus, Loader2, PlusIcon, X } from "lucide-react";
 
 const categories = ["Grillades", "Signature", "Burgers", "PÃ¢tes", "Desserts", "Boissons"];
 
-const emptyDraft = {
+type MenuDraft = {
+  nom: string;
+  description: string;
+  prix: string;
+  categorie: string;
+  stock_quantity: string;
+  temps_prep: string;
+  disponible: boolean;
+  best_seller: boolean;
+  jour: string;
+};
+
+const createEmptyDraft = (): MenuDraft => ({
   nom: "",
   description: "",
   prix: "",
@@ -29,16 +41,30 @@ const emptyDraft = {
   disponible: true,
   best_seller: false,
   jour: "",
-};
+});
+
+const buildDraftFromItem = (item: MenuItem): MenuDraft => ({
+  nom: item.name,
+  description: item.description || "",
+  prix: String(item.price),
+  categorie: item.category || categories[0],
+  stock_quantity: String(item.stockQuantity ?? 0),
+  temps_prep: String(Number.parseInt(item.prepTime, 10) || 15),
+  disponible: item.disponible ?? true,
+  best_seller: item.featured ?? false,
+  jour: item.jour || "",
+});
 
 export default function MenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState(emptyDraft);
+  const [draft, setDraft] = useState<MenuDraft>(createEmptyDraft());
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [stockAlerts, setStockAlerts] = useState<{ lowStock: number; outOfStock: number; items: any[] }>({ lowStock: 0, outOfStock: 0, items: [] });
 
   const loadItems = async (showLoading = true) => {
@@ -61,7 +87,7 @@ export default function MenuPage() {
   useAutoRefresh(() => {
     loadItems(false);
     loadStockAlerts();
-  }, { enabled: !saving && !isAddModalOpen });
+  }, { enabled: !saving && !isFormModalOpen });
 
   const loadStockAlerts = async () => {
     try {
@@ -107,13 +133,36 @@ export default function MenuPage() {
   const clearImage = () => {
     setImageFile(null);
     setImagePreview("");
+    setImageUrl("");
   };
 
-  const closeAddModal = () => {
-    if (saving) return;
-    setIsAddModalOpen(false);
-    setDraft(emptyDraft);
+  const resetFormState = () => {
+    setDraft(createEmptyDraft());
     clearImage();
+  };
+
+  const openCreateModal = () => {
+    if (saving) return;
+    setEditingItem(null);
+    resetFormState();
+    setIsFormModalOpen(true);
+  };
+
+  const openEditModal = (item: MenuItem) => {
+    if (saving) return;
+    setEditingItem(item);
+    setDraft(buildDraftFromItem(item));
+    setImageFile(null);
+    setImagePreview(item.image || "");
+    setImageUrl(item.image || "");
+    setIsFormModalOpen(true);
+  };
+
+  const closeFormModal = () => {
+    if (saving) return;
+    setIsFormModalOpen(false);
+    setEditingItem(null);
+    resetFormState();
   };
 
   const uploadImage = async () => {
@@ -136,7 +185,7 @@ export default function MenuPage() {
     return payload.url as string;
   };
 
-  const handleAddDish = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSaveDish = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const prix = Number(draft.prix);
@@ -149,59 +198,41 @@ export default function MenuPage() {
     }
 
     setSaving(true);
-    let imageUrl: string | null = null;
-
     try {
-      imageUrl = await uploadImage();
-    } catch (err) {
-      setSaving(false);
-      alert("Erreur lors de l'upload de l'image : " + (err as Error).message);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("menu_items")
-      .insert({
+      const nextImageUrl = imageFile ? await uploadImage() : imageUrl || null;
+      const payload = {
         nom: draft.nom.trim(),
         description: draft.description.trim(),
         prix,
         categorie: draft.categorie,
-        image_url: imageUrl,
+        image_url: nextImageUrl,
         stock_quantity: Number.isFinite(stockQuantity) && stockQuantity >= 0 ? stockQuantity : 0,
         temps_prep: Number.isFinite(tempsPrep) && tempsPrep > 0 ? tempsPrep : 15,
         disponible: draft.disponible,
         best_seller: draft.best_seller,
         jour: draft.jour || null,
-      })
-      .select("*")
-      .single();
+      };
 
-    setSaving(false);
+      const query = supabase.from("menu_items");
+      const { error } = editingItem
+        ? await query.update(payload).eq("id", editingItem.id)
+        : await query.insert(payload);
 
-    if (error) {
-      alert("Erreur lors de l'ajout du plat : " + error.message);
-      return;
+      if (error) {
+        alert(`Erreur lors de ${editingItem ? "la modification" : "l'ajout"} du plat : ` + error.message);
+        return;
+      }
+
+      await Promise.all([loadItems(false), loadStockAlerts()]);
+      setIsFormModalOpen(false);
+      setEditingItem(null);
+      resetFormState();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Erreur inconnue.";
+      alert("Erreur lors de l'enregistrement : " + message);
+    } finally {
+      setSaving(false);
     }
-
-    const nextItem: MenuItem = {
-      id: data.id,
-      name: data.nom,
-      category: data.categorie,
-      description: data.description || "",
-      price: data.prix,
-      stock: 10,
-      maxStock: 20,
-      prepTime: `${data.temps_prep} min`,
-      featured: data.best_seller,
-      image: data.image_url || undefined,
-      disponible: data.disponible,
-      stockQuantity: data.stock_quantity ?? 0,
-    };
-
-    setItems((current) => [nextItem, ...current]);
-    setDraft(emptyDraft);
-    clearImage();
-    setIsAddModalOpen(false);
   };
 
   return (
@@ -262,7 +293,7 @@ export default function MenuPage() {
         <PageBreadCrumb pageTitle="Menu" />
         <button
           type="button"
-          onClick={() => setIsAddModalOpen(true)}
+          onClick={openCreateModal}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600"
         >
           <PlusIcon className="h-4 w-4" />
@@ -280,18 +311,22 @@ export default function MenuPage() {
         </p>
       </section>
 
-      <Modal isOpen={isAddModalOpen} onClose={closeAddModal} size="xl" className="max-h-[92vh] overflow-y-auto p-6">
+      <Modal isOpen={isFormModalOpen} onClose={closeFormModal} size="xl" className="max-h-[92vh] overflow-y-auto p-6">
         <div className="mb-6 pr-12">
-          <p className="text-sm font-medium text-brand-500">Nouveau plat</p>
+          <p className="text-sm font-medium text-brand-500">
+            {editingItem ? "Modifier le plat" : "Nouveau plat"}
+          </p>
           <h2 className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white/90">
-            Ajouter un plat
+            {editingItem ? "Mettre à jour un plat" : "Ajouter un plat"}
           </h2>
           <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-            Le plat sera disponible sur le site client si l'option Disponible est active.
+            {editingItem
+              ? "Modifiez les informations du plat déjà disponible sur le site client."
+              : "Le plat sera disponible sur le site client si l'option Disponible est active."}
           </p>
         </div>
 
-        <form onSubmit={handleAddDish} className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
+        <form onSubmit={handleSaveDish} className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
@@ -436,7 +471,7 @@ export default function MenuPage() {
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-medium text-white shadow-theme-xs transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-brand-300"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusIcon className="h-4 w-4" />}
-              {saving ? "Ajout en cours..." : "Ajouter le plat"}
+              {saving ? "Enregistrement..." : editingItem ? "Enregistrer les changements" : "Ajouter le plat"}
             </button>
           </div>
         </form>
@@ -447,7 +482,7 @@ export default function MenuPage() {
           <Loader2 className="animate-spin text-brand-500" size={40} />
         </div>
       ) : (
-        <MenuGrid items={items} allowDelete onItemsChange={setItems} />
+        <MenuGrid items={items} allowDelete onItemsChange={setItems} onEditItem={openEditModal} />
       )}
     </div>
   );

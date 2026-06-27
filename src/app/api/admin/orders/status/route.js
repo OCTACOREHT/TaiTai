@@ -115,7 +115,7 @@ export async function PATCH(request) {
               WHEN $2 = 'Annulee' THEN 'Refuse'
               WHEN $2 = 'En préparation' THEN 'Valide'
               ELSE payment_status
-            END
+          END
         WHERE id = $1
         RETURNING id, numero_commande, client_nom, client_user_id
       `,
@@ -129,13 +129,12 @@ export async function PATCH(request) {
     client = null;
 
     let email = null;
-
     if (order.client_user_id) {
       const { rows: clientRows } = await db.query(
         "SELECT email FROM public.clients WHERE id = $1",
         [order.client_user_id],
       );
-      email = clientRows[0]?.email || null;
+      email = String(clientRows[0]?.email || "").trim() || null;
     }
 
     if (email && process.env.RESEND_API_KEY) {

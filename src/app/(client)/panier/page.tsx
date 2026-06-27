@@ -107,7 +107,7 @@ export default function PanierPage() {
         ...prev,
         client_nom: prev.client_nom || user.nom,
         client_tel: prev.client_tel || user.telephone,
-        client_email: prev.client_email || user.email || "",
+        client_email: user.email || prev.client_email || "",
       }));
     }
   }, [user]);
@@ -172,14 +172,14 @@ export default function PanierPage() {
     return result.url as string;
   };
 
-  const sendConfirmationEmail = async (orderId: string) => {
+  const sendConfirmationEmail = async (orderId: string, email: string) => {
     const response = await fetch("/api/orders/confirmation-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         orderId,
-        email: formData.client_email.trim(),
         clientTel: formData.client_tel,
+        email,
       }),
     });
 
@@ -205,6 +205,13 @@ export default function PanierPage() {
 
     if (proofRequired && !paymentProofFile) {
       alert("Tanpri ajoute jistifikatif peman an pou MonCash/Zelle.");
+      return;
+    }
+
+    const clientEmail = user?.email?.trim() || formData.client_email.trim();
+
+    if (!clientEmail) {
+      alert("Tanpri konekte oswa antre imel ou itilize pou enskripsyon an.");
       return;
     }
 
@@ -294,7 +301,7 @@ export default function PanierPage() {
       );
 
       try {
-        await sendConfirmationEmail(commande.id);
+        await sendConfirmationEmail(commande.id, clientEmail);
       } catch (emailError) {
         console.error("[order confirmation email]", emailError);
         alert(`Komann nan pase, men email konfimasyon an pa rive voye: ${(emailError as Error).message}`);
@@ -553,20 +560,34 @@ export default function PanierPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-sm font-bold text-[#101828]">
-                <Mail size={16} className="text-brand-500" />
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm font-bold text-[#101828]">
+                  <Mail size={16} className="text-brand-500" />
                 Email pou konfimasyon
-              </label>
-              <input
-                required
-                type="email"
-                placeholder="Egzanp: jean@email.com"
-                value={formData.client_email}
-                onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 font-medium transition-all focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
-              />
-            </div>
+                </label>
+              {user?.email ? (
+                <div className="space-y-2">
+                  <input
+                    type="email"
+                    value={user.email}
+                    readOnly
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-100 px-5 py-4 font-medium text-gray-600 outline-none"
+                  />
+                  <p className="text-xs font-semibold text-[#667085]">
+                    Nou ap itilize imel ki sou kont enskripsyon ou an.
+                  </p>
+                </div>
+              ) : (
+                <input
+                  required
+                  type="email"
+                  placeholder="Egzanp: jean@email.com"
+                  value={formData.client_email}
+                  onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 font-medium transition-all focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
+                />
+              )}
+              </div>
 
             <div className="space-y-3">
               <label className="text-sm font-bold text-[#101828]">Adres presi</label>

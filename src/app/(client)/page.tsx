@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -18,6 +18,7 @@ import {
   Soup,
   CakeSlice,
   GlassWater,
+  CalendarDays,
   Plus,
 } from "lucide-react";
 
@@ -298,14 +299,22 @@ export default function ClientHomePage() {
                       {dish.categorie}
                     </span>
                   </div>
-                  <p className="line-clamp-2 text-xs leading-relaxed font-medium text-[#667085]">{dish.description}</p>
+                  <p className="line-clamp-2 text-xs leading-relaxed font-medium text-[#667085]">{dish.description || ""}</p>
                 </div>
                 <div className="mt-auto flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-2 text-xs font-bold text-[#667085]">
-                    <div className="rounded-lg bg-gray-50 p-1.5 text-[#98A2B3]">
-                      <Clock size={15} />
-                    </div>
-                    <span>{dish.temps_prep} min</span>
+                  <div className="flex items-center gap-3 text-xs font-bold text-[#667085]">
+                    <span className="inline-flex items-center gap-1.5">
+                      <div className="rounded-lg bg-gray-50 p-1.5 text-[#98A2B3]">
+                        <Clock size={15} />
+                      </div>
+                      {dish.temps_prep} min
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <div className="rounded-lg bg-gray-50 p-1.5 text-[#F4A640]">
+                        <CalendarDays size={15} />
+                      </div>
+                      {dish.jour || "Tout jou"}
+                    </span>
                   </div>
                   <button
                     type="button"

@@ -19,6 +19,7 @@ export interface Commande {
   numero_commande: string;
   client_nom: string;
   client_tel: string | null;
+  client_email: string | null;
   canal: "Livraison";
   table_numero: string | null;
   adresse_livraison: string | null;
