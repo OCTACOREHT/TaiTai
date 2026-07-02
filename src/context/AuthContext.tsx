@@ -176,7 +176,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     if (existingPhone) {
-      throw new Error("Nimewo telefon sa a deja itilize.");
+      throw new Error("Nimewo telefòn sa a deja itilize.");
     }
 
     const hash = await hashPassword(mot_de_passe);

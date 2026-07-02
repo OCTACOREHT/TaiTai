@@ -283,7 +283,7 @@ export default function AuthModal() {
                   </span>
                   <div className="min-w-0">
                     <p className="truncate text-base font-black">{user.nom}</p>
-                    <p className="mt-1 text-xs font-bold text-white/60">Kont kliyan TaÃ¯TaÃ¯</p>
+                    <p className="mt-1 text-xs font-bold text-white/60">Kont kliyan TaïTaï</p>
                   </div>
                 </div>
               </div>
@@ -296,7 +296,7 @@ export default function AuthModal() {
                 </div>
                 {user.ville || user.departement ? (
                   <div className="rounded-2xl bg-brand-500/10 p-4">
-                    <p className="text-xs font-black uppercase tracking-widest text-brand-700">AdrÃ¨s</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-brand-700">Adrès</p>
                     <p className="mt-2 text-sm font-bold text-[#101828]">
                       {[user.ville, user.departement].filter(Boolean).join(", ")}
                     </p>
@@ -349,7 +349,7 @@ export default function AuthModal() {
   <div className="mx-auto mb-4 relative h-20 w-40">
     <Image
       src="/images/logo/tailogo.png"
-      alt="TaÃ¯TaÃ¯"
+      alt="TaïTaï"
       fill
       className="object-contain"
     />
@@ -361,8 +361,8 @@ export default function AuthModal() {
 
   <p className="mt-1 text-sm text-[#667085]">
     {mode === "login"
-      ? "Konekte pou pase kÃ²mann"
-      : "Antre nan TaÃ¯TaÃ¯ pou kÃ²mande"}
+      ? "Konekte pou pase kòmann"
+      : "Antre nan TaïTaï pou kòmande"}
   </p>
 </div>
                 
@@ -404,7 +404,7 @@ export default function AuthModal() {
 
         <div className="relative">
           <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#98A2B3]" />
-          <input type="tel" required placeholder="TelefÃ²n" value={telephone} onChange={(event) => setTelephone(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
+          <input type="tel" required placeholder="Telefòn" value={telephone} onChange={(event) => setTelephone(event.target.value)} className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         </div>
       </div>
 
@@ -416,7 +416,7 @@ export default function AuthModal() {
 
         <div className="relative">
           <MapPin size={18} className="absolute left-4 top-5 text-[#98A2B3]" />
-          <textarea required placeholder="Adres konplÃ¨" value={adresse} onChange={(event) => setAdresse(event.target.value)} className="h-[58px] w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
+          <textarea required placeholder="Adres konplè" value={adresse} onChange={(event) => setAdresse(event.target.value)} className="h-[58px] w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 py-4 pl-12 pr-5 text-sm font-medium focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10" />
         </div>
       </div>
 
