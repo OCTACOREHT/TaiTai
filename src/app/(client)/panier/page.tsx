@@ -20,6 +20,7 @@ import {
   Trash2,
   UploadCloud,
 } from "lucide-react";
+import { CustomAlert } from "@/components/ui/CustomAlert";
 
 type PaymentMethod = "Sur place" | "MonCash" | "Zelle";
 
@@ -89,6 +90,15 @@ export default function PanierPage() {
   const [promoMessage, setPromoMessage] = useState("");
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date());
+  const [alertConfig, setAlertConfig] = useState<{
+    isOpen: boolean;
+    message: string;
+    type: "error" | "success" | "warning" | "info";
+  }>({
+    isOpen: false,
+    message: "",
+    type: "info",
+  });
 
   const [formData, setFormData] = useState({
     client_nom: "",
@@ -194,24 +204,40 @@ export default function PanierPage() {
     if (cart.length === 0) return;
 
     if (!livraisonDisponible) {
-      alert("Livrezon pa disponib nan zon sa a.");
+      setAlertConfig({
+        isOpen: true,
+        message: "Livrezon pa disponib nan zon sa a.",
+        type: "error",
+      });
       return;
     }
 
     if (!formData.zone_livraison) {
-      alert("Tanpri chwazi zon livrezon ou.");
+      setAlertConfig({
+        isOpen: true,
+        message: "Tanpri chwazi zon livrezon ou.",
+        type: "error",
+      });
       return;
     }
 
     if (proofRequired && !paymentProofFile) {
-      alert("Tanpri ajoute jistifikatif peman an pou MonCash/Zelle.");
+      setAlertConfig({
+        isOpen: true,
+        message: "Tanpri ajoute jistifikatif peman an pou MonCash/Zelle.",
+        type: "error",
+      });
       return;
     }
 
     const clientEmail = user?.email?.trim() || formData.client_email.trim();
 
     if (!clientEmail) {
-      alert("Tanpri konekte oswa antre imel ou itilize pou enskripsyon an.");
+      setAlertConfig({
+        isOpen: true,
+        message: "Tanpri konekte oswa antre imel ou itilize pou enskripsyon an.",
+        type: "error",
+      });
       return;
     }
 
@@ -240,10 +266,23 @@ export default function PanierPage() {
       });
 
       if (unavailableItems.length > 0) {
+        const outOfStockItems = unavailableItems.filter((item) => {
+          const stock = stockById.get(item.id)?.stock_quantity ?? 0;
+          return stock === 0;
+        });
+        
+        if (outOfStockItems.length > 0) {
+          throw new Error(
+            "Sa pa disponib ankò: " +
+              outOfStockItems.map((item) => item.nom).join(", ") +
+              ". Tanpri retire yo nan panyen ou."
+          );
+        }
+        
         throw new Error(
           "Stok la pa sifi pou: " +
             unavailableItems.map((item) => item.nom).join(", ") +
-            ". Tanpri ajiste panyen ou.",
+            ". Tanpri ajiste panyen ou."
         );
       }
 
@@ -304,7 +343,11 @@ export default function PanierPage() {
         await sendConfirmationEmail(commande.id, clientEmail);
       } catch (emailError) {
         console.error("[order confirmation email]", emailError);
-        alert(`Komann nan pase, men email konfimasyon an pa rive voye: ${(emailError as Error).message}`);
+        setAlertConfig({
+          isOpen: true,
+          message: `Komann nan pase, men email konfimasyon an pa rive voye: ${(emailError as Error).message}`,
+          type: "warning",
+        });
       }
 
       const orderHistory = JSON.parse(localStorage.getItem("taitai-orders-history") || "[]");
@@ -319,7 +362,11 @@ export default function PanierPage() {
       clearCart();
       router.push(`/confirmation/${commande.id}`);
     } catch (err) {
-      alert((err as Error).message);
+      setAlertConfig({
+        isOpen: true,
+        message: (err as Error).message,
+        type: "error",
+      });
       setLoading(false);
     }
   };
@@ -343,6 +390,10 @@ export default function PanierPage() {
       </div>
     );
   }
+
+  const closeAlert = () => {
+    setAlertConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   return (
     <div className="grid min-w-0 gap-10 lg:grid-cols-2 lg:gap-16">
@@ -683,6 +734,14 @@ export default function PanierPage() {
           </div>
         </form>
       </div>
+
+      {/* Custom Alert */}
+      <CustomAlert
+        isOpen={alertConfig.isOpen}
+        message={alertConfig.message}
+        type={alertConfig.type}
+        onClose={closeAlert}
+      />
     </div>
   );
 }

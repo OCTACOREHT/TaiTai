@@ -19,6 +19,7 @@ export const metadata = {
     shortcut: "/images/logo/tailogo.png",
     apple: "/images/logo/tailogo.png",
   },
+  charset: "UTF-8",
 };
 
 export default function RootLayout({
