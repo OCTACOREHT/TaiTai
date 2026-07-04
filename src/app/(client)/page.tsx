@@ -23,12 +23,8 @@ import {
 } from "lucide-react";
 
 const categories = [
-  { name: "Grillades", label: "Griyay", icon: Flame, color: "bg-orange-50", text: "text-orange-600" },
-  { name: "Signature", label: "Espesyal", icon: Award, color: "bg-yellow-50", text: "text-yellow-600" },
-  { name: "Burgers", label: "Bègè", icon: Beef, color: "bg-red-50", text: "text-red-600" },
-  { name: "Pâtes", label: "Pat", icon: Soup, color: "bg-blue-50", text: "text-blue-600" },
-  { name: "Desserts", label: "Desè", icon: CakeSlice, color: "bg-pink-50", text: "text-pink-600" },
-  { name: "Boissons", label: "Bwason", icon: GlassWater, color: "bg-cyan-50", text: "text-cyan-600" },
+  { name: "Healthy", label: "Healthy", icon: Flame, color: "bg-green-50", text: "text-green-600" },
+  { name: "Fast food", label: "Fast food", icon: Beef, color: "bg-red-50", text: "text-red-600" },
 ];
 
 type ClientReview = {
@@ -403,7 +399,7 @@ export default function ClientHomePage() {
         {/* Formulaire en bas */}
         {user ? (
           <form onSubmit={handleSubmitReview} className="space-y-4 rounded-2xl border border-gray-100 bg-[#F9FAFB] p-5 sm:p-6">
-            <p className="text-sm font-black uppercase tracking-widest text-[#101828]">Laisse yon avis</p>
+            <p className="text-sm font-black uppercase tracking-widest text-[#101828]">Lèsè yon avi</p>
             <input
               type="text"
               required

@@ -237,7 +237,7 @@ function drawTopBar({
     color: COLORS.ink,
   });
 
-  page.drawText("Reku TaïTaï", {
+  page.drawText("Resi TaïTaï", {
     x: MARGIN,
     y: PAGE_HEIGHT - MARGIN - 28,
     size: 10,
@@ -457,7 +457,7 @@ export function buildReceiptEmailHtml({
                 <tr>
                   <td style="vertical-align:top;">
                     <div style="font-size:30px;line-height:1;font-weight:900;letter-spacing:-0.04em;color:#101828;">Fakti</div>
-                    <div style="margin-top:6px;font-size:12px;font-weight:700;color:#667085;">Reku TaïTaï</div>
+                    <div style="margin-top:6px;font-size:12px;font-weight:700;color:#667085;">Resi TaïTaï</div>
                   </td>
                   <td align="right" style="vertical-align:top;">
                     ${
@@ -633,7 +633,6 @@ export async function buildReceiptPdfBytes(document: ReceiptDocument) {
     document.customerName,
     document.customerPhone ?? "",
     document.customerEmail ?? "",
-    document.customerAddress ?? "",
     document.serviceLabel ?? "",
   ].filter(Boolean) as string[];
 
@@ -676,7 +675,7 @@ export async function buildReceiptPdfBytes(document: ReceiptDocument) {
     font: boldFont,
     color: COLORS.ink,
   });
-  page.drawText("Reku sa a pare pou enprime oswa sove kom PDF.", {
+  page.drawText("Resi sa a pare pou enprime oswa sove kom PDF.", {
     x: MARGIN,
     y: amountY - 46,
     size: 10,
