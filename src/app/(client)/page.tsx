@@ -234,22 +234,22 @@ export default function ClientHomePage() {
           </Link>
         </div>
 
-        <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6 md:mx-0 md:px-0 xl:justify-center xl:overflow-visible">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:mx-0 md:grid-cols-2 md:justify-center">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
               <Link
                 key={cat.name}
                 href={`/menu?cat=${cat.name}`}
-                className="group relative min-w-[150px] snap-center overflow-hidden rounded-3xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#F4A640]/30 hover:shadow-xl sm:min-w-[175px] sm:p-6"
+                className="group relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#F4A640]/30 hover:shadow-xl sm:p-8"
               >
-                <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full ${cat.color}`} />
-                <div className={`relative flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 ${cat.color}`}>
-                  <Icon className={`h-9 w-9 ${cat.text}`} strokeWidth={1.7} />
+                <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full ${cat.color}`} />
+                <div className={`relative flex h-20 w-20 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-110 sm:h-24 sm:w-24 ${cat.color}`}>
+                  <Icon className={`h-10 w-10 sm:h-12 sm:w-12 ${cat.text}`} strokeWidth={1.7} />
                 </div>
-                <div className="relative mt-5">
-                  <span className="block font-black text-[#101828]">{cat.label}</span>
-                  <span className="mt-1 block text-xs font-bold text-[#98A2B3]">Gade plat yo</span>
+                <div className="relative mt-6">
+                  <span className="block text-lg font-black text-[#101828] sm:text-xl">{cat.label}</span>
+                  <span className="mt-1 block text-xs font-bold text-[#98A2B3] sm:text-sm">Gade plat yo</span>
                 </div>
               </Link>
             );
