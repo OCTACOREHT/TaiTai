@@ -88,10 +88,18 @@ export function DeliveryManagement() {
         return;
       }
 
-      await loadZones();
+      // Mise à jour locale sans rechargement complet
+      setZones((current) =>
+        current.map((zone) => (zone.id === id ? { ...zone, ...updates } : zone))
+      );
     } catch (error) {
       alert("Erreur : " + (error as Error).message);
     }
+  };
+
+  const handleQuickPriceChange = (id: string, currentPrice: number, delta: number) => {
+    const newPrice = Math.max(0, currentPrice + delta);
+    handleUpdateZone(id, { frais: newPrice });
   };
 
   const handleDeleteZone = async (id: string) => {
@@ -249,15 +257,33 @@ export function DeliveryManagement() {
                     />
                   </td>
                   <td className="px-5 py-4">
-                    <input
-                      type="number"
-                      min={0}
-                      value={zone.frais}
-                      onChange={(e) =>
-                        handleUpdateZone(zone.id, { frais: Number(e.target.value) })
-                      }
-                      className="w-24 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleQuickPriceChange(zone.id, zone.frais, -50)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-lg font-bold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300"
+                        title="Réduire de 50 HTG"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min={0}
+                        value={zone.frais}
+                        onChange={(e) =>
+                          handleUpdateZone(zone.id, { frais: Number(e.target.value) })
+                        }
+                        className="w-24 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-2 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white text-center"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleQuickPriceChange(zone.id, zone.frais, 50)}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-lg font-bold text-gray-700 transition hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300"
+                        title="Augmenter de 50 HTG"
+                      >
+                        +
+                      </button>
+                    </div>
                   </td>
                   <td className="px-5 py-4">
                     <span className="text-sm text-gray-600 dark:text-gray-400">

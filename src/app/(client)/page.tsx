@@ -21,6 +21,7 @@ import {
   CalendarDays,
   Plus,
 } from "lucide-react";
+import { RestaurantStructuredData, BreadcrumbStructuredData } from "@/components/seo/StructuredData";
 
 const categories = [
   { name: "Healthy", label: "Healthy", icon: Flame, color: "bg-green-50", text: "text-green-600" },
@@ -75,6 +76,26 @@ export default function ClientHomePage() {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [homeDishes, setHomeDishes] = useState<MenuItem[]>([]);
+
+  // Structured data pour le SEO
+  const restaurantSchema = {
+    name: "TaïTaï Fast Food",
+    description: "Le meilleur fast food créole de Port-au-Prince. Spécialités haïtiennes : poulet grillé, burgers créoles, pâtes, desserts.",
+    image: "/images/og-image.jpg",
+    servesCuisine: ["Créole", "Haïtienne", "Fast Food"],
+    priceRange: "$$",
+    address: {
+      streetAddress: "Port-au-Prince",
+      addressLocality: "Port-au-Prince",
+      addressCountry: "HT",
+    },
+    telephone: "+509 1234-5678",
+    openingHours: ["Mo-Su 11:00-23:00"],
+  };
+
+  const breadcrumbItems = [
+    { name: "Accueil", item: "/" },
+  ];
   const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
@@ -187,6 +208,9 @@ export default function ClientHomePage() {
 
   return (
     <div className="space-y-24 pb-20">
+      {/* Structured Data pour SEO */}
+      <RestaurantStructuredData data={restaurantSchema} />
+      <BreadcrumbStructuredData items={breadcrumbItems} />
       <section className="relative overflow-hidden rounded-3xl bg-[#101828] p-6 text-white shadow-2xl sm:p-8 md:px-12 md:py-16">
         <div className="absolute right-0 top-0 h-full w-full opacity-20">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200')] bg-cover bg-center" />
