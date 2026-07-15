@@ -153,8 +153,8 @@ export default function MenuPage() {
     setEditingItem(item);
     setDraft(buildDraftFromItem(item));
     setImageFile(null);
-    setImagePreview(item.image || "");
-    setImageUrl(item.image || "");
+    setImagePreview(item.image_url || "");
+    setImageUrl(item.image_url || "");
     setIsFormModalOpen(true);
   };
 
@@ -416,6 +416,8 @@ export default function MenuPage() {
             <div className="space-y-3">
               <div className="space-y-3">
                 <FieldLabel>Image du plat</FieldLabel>
+                
+                {/* Upload depuis l'ordinateur */}
                 <label className="flex min-h-44 cursor-pointer flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-white p-4 text-center transition hover:border-brand-400 hover:bg-brand-50/30 dark:border-gray-700 dark:bg-gray-900">
                   {imagePreview ? (
                     <img
@@ -429,7 +431,7 @@ export default function MenuPage() {
                         <ImagePlus size={24} />
                       </span>
                       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Choisir une image
+                        Cliquez pour uploader une image
                       </span>
                       <span className="text-xs text-gray-500">PNG, JPG ou WEBP, 5 MB max.</span>
                     </>
@@ -441,7 +443,7 @@ export default function MenuPage() {
                     className="hidden"
                   />
                 </label>
-                {imagePreview ? (
+                {imagePreview && (
                   <button
                     type="button"
                     onClick={clearImage}
@@ -450,7 +452,37 @@ export default function MenuPage() {
                     <X size={14} />
                     Retirer l'image
                   </button>
-                ) : null}
+                )}
+
+                {/* OU séparateur */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-gray-50 px-2 text-gray-500">OU</span>
+                  </div>
+                </div>
+
+                {/* URL externe */}
+                <div className="space-y-2">
+                  <FieldLabel>URL de l'image (alternative)</FieldLabel>
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      if (e.target.value && !imageFile) {
+                        setImagePreview(e.target.value);
+                      }
+                    }}
+                    placeholder="https://exemple.com/image.jpg"
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Utilisez une URL externe si vous n'avez pas Supabase Storage configuré
+                  </p>
+                </div>
               </div>
 
               <ToggleInput

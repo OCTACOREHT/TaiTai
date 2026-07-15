@@ -113,9 +113,9 @@ export function MenuGrid({
                   </div>
                 </div>
 
-                {item.image ? (
+                {item.image_url ? (
                   <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border-2 border-white shadow-lg dark:border-gray-800">
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    <img src={item.image_url} alt={item.name} className="h-full w-full object-cover" />
                   </div>
                 ) : null}
               </div>

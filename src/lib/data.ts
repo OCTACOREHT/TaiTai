@@ -55,7 +55,7 @@ export interface MenuItem {
   maxStock: number;
   prepTime: string;
   featured: boolean;
-  image?: string;
+  image_url?: string | null;
   disponible?: boolean;
   stockQuantity: number;
   jour?: string | null;
@@ -143,7 +143,7 @@ export async function getMenuItems(): Promise<MenuItem[]> {
     maxStock: 20,
     prepTime: `${item.temps_prep} min`,
     featured: item.best_seller,
-    image: item.image_url,
+    image_url: item.image_url,
     disponible: item.disponible,
     stockQuantity: item.stock_quantity ?? 0,
     jour: item.jour ?? null,
