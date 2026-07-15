@@ -20,6 +20,7 @@ import { supabase } from "@/lib/supabase-client";
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { DeliveryManagement } from "@/components/dashboard/DeliveryManagement";
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
@@ -199,6 +200,9 @@ export default function DashboardPage() {
       <MetricGrid metrics={metrics} />
 
       <SalesPerformanceChart data={salesTrendData} />
+
+      {/* Section de gestion des livraisons */}
+      <DeliveryManagement />
     </div>
   );
 }

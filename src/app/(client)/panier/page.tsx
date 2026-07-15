@@ -34,7 +34,7 @@ type OrderPromotion = {
   active: boolean;
 };
 
-const ZONES_LIVRAISON = [
+const ZONES_LIVRAISON_DEFAULT = [
   { zone: "PV", frais: 300, label: "PV - 300 HTG" },
   { zone: "Puits B", frais: 300, label: "Puits B - 300 HTG" },
   { zone: "Routes Freres", frais: 300, label: "Routes Freres - 300 HTG" },
@@ -110,6 +110,7 @@ export default function PanierPage() {
     notes: "",
     payment_method: "Sur place" as PaymentMethod,
   });
+  const [zonesLivraison, setZonesLivraison] = useState<typeof ZONES_LIVRAISON_DEFAULT>([]);
 
   useEffect(() => {
     if (user) {
@@ -122,6 +123,37 @@ export default function PanierPage() {
     }
   }, [user]);
 
+  // Charger les zones de livraison depuis Supabase
+  useEffect(() => {
+    async function loadDeliveryZones() {
+      try {
+        const { data, error } = await supabase
+          .from("delivery_zones")
+          .select("*")
+          .eq("active", true)
+          .order("departement", { ascending: true })
+          .order("frais", { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          const zones = data.map((z) => ({
+            zone: z.zone,
+            frais: z.frais,
+            label: z.label,
+          }));
+          setZonesLivraison(zones);
+        } else {
+          // Fallback sur les valeurs par défaut
+          setZonesLivraison(ZONES_LIVRAISON_DEFAULT);
+        }
+      } catch (error) {
+        console.error("Failed to load delivery zones:", error);
+        setZonesLivraison(ZONES_LIVRAISON_DEFAULT);
+      }
+    }
+
+    loadDeliveryZones();
+  }, []);
+
   useEffect(() => {
     const interval = window.setInterval(() => setCurrentTime(new Date()), 60 * 1000);
     return () => window.clearInterval(interval);
@@ -129,7 +161,7 @@ export default function PanierPage() {
 
   const livraisonDisponible = formData.departement === "Ouest";
   const deliveryHasStarted = currentTime.getHours() >= DELIVERY_START_HOUR;
-  const selectedZone = ZONES_LIVRAISON.find((z) => z.zone === formData.zone_livraison);
+  const selectedZone = zonesLivraison.find((z) => z.zone === formData.zone_livraison);
   const fraisLivraison = livraisonDisponible && selectedZone ? selectedZone.frais : 0;
   const sousTotal = cart.reduce((acc, item) => acc + item.prix * item.quantity, 0);
   const discountTotal = getDiscountAmount(sousTotal, appliedPromo);
@@ -570,7 +602,7 @@ export default function PanierPage() {
                   className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-5 py-4 pr-12 text-sm font-bold text-[#101828] focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/10"
                 >
                   <option value="">Chwazi zon ou...</option>
-                  {ZONES_LIVRAISON.map((z) => (
+                  {zonesLivraison.map((z) => (
                     <option key={z.zone} value={z.zone}>
                       {z.label}
                     </option>
