@@ -90,7 +90,17 @@ export function DeliveryManagement() {
 
       // Mise à jour locale sans rechargement complet
       setZones((current) =>
-        current.map((zone) => (zone.id === id ? { ...zone, ...updates } : zone))
+        current.map((zone) => {
+          if (zone.id !== id) return zone;
+          
+          // Si le prix a changé, mettre à jour le label automatiquement
+          if (updates.frais !== undefined && updates.frais !== zone.frais) {
+            const newLabel = `${zone.zone} - ${updates.frais} HTG`;
+            return { ...zone, ...updates, label: newLabel };
+          }
+          
+          return { ...zone, ...updates };
+        })
       );
     } catch (error) {
       alert("Erreur : " + (error as Error).message);
