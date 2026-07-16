@@ -1,6 +1,6 @@
 import type { UserRole } from "@/types/cms";
 
-export const cashierAllowedPaths = ["/commandes", "/validation-commandes", "/menu-admin", "/supplements", "/recherche-recu"];
+export const cashierAllowedPaths = ["/commandes", "/validation-commandes", "/menu-admin", "/recherche-recu"];
 export const fullAccessRoles: UserRole[] = ["super_admin", "admin"];
 
 export function hasFullAdminAccess(role?: UserRole | string | null) {

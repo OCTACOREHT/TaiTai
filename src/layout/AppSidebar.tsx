@@ -24,7 +24,6 @@ import {
   Store,
   UserCog,
   UsersRound,
-  UtensilsCrossed,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -36,7 +35,6 @@ const navItems = [
   { name: "Validation", path: "/validation-commandes", icon: <ClipboardCheck size={20} strokeWidth={2} /> },
   { name: "Recherche Reçu", path: "/recherche-recu", icon: <Search size={20} strokeWidth={2} /> },
   { name: "Menu", path: "/menu-admin", icon: <ChefHat size={20} strokeWidth={2} /> },
-  { name: "Suppléments", path: "/supplements", icon: <UtensilsCrossed size={20} strokeWidth={2} /> },
   { name: "Promotions", path: "/promotions", icon: <BadgePercent size={20} strokeWidth={2} /> },
   { name: "Stocks", path: "/stocks", icon: <PackageSearch size={20} strokeWidth={2} /> },
   { name: "Fournisseurs", path: "/fournisseurs", icon: <Store size={20} strokeWidth={2} /> },
