@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import {
   FieldLabel,
@@ -200,12 +200,13 @@ export default function MenuPage() {
   };
 
   const addSupplement = () => {
-    if (!newSupplementNom.trim() || newSupplementPrix === "") {
-      alert("Veuillez saisir un nom et un prix pour le supplément.");
+    if (!newSupplementNom.trim()) {
+      alert("Veuillez saisir un nom pour le supplément.");
       return;
     }
 
-    const prix = Number(newSupplementPrix);
+    // Si le prix est vide, considérer comme gratuit (0)
+    const prix = newSupplementPrix === "" ? 0 : Number(newSupplementPrix);
     if (!Number.isFinite(prix) || prix < 0) {
       alert("Le prix doit être un nombre positif ou zéro (0 = gratuit).");
       return;
@@ -399,74 +400,81 @@ export default function MenuPage() {
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <FieldLabel>Nom du plat</FieldLabel>
-                <TextInput
+                <label className="block text-sm font-medium text-gray-700">Nom du plat</label>
+                <input
                   required
                   value={draft.nom}
                   onChange={(event) => setDraft((current) => ({ ...current, nom: event.target.value }))}
                   placeholder="Ex: Poulet grille TaïTaï"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                 />
               </div>
               <div className="space-y-2">
-                <FieldLabel>Categorie</FieldLabel>
-                <SelectInput
+                <label className="block text-sm font-medium text-gray-700">Categorie</label>
+                <select
                   value={draft.categorie}
                   onChange={(event) => setDraft((current) => ({ ...current, categorie: event.target.value }))}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                 >
                   {categories.map((category) => (
                     <option key={category} value={category}>
                       {category}
                     </option>
                   ))}
-                </SelectInput>
+                </select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <FieldLabel>Description</FieldLabel>
-              <TextAreaInput
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
                 rows={3}
                 value={draft.description}
                 onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))}
                 placeholder="Ingredients, accompagnements, notes de preparation..."
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
               />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <FieldLabel>Prix HTG</FieldLabel>
-                <TextInput
+                <label className="block text-sm font-medium text-gray-700">Prix HTG</label>
+                <input
                   required
                   min={1}
                   type="number"
                   value={draft.prix}
                   onChange={(event) => setDraft((current) => ({ ...current, prix: event.target.value }))}
                   placeholder="1450"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                 />
               </div>
               <div className="space-y-2">
-                <FieldLabel>Temps prep. min</FieldLabel>
-                <TextInput
+                <label className="block text-sm font-medium text-gray-700">Temps prep. min</label>
+                <input
                   min={1}
                   type="number"
                   value={draft.temps_prep}
                   onChange={(event) => setDraft((current) => ({ ...current, temps_prep: event.target.value }))}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                 />
               </div>
               <div className="space-y-2">
-                <FieldLabel>Stock initial</FieldLabel>
-                <TextInput
+                <label className="block text-sm font-medium text-gray-700">Stock initial</label>
+                <input
                   min={0}
                   type="number"
                   value={draft.stock_quantity}
                   onChange={(event) => setDraft((current) => ({ ...current, stock_quantity: event.target.value }))}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                 />
               </div>
               <div className="space-y-2">
-                <FieldLabel>Jour de la semaine (optionnel)</FieldLabel>
-                <SelectInput
+                <label className="block text-sm font-medium text-gray-700">Jour de la semaine (optionnel)</label>
+                <select
                   value={draft.jour}
                   onChange={(event) => setDraft((current) => ({ ...current, jour: event.target.value }))}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                 >
                   <option value="">Tous les jours</option>
                   <option value="Lundi">Lundi</option>
@@ -476,7 +484,7 @@ export default function MenuPage() {
                   <option value="Vendredi">Vendredi</option>
                   <option value="Samedi">Samedi</option>
                   <option value="Dimanche">Dimanche</option>
-                </SelectInput>
+                </select>
               </div>
             </div>
           </div>
@@ -588,7 +596,7 @@ export default function MenuPage() {
                         }`}
                       >
                         <div className="flex-1">
-                          <p className="font-bold text-gray-900">{supplement.nom}</p>
+                          <p className="font-bold text-gray-900" dir="ltr">{supplement.nom}</p>
                           <p className="text-sm font-black text-brand-500">
                             {Number(supplement.prix) === 0 ? "Gratuit" : `+${supplement.prix} HTG`}
                           </p>
@@ -622,18 +630,21 @@ export default function MenuPage() {
                 <div className="space-y-2">
                   <p className="text-xs font-bold text-gray-700">Ajouter un supplément</p>
                   <div className="flex gap-2">
-                    <TextInput
+                    <input
+                      type="text"
                       value={newSupplementNom}
                       onChange={(event) => setNewSupplementNom(event.target.value)}
                       placeholder="Nom (ex: Sos tomat)"
-                      className="flex-1"
+                      dir="ltr"
+                      className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                     />
-                    <TextInput
+                    <input
                       type="number"
                       value={newSupplementPrix}
                       onChange={(event) => setNewSupplementPrix(event.target.value)}
                       placeholder="Prix HTG"
-                      className="w-24"
+                      dir="ltr"
+                      className="w-24 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-900 outline-none transition focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10"
                     />
                     <button
                       type="button"
