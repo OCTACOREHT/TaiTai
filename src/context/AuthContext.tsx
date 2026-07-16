@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select("id, nom, telephone, email, adresse, ville, departement")
       .eq("email", normalizedEmail)
       .eq("mot_de_passe_hash", hash)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       throw new Error("Imel oswa modpas la pa korek.");
@@ -220,7 +220,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .from("clients")
       .select("id")
       .ilike("email", normalizedEmail)
-      .single();
+      .maybeSingle();
 
     if (findError || !existing) {
       throw new Error("Nou pa jwenn kont ki gen imel sa a.");
