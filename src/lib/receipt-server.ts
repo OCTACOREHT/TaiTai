@@ -423,19 +423,31 @@ export function buildReceiptEmailHtml({
 
   const itemRows = document.items
     .map(
-      (item) => `
-        <tr>
-          <td style="padding:14px 0;border-bottom:1px solid #EAECF0;">
-            <div style="font-size:14px;font-weight:700;color:#101828;">${escapeHtml(item.name)}</div>
-            <div style="font-size:12px;color:#667085;margin-top:4px;">${item.quantity} x ${escapeHtml(
-              formatReceiptMoney(item.unitPrice),
-            )}</div>
-          </td>
-          <td style="padding:14px 0;border-bottom:1px solid #EAECF0;text-align:right;font-size:14px;font-weight:700;color:#101828;white-space:nowrap;">
-            ${escapeHtml(formatReceiptMoney(item.amount))}
-          </td>
-        </tr>
-      `,
+      (item) => {
+        const supplementsHtml = item.supplements && item.supplements.length > 0
+          ? `<div style="font-size:11px;color:#667085;margin-top:4px;padding-left:8px;border-left:2px solid #F4A640;">
+              ${item.supplements.map(sup => {
+                const priceText = sup.prix === 0 ? 'Gratuit' : `+${formatReceiptMoney(sup.prix)}`;
+                return `<div>• ${escapeHtml(sup.nom)} <span style="color:#F4A640;font-weight:600;">${priceText}</span></div>`;
+              }).join('')}
+            </div>`
+          : '';
+        
+        return `
+          <tr>
+            <td style="padding:14px 0;border-bottom:1px solid #EAECF0;">
+              <div style="font-size:14px;font-weight:700;color:#101828;">${escapeHtml(item.name)}</div>
+              <div style="font-size:12px;color:#667085;margin-top:4px;">${item.quantity} x ${escapeHtml(
+                formatReceiptMoney(item.unitPrice),
+              )}</div>
+              ${supplementsHtml}
+            </td>
+            <td style="padding:14px 0;border-bottom:1px solid #EAECF0;text-align:right;font-size:14px;font-weight:700;color:#101828;white-space:nowrap;">
+              ${escapeHtml(formatReceiptMoney(item.amount))}
+            </td>
+          </tr>
+        `;
+      },
     )
     .join("");
 
@@ -735,7 +747,10 @@ export async function buildReceiptPdfBytes(document: ReceiptDocument) {
   let rowY = tableTop - 30;
   document.items.forEach((item) => {
     const nameLines = wrapText(item.name, boldFont, 11, 250);
-    const rowHeight = Math.max(28, nameLines.length * 13 + 8);
+    const hasSupplements = item.supplements && item.supplements.length > 0;
+    const baseRowHeight = Math.max(28, nameLines.length * 13 + 8);
+    const supplementsHeight = hasSupplements ? item.supplements.length * 12 + 4 : 0;
+    const rowHeight = baseRowHeight + supplementsHeight;
 
     page.drawText(nameLines[0], {
       x: MARGIN,
@@ -778,6 +793,21 @@ export async function buildReceiptPdfBytes(document: ReceiptDocument) {
       font: boldFont,
       color: COLORS.ink,
     });
+
+    if (hasSupplements && item.supplements) {
+      let supY = rowY - 14;
+      item.supplements.forEach((sup) => {
+        const priceText = sup.prix === 0 ? 'Gratuit' : `+${formatReceiptMoney(sup.prix)}`;
+        page.drawText(`• ${sup.nom} ${priceText}`, {
+          x: MARGIN + 8,
+          y: supY,
+          size: 9,
+          font: regularFont,
+          color: COLORS.accent,
+        });
+        supY -= 11;
+      });
+    }
 
     page.drawLine({
       start: { x: MARGIN, y: rowY - 10 },

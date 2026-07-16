@@ -3,6 +3,7 @@ export type ReceiptLineItem = {
   quantity: number;
   unitPrice: number;
   amount: number;
+  supplements?: Array<{ nom: string; prix: number }>;
 };
 
 export type ReceiptDocument = {

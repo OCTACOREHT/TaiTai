@@ -20,6 +20,7 @@ function buildReceiptDocument(order, items) {
       quantity: Number(item.quantite) || 0,
       unitPrice: Number(item.prix_unitaire) || 0,
       amount: Number(item.sous_total) || 0,
+      supplements: item.supplements || [],
     })),
     total: Number(order.total) || 0,
   };
@@ -63,7 +64,7 @@ export async function GET(request) {
     }
 
     const { rows: items } = await db.query(
-      `SELECT nom_plat, quantite, prix_unitaire, sous_total
+      `SELECT nom_plat, quantite, prix_unitaire, sous_total, supplements
        FROM public.commande_items
        WHERE commande_id = $1
        ORDER BY id`,
