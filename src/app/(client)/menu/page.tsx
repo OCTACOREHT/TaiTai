@@ -38,7 +38,7 @@ function MenuContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>(catParam || "Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDay, setSelectedDay] = useState<string>("Tous");
-  const [supplements, setSupplements] = useState<Supplement[]>([]);
+  const [allSupplements, setAllSupplements] = useState<Supplement[]>([]);
   const [showSupplementModal, setShowSupplementModal] = useState(false);
   const [selectedItemForSupplements, setSelectedItemForSupplements] = useState<MenuItem | null>(null);
   const [selectedSupplements, setSelectedSupplements] = useState<Supplement[]>([]);
@@ -90,7 +90,7 @@ function MenuContent() {
       }
 
       if (!supplementsResult.error && supplementsResult.data) {
-        setSupplements(supplementsResult.data as Supplement[]);
+        setAllSupplements(supplementsResult.data as Supplement[]);
       }
       setLoading(false);
     }
@@ -113,7 +113,7 @@ function MenuContent() {
     // Utiliser les suppléments du plat s'ils existent, sinon la liste globale
     const itemSupplements = (item as any).supplements && (item as any).supplements.length > 0
       ? (item as any).supplements.filter((s: Supplement) => s.disponible)
-      : supplements.filter(s => !s.categorie || s.categorie === item.categorie);
+      : allSupplements.filter(s => !s.categorie || s.categorie === item.categorie);
     
     if (itemSupplements.length > 0) {
       setSelectedItemForSupplements(item);
@@ -348,31 +348,46 @@ function MenuContent() {
             </p>
 
             <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
-              {supplements.map((supplement) => (
-                <button
-                  key={supplement.id}
-                  onClick={() => toggleSupplement(supplement)}
-                  className={`w-full flex items-center justify-between rounded-2xl border-2 p-4 transition-all ${
-                    selectedSupplements.find(s => s.id === supplement.id)
-                      ? "border-[#F4A640] bg-orange-50"
-                      : "border-gray-200 hover:border-[#F4A640]"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`rounded-xl p-2 ${
+              {(() => {
+                // Récupérer les suppléments du plat spécifique
+                const itemSupplements = selectedItemForSupplements 
+                  ? ((selectedItemForSupplements as any).supplements || [])
+                  : [];
+                
+                if (itemSupplements.length === 0) {
+                  return (
+                    <p className="text-center text-sm text-gray-500 py-4">
+                      Aucun supplément disponible pour ce plat
+                    </p>
+                  );
+                }
+                
+                return itemSupplements.map((supplement: Supplement) => (
+                  <button
+                    key={supplement.id}
+                    onClick={() => toggleSupplement(supplement)}
+                    className={`w-full flex items-center justify-between rounded-2xl border-2 p-4 transition-all ${
                       selectedSupplements.find(s => s.id === supplement.id)
-                        ? "bg-[#F4A640] text-white"
-                        : "bg-gray-100 text-[#98A2B3]"
-                    }`}>
-                      <Check size={20} strokeWidth={3} />
+                        ? "border-[#F4A640] bg-orange-50"
+                        : "border-gray-200 hover:border-[#F4A640]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`rounded-xl p-2 ${
+                        selectedSupplements.find(s => s.id === supplement.id)
+                          ? "bg-[#F4A640] text-white"
+                          : "bg-gray-100 text-[#98A2B3]"
+                      }`}>
+                        <Check size={20} strokeWidth={3} />
+                      </div>
+                      <span className="font-bold text-[#101828]">{supplement.nom}</span>
                     </div>
-                    <span className="font-bold text-[#101828]">{supplement.nom}</span>
-                  </div>
-                  <span className="font-black text-[#F4A640]">
-                    {Number(supplement.prix) === 0 ? "Gratuit" : `+${supplement.prix} HTG`}
-                  </span>
-                </button>
-              ))}
+                    <span className="font-black text-[#F4A640]">
+                      {Number(supplement.prix) === 0 ? "Gratuit" : `+${supplement.prix} HTG`}
+                    </span>
+                  </button>
+                ));
+              })()}
             </div>
 
             <div className="space-y-3">

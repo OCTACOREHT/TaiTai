@@ -698,17 +698,6 @@ export default function PanierPage() {
                 className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-medium min-h-[100px]"
               />
             </div>
-
-            <div className="space-y-3">
-              <label className="text-sm font-bold text-[#101828]">Enstriksyon (opsyonel)</label>
-              <input
-                type="text"
-                placeholder="Egzanp: San zonyon, sos apa..."
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-4 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all font-medium"
-              />
-            </div>
           </div>
 
           <div className="space-y-4 rounded-3xl border border-gray-100 bg-gray-50 p-4 sm:p-6">
