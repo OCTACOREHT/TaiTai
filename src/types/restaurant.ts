@@ -42,8 +42,18 @@ export interface CommandeItem {
   sous_total: number;
 }
 
+export interface Supplement {
+  id: string;
+  nom: string;
+  prix: number;
+  disponible: boolean;
+  categorie?: string;
+}
+
 export interface CartItem extends MenuItem {
   quantity: number;
   original_prix?: number;
   promotion_title?: string;
+  supplements?: Supplement[];
+  supplements_prix_total?: number;
 }

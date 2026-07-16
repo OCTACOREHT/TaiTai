@@ -59,6 +59,7 @@ export interface MenuItem {
   disponible?: boolean;
   stockQuantity: number;
   jour?: string | null;
+  supplements?: any[];
 }
 
 export interface RestaurantOrder {
@@ -147,6 +148,7 @@ export async function getMenuItems(): Promise<MenuItem[]> {
     disponible: item.disponible,
     stockQuantity: item.stock_quantity ?? 0,
     jour: item.jour ?? null,
+    supplements: item.supplements || [],
   }));
 }
 
@@ -195,6 +197,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
       quantity: Number(item.quantite) || 0,
       price: Number(item.prix_unitaire) || 0,
       category: "Divers",
+      supplements: item.supplements || [],
     })),
     paymentMethod: cmd.payment_method ?? null,
     paymentProofUrl: cmd.payment_proof_url ?? null,

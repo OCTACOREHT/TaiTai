@@ -5,7 +5,7 @@ import { CartItem } from '@/types/restaurant';
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: any) => void;
+  addToCart: (item: any, supplements?: any[]) => void;
   updateQuantity: (id: string, delta: number) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
@@ -44,20 +44,43 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('taitai-cart', JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (item: any) => {
+  const addToCart = (item: any, supplements: any[] = []) => {
     if ((item.stock_quantity ?? Infinity) <= 0) {
       return;
     }
 
+    const supplementsPrixTotal = supplements.reduce((sum, sup) => sum + sup.prix, 0);
+    const cartKey = supplements.length > 0 
+      ? `${item.id}-${supplements.map(s => s.id).sort().join('-')}`
+      : item.id;
+
     setCart(prev => {
-      const existing = prev.find(i => i.id === item.id);
+      const existing = prev.find(i => {
+        const existingKey = i.supplements && i.supplements.length > 0
+          ? `${i.id}-${i.supplements!.map(s => s.id).sort().join('-')}`
+          : i.id;
+        return existingKey === cartKey;
+      });
+
       if (existing) {
         if (existing.quantity >= (item.stock_quantity ?? Infinity)) {
           return prev;
         }
-        return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+        return prev.map(i => {
+          const existingKey = i.supplements && i.supplements.length > 0
+            ? `${i.id}-${i.supplements!.map(s => s.id).sort().join('-')}`
+            : i.id;
+          return existingKey === cartKey 
+            ? { ...i, quantity: i.quantity + 1 } 
+            : i;
+        });
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { 
+        ...item, 
+        quantity: 1, 
+        supplements: supplements,
+        supplements_prix_total: supplementsPrixTotal 
+      }];
     });
   };
 

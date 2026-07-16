@@ -3,9 +3,9 @@
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
-import { MenuItem } from "@/types/restaurant";
+import { MenuItem, Supplement } from "@/types/restaurant";
 import { useCart } from "@/context/CartContext";
-import { Plus, ShoppingBasket, Search, Clock, Flame, CalendarDays } from "lucide-react";
+import { Plus, ShoppingBasket, Search, Clock, Flame, CalendarDays, X, Check } from "lucide-react";
 
 type Promotion = {
   id: string;
@@ -38,6 +38,10 @@ function MenuContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>(catParam || "Tous");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDay, setSelectedDay] = useState<string>("Tous");
+  const [supplements, setSupplements] = useState<Supplement[]>([]);
+  const [showSupplementModal, setShowSupplementModal] = useState(false);
+  const [selectedItemForSupplements, setSelectedItemForSupplements] = useState<MenuItem | null>(null);
+  const [selectedSupplements, setSelectedSupplements] = useState<Supplement[]>([]);
 
   const categories = ["Tous", "Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
   const daysOfWeek = ["Tous", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -54,17 +58,21 @@ function MenuContent() {
   useEffect(() => {
     async function fetchMenu() {
       setLoading(true);
-      const [{ data, error }, promoResult] = await Promise.all([
+      const [{ data, error }, promoResult, supplementsResult] = await Promise.all([
         supabase
-        .from("menu_items")
-        .select("*")
-        .eq("disponible", true)
+          .from("menu_items")
+          .select("*")
+          .eq("disponible", true)
           .is("deleted_at", null),
         supabase
           .from("promotions")
           .select("*")
           .eq("active", true)
           .eq("scope", "item"),
+        supabase
+          .from("supplements")
+          .select("*")
+          .eq("disponible", true),
       ]);
       
       if (!error && data) {
@@ -79,6 +87,10 @@ function MenuContent() {
           }
         });
         setItemPromotions(nextPromos);
+      }
+
+      if (!supplementsResult.error && supplementsResult.data) {
+        setSupplements(supplementsResult.data as Supplement[]);
       }
       setLoading(false);
     }
@@ -97,13 +109,55 @@ function MenuContent() {
 
   const handleAddToCart = (item: MenuItem) => {
     if ((item.stock_quantity ?? 0) <= 0) return;
-    const promotion = itemPromotions[item.id];
-    const discount = getDiscountAmount(item.prix, promotion);
+    
+    // Utiliser les suppléments du plat s'ils existent, sinon la liste globale
+    const itemSupplements = (item as any).supplements && (item as any).supplements.length > 0
+      ? (item as any).supplements.filter((s: Supplement) => s.disponible)
+      : supplements.filter(s => !s.categorie || s.categorie === item.categorie);
+    
+    if (itemSupplements.length > 0) {
+      setSelectedItemForSupplements(item);
+      setSelectedSupplements([]);
+      setShowSupplementModal(true);
+    } else {
+      // Pas de suppléments, ajouter directement
+      const promotion = itemPromotions[item.id];
+      const discount = getDiscountAmount(item.prix, promotion);
+      addToCart({
+        ...item,
+        prix: item.prix - discount,
+        original_prix: item.prix,
+        promotion_title: promotion?.title,
+      });
+    }
+  };
+
+  const handleConfirmSupplements = () => {
+    if (!selectedItemForSupplements) return;
+    
+    const promotion = itemPromotions[selectedItemForSupplements.id];
+    const discount = getDiscountAmount(selectedItemForSupplements.prix, promotion);
+    const supplementsPrixTotal = selectedSupplements.reduce((sum, sup) => sum + sup.prix, 0);
+    
     addToCart({
-      ...item,
-      prix: item.prix - discount,
-      original_prix: item.prix,
+      ...selectedItemForSupplements,
+      prix: selectedItemForSupplements.prix - discount + supplementsPrixTotal,
+      original_prix: selectedItemForSupplements.prix,
       promotion_title: promotion?.title,
+    }, selectedSupplements);
+    
+    setShowSupplementModal(false);
+    setSelectedItemForSupplements(null);
+    setSelectedSupplements([]);
+  };
+
+  const toggleSupplement = (supplement: Supplement) => {
+    setSelectedSupplements(prev => {
+      const exists = prev.find(s => s.id === supplement.id);
+      if (exists) {
+        return prev.filter(s => s.id !== supplement.id);
+      }
+      return [...prev, supplement];
     });
   };
 
@@ -267,6 +321,92 @@ function MenuContent() {
           <div className="space-y-2">
             <p className="text-xl md:text-2xl font-bold text-[#101828]">Nou pa jwenn okenn plat</p>
             <p className="text-sm md:text-base text-[#667085] font-medium">Chanje rechèch la oswa chwazi yon lòt kategori.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de sélection des suppléments */}
+      {showSupplementModal && selectedItemForSupplements && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-black text-[#101828]">Chwazi akòz ou vle</h3>
+              <button
+                onClick={() => {
+                  setShowSupplementModal(false);
+                  setSelectedItemForSupplements(null);
+                  setSelectedSupplements([]);
+                }}
+                className="rounded-xl p-2 text-[#98A2B3] hover:bg-gray-100 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <p className="text-sm font-bold text-[#667085] mb-4">
+              {selectedItemForSupplements.nom}
+            </p>
+
+            <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
+              {supplements.map((supplement) => (
+                <button
+                  key={supplement.id}
+                  onClick={() => toggleSupplement(supplement)}
+                  className={`w-full flex items-center justify-between rounded-2xl border-2 p-4 transition-all ${
+                    selectedSupplements.find(s => s.id === supplement.id)
+                      ? "border-[#F4A640] bg-orange-50"
+                      : "border-gray-200 hover:border-[#F4A640]"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`rounded-xl p-2 ${
+                      selectedSupplements.find(s => s.id === supplement.id)
+                        ? "bg-[#F4A640] text-white"
+                        : "bg-gray-100 text-[#98A2B3]"
+                    }`}>
+                      <Check size={20} strokeWidth={3} />
+                    </div>
+                    <span className="font-bold text-[#101828]">{supplement.nom}</span>
+                  </div>
+                  <span className="font-black text-[#F4A640]">
+                    {Number(supplement.prix) === 0 ? "Gratuit" : `+${supplement.prix} HTG`}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              {selectedSupplements.length > 0 && (
+                <div className="rounded-2xl bg-gray-50 p-4">
+                  <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3] mb-2">
+                    Akòz ou chwazi yo
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedSupplements.map(sup => (
+                      <span key={sup.id} className="inline-flex items-center gap-1 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#101828] border border-gray-200">
+                        {sup.nom}
+                        <span className="text-[#F4A640]">+{sup.prix} HTG</span>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-200">
+                    <div className="flex justify-between text-sm font-bold">
+                      <span>Total akòz</span>
+                      <span className="text-[#F4A640]">
+                        +{selectedSupplements.reduce((sum, sup) => sum + sup.prix, 0)} HTG
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={handleConfirmSupplements}
+                className="w-full rounded-2xl bg-[#F4A640] py-4 text-base font-black text-white shadow-lg shadow-[#F4A640]/20 transition hover:bg-[#101828] active:scale-95"
+              >
+                Ajoute nan panyen
+              </button>
+            </div>
           </div>
         </div>
       )}

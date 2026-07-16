@@ -72,6 +72,7 @@ CREATE TABLE public.menu_items (
   temps_prep INTEGER DEFAULT 15,
   best_seller BOOLEAN DEFAULT false,
   jour TEXT,
+  supplements JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   deleted_at TIMESTAMPTZ
 );
@@ -105,7 +106,8 @@ CREATE TABLE public.commande_items (
   nom_plat TEXT NOT NULL,
   prix_unitaire INTEGER NOT NULL,
   quantite INTEGER NOT NULL DEFAULT 1,
-  sous_total INTEGER NOT NULL
+  sous_total INTEGER NOT NULL,
+  supplements JSONB DEFAULT '[]'::jsonb
 );
 
 -- Table promotions
@@ -120,6 +122,16 @@ CREATE TABLE public.promotions (
   active BOOLEAN NOT NULL DEFAULT true,
   starts_at TIMESTAMPTZ,
   ends_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Table supplements
+CREATE TABLE public.supplements (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  nom TEXT NOT NULL,
+  prix INTEGER NOT NULL,
+  disponible BOOLEAN NOT NULL DEFAULT true,
+  categorie TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -148,6 +160,7 @@ ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commandes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commande_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.promotions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.supplements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.avis_clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fournisseurs ENABLE ROW LEVEL SECURITY;
 
@@ -181,6 +194,16 @@ CREATE POLICY "promotions_admin_insert" ON public.promotions
 CREATE POLICY "promotions_admin_update" ON public.promotions
   FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "promotions_admin_delete" ON public.promotions
+  FOR DELETE USING (true);
+
+-- Supplements : lecture publique, gestion admin
+CREATE POLICY "supplements_public_read" ON public.supplements
+  FOR SELECT USING (true);
+CREATE POLICY "supplements_admin_insert" ON public.supplements
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "supplements_admin_update" ON public.supplements
+  FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "supplements_admin_delete" ON public.supplements
   FOR DELETE USING (true);
 
 -- Avis clients : lecture et ajout publics

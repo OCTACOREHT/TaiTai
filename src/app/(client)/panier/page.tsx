@@ -356,6 +356,7 @@ export default function PanierPage() {
         prix_unitaire: item.prix,
         quantite: item.quantity,
         sous_total: item.prix * item.quantity,
+        supplements: item.supplements || [],
       }));
 
       const { error: itemsError } = await supabase.from("commande_items").insert(itemsToInsert);
@@ -463,6 +464,21 @@ export default function PanierPage() {
                 {"promotion_title" in item && item.promotion_title ? (
                   <p className="text-xs font-bold text-red-600">{item.promotion_title}</p>
                 ) : null}
+                {"supplements" in item && item.supplements && item.supplements.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3]">Akòz</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.supplements.map((sup: any) => (
+                        <span key={sup.id} className="inline-flex items-center gap-1 rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-bold text-[#101828] border border-orange-100">
+                          {sup.nom}
+                          <span className="text-[#F4A640]">
+                            {Number(sup.prix) === 0 ? "(Gratuit)" : `+${sup.prix} HTG`}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex w-full items-center justify-center gap-4 rounded-xl border border-gray-100 bg-gray-50 p-1.5 sm:w-auto">
                 <button

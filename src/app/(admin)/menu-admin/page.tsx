@@ -13,11 +13,11 @@ import { Modal } from "@/components/ui/modal";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { MenuItem, getMenuItems } from "@/lib/data";
 import { supabase } from "@/lib/supabase-client";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { ImagePlus, Loader2, PlusIcon, X } from "lucide-react";
 
-const categories = ["Grillades", "Signature", "Burgers", "PÃ¢tes", "Desserts", "Boissons"];
+const categories = ["Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
 
 type MenuDraft = {
   nom: string;
@@ -29,6 +29,14 @@ type MenuDraft = {
   disponible: boolean;
   best_seller: boolean;
   jour: string;
+  supplements: SupplementDraft[];
+};
+
+type SupplementDraft = {
+  id?: string;
+  nom: string;
+  prix: string;
+  disponible: boolean;
 };
 
 const createEmptyDraft = (): MenuDraft => ({
@@ -41,6 +49,7 @@ const createEmptyDraft = (): MenuDraft => ({
   disponible: true,
   best_seller: false,
   jour: "",
+  supplements: [],
 });
 
 const buildDraftFromItem = (item: MenuItem): MenuDraft => ({
@@ -53,6 +62,7 @@ const buildDraftFromItem = (item: MenuItem): MenuDraft => ({
   disponible: item.disponible ?? true,
   best_seller: item.featured ?? false,
   jour: item.jour || "",
+  supplements: (item.supplements as SupplementDraft[]) || [],
 });
 
 export default function MenuPage() {
@@ -66,6 +76,8 @@ export default function MenuPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [stockAlerts, setStockAlerts] = useState<{ lowStock: number; outOfStock: number; items: any[] }>({ lowStock: 0, outOfStock: 0, items: [] });
+  const [newSupplementNom, setNewSupplementNom] = useState("");
+  const [newSupplementPrix, setNewSupplementPrix] = useState("");
 
   const loadItems = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -139,6 +151,8 @@ export default function MenuPage() {
   const resetFormState = () => {
     setDraft(createEmptyDraft());
     clearImage();
+    setNewSupplementNom("");
+    setNewSupplementPrix("");
   };
 
   const openCreateModal = () => {
@@ -185,6 +199,50 @@ export default function MenuPage() {
     return payload.url as string;
   };
 
+  const addSupplement = () => {
+    if (!newSupplementNom.trim() || newSupplementPrix === "") {
+      alert("Veuillez saisir un nom et un prix pour le supplément.");
+      return;
+    }
+
+    const prix = Number(newSupplementPrix);
+    if (!Number.isFinite(prix) || prix < 0) {
+      alert("Le prix doit être un nombre positif ou zéro (0 = gratuit).");
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      supplements: [
+        ...current.supplements,
+        {
+          nom: newSupplementNom.trim(),
+          prix: String(prix),
+          disponible: true,
+        },
+      ],
+    }));
+
+    setNewSupplementNom("");
+    setNewSupplementPrix("");
+  };
+
+  const removeSupplement = (index: number) => {
+    setDraft((current) => ({
+      ...current,
+      supplements: current.supplements.filter((_, i) => i !== index),
+    }));
+  };
+
+  const toggleSupplementDisponible = (index: number) => {
+    setDraft((current) => ({
+      ...current,
+      supplements: current.supplements.map((sup, i) =>
+        i === index ? { ...sup, disponible: !sup.disponible } : sup
+      ),
+    }));
+  };
+
   const handleSaveDish = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -200,6 +258,16 @@ export default function MenuPage() {
     setSaving(true);
     try {
       const nextImageUrl = imageFile ? await uploadImage() : imageUrl || null;
+      
+      // Préparer les suppléments pour la sauvegarde
+      const supplements = draft.supplements
+        .filter((sup) => sup.nom.trim())
+        .map((sup) => ({
+          nom: sup.nom.trim(),
+          prix: Number(sup.prix),
+          disponible: sup.disponible,
+        }));
+
       const payload = {
         nom: draft.nom.trim(),
         description: draft.description.trim(),
@@ -211,6 +279,7 @@ export default function MenuPage() {
         disponible: draft.disponible,
         best_seller: draft.best_seller,
         jour: draft.jour || null,
+        supplements,
       };
 
       const query = supabase.from("menu_items");
@@ -495,6 +564,88 @@ export default function MenuPage() {
                 onChange={(checked) => setDraft((current) => ({ ...current, best_seller: checked }))}
                 label="Marquer best seller"
               />
+
+              {/* Section Suppléments */}
+              <div className="space-y-3 rounded-2xl border-2 border-gray-200 bg-gray-50 p-5">
+                <div className="flex items-center gap-2">
+                  <p className="text-base font-semibold text-gray-900">Suppléments disponibles</p>
+                  <span className="text-xs text-gray-500">(optionnel)</span>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Ajoutez les suppléments spécifiques à ce plat (sauces, accompagnements, etc.)
+                </p>
+
+                {/* Liste des suppléments existants */}
+                {draft.supplements.length > 0 && (
+                  <div className="space-y-2">
+                    {draft.supplements.map((supplement, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-center justify-between rounded-xl border-2 p-3 ${
+                          supplement.disponible
+                            ? "border-gray-200 bg-white"
+                            : "border-gray-100 bg-gray-100 opacity-60"
+                        }`}
+                      >
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-900">{supplement.nom}</p>
+                          <p className="text-sm font-black text-brand-500">
+                            {Number(supplement.prix) === 0 ? "Gratuit" : `+${supplement.prix} HTG`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleSupplementDisponible(index)}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+                              supplement.disponible
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            }`}
+                          >
+                            {supplement.disponible ? "Disponible" : "Indisponible"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => removeSupplement(index)}
+                            className="rounded-lg bg-red-50 p-2 text-red-600 transition hover:bg-red-100"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Ajout d'un nouveau supplément */}
+                <div className="space-y-2">
+                  <p className="text-xs font-bold text-gray-700">Ajouter un supplément</p>
+                  <div className="flex gap-2">
+                    <TextInput
+                      value={newSupplementNom}
+                      onChange={(event) => setNewSupplementNom(event.target.value)}
+                      placeholder="Nom (ex: Sos tomat)"
+                      className="flex-1"
+                    />
+                    <TextInput
+                      type="number"
+                      value={newSupplementPrix}
+                      onChange={(event) => setNewSupplementPrix(event.target.value)}
+                      placeholder="Prix HTG"
+                      className="w-24"
+                    />
+                    <button
+                      type="button"
+                      onClick={addSupplement}
+                      className="rounded-xl bg-brand-500 p-3 text-white transition hover:bg-brand-600"
+                      title="Ajouter"
+                    >
+                      <Plus size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <button
