@@ -121,14 +121,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = async (email: string, mot_de_passe: string) => {
     const normalizedEmail = normalizeEmail(email);
     const hash = await hashPassword(mot_de_passe);
-    const { data, error } = await supabase
+    
+    console.log("Tentative de connexion:", { email: normalizedEmail, hash });
+    
+    // D'abord essayer avec l'email normalisé (lowercase)
+    let { data, error } = await supabase
       .from("clients")
       .select("id, nom, telephone, email, adresse, ville, departement")
-      .eq("email", normalizedEmail)
+      .ilike("email", normalizedEmail)
       .eq("mot_de_passe_hash", hash)
       .maybeSingle();
 
+    console.log("Résultat avec ilike:", { data, error });
+
+    // Si ça échoue, essayer avec l'email original (au cas où il est stocké avec casse)
+    if (!data && !error) {
+      const trimmedEmail = email.trim();
+      if (trimmedEmail !== normalizedEmail) {
+        const result2 = await supabase
+          .from("clients")
+          .select("id, nom, telephone, email, adresse, ville, departement")
+          .ilike("email", trimmedEmail)
+          .eq("mot_de_passe_hash", hash)
+          .maybeSingle();
+        
+        data = result2.data;
+        error = result2.error;
+        console.log("Résultat avec email original:", { data, error });
+      }
+    }
+
     if (error || !data) {
+      console.error("Erreur de connexion:", error);
       throw new Error("Imel oswa modpas la pa korek.");
     }
 
