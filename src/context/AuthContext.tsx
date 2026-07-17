@@ -124,45 +124,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     console.log("Tentative de connexion:", { email: normalizedEmail, hash });
     
-    // D'abord essayer avec l'email normalisé (lowercase)
-    let { data, error } = await supabase
+    // Récupérer l'utilisateur par email (case-insensitive)
+    const { data: userData, error: userError } = await supabase
       .from("clients")
-      .select("id, nom, telephone, email, adresse, ville, departement")
+      .select("id, nom, telephone, email, adresse, ville, departement, mot_de_passe_hash")
       .ilike("email", normalizedEmail)
-      .eq("mot_de_passe_hash", hash)
       .maybeSingle();
 
-    console.log("Résultat avec ilike:", { data, error });
+    console.log("Utilisateur trouvé:", { userData, userError });
 
-    // Si ça échoue, essayer avec l'email original (au cas où il est stocké avec casse)
-    if (!data && !error) {
-      const trimmedEmail = email.trim();
-      if (trimmedEmail !== normalizedEmail) {
-        const result2 = await supabase
-          .from("clients")
-          .select("id, nom, telephone, email, adresse, ville, departement")
-          .ilike("email", trimmedEmail)
-          .eq("mot_de_passe_hash", hash)
-          .maybeSingle();
-        
-        data = result2.data;
-        error = result2.error;
-        console.log("Résultat avec email original:", { data, error });
-      }
-    }
-
-    if (error || !data) {
-      console.error("Erreur de connexion:", error);
+    if (!userData) {
+      console.error("Utilisateur non trouvé");
       throw new Error("Imel oswa modpas la pa korek.");
     }
 
+    // Vérifier le mot de passe
+    const storedHash = userData.mot_de_passe_hash;
+    let passwordMatch = false;
+
+    // Cas 1: Mot de passe hashé (nouveaux comptes)
+    if (storedHash && storedHash.length === 64) { // Hash SHA-256 = 64 caractères hex
+      passwordMatch = storedHash === hash;
+      console.log("Comparaison hash:", { storedHash, hash, match: passwordMatch });
+    } 
+    // Cas 2: Mot de passe en clair (anciens comptes) - pour compatibilité
+    else if (storedHash && storedHash !== hash) {
+      passwordMatch = storedHash === mot_de_passe;
+      console.log("Comparaison clair:", { stored: storedHash, provided: mot_de_passe, match: passwordMatch });
+    }
+
+    if (!passwordMatch) {
+      console.error("Mot de passe incorrect");
+      throw new Error("Imel oswa modpas la pa korek.");
+    }
+
+    // Si le mot de passe était en clair, le hasher pour la prochaine fois
+    if (storedHash && storedHash.length !== 64 && storedHash === mot_de_passe) {
+      console.log("Migration du mot de passe vers hash...");
+      await supabase
+        .from("clients")
+        .update({ mot_de_passe_hash: hash })
+        .eq("id", userData.id);
+    }
+
+    // Mettre à jour last_login_at
     await supabase
       .from("clients")
       .update({ last_login_at: new Date().toISOString() })
-      .eq("id", data.id);
+      .eq("id", userData.id);
 
-    setUser(data);
-    localStorage.setItem("taitai_user_id", data.id);
+    // Retourner les données utilisateur (sans le hash)
+    const { mot_de_passe_hash: _, ...userWithoutHash } = userData;
+    setUser(userWithoutHash as any);
+    localStorage.setItem("taitai_user_id", userData.id);
     localStorage.setItem(SESSION_LAST_ACTIVITY_KEY, String(Date.now()));
   };
 
