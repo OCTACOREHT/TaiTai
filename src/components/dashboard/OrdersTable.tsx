@@ -237,7 +237,7 @@ export function OrdersTable({
                       <h4 className="mb-4 text-sm font-black uppercase tracking-widest text-gray-700 dark:text-gray-300">
                         Détails de la commande
                       </h4>
-                      <div className="space-y-3">
+                       <div className="space-y-3">
                         {order.items.map((item: any, index: number) => (
                           <div key={index} className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-800">
                             <div className="flex items-start justify-between">
@@ -246,26 +246,6 @@ export function OrdersTable({
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
                                   {item.quantity} x {formatCurrency(item.price)}
                                 </p>
-                                {item.supplements && item.supplements.length > 0 && (
-                                  <div className="mt-2 space-y-1">
-                                    <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-                                      Suppléments:
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                      {item.supplements.map((sup: any, supIndex: number) => (
-                                        <span
-                                          key={supIndex}
-                                          className="inline-flex items-center gap-1 rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-bold text-gray-900 border border-orange-100"
-                                        >
-                                          {sup.nom}
-                                          <span className="text-orange-600">
-                                            {Number(sup.prix) === 0 ? "(Gratuit)" : `+${sup.prix} HTG`}
-                                          </span>
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
                               </div>
                               <p className="ml-4 font-black text-gray-900 dark:text-white">
                                 {formatCurrency(item.price * item.quantity)}
@@ -274,6 +254,16 @@ export function OrdersTable({
                           </div>
                         ))}
                       </div>
+                      {order.notes && (
+                        <div className="mt-4 rounded-xl border-2 border-orange-200 bg-orange-50 p-4 dark:border-orange-700 dark:bg-orange-900/20">
+                          <p className="text-xs font-black uppercase tracking-widest text-orange-700 dark:text-orange-400 mb-2">
+                            Enstriksyon espesyal:
+                          </p>
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">
+                            {order.notes}
+                          </p>
+                        </div>
+                      )}
                       <div className="mt-4 flex justify-between rounded-xl border-2 border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
                         <span className="font-black text-gray-900 dark:text-white">Total</span>
                         <span className="font-black text-brand-500">{formatCurrency(order.total)}</span>

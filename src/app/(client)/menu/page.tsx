@@ -110,26 +110,15 @@ function MenuContent() {
   const handleAddToCart = (item: MenuItem) => {
     if ((item.stock_quantity ?? 0) <= 0) return;
     
-    // Utiliser les suppléments du plat s'ils existent, sinon la liste globale
-    const itemSupplements = (item as any).supplements && (item as any).supplements.length > 0
-      ? (item as any).supplements.filter((s: Supplement) => s.disponible)
-      : allSupplements.filter(s => !s.categorie || s.categorie === item.categorie);
-    
-    if (itemSupplements.length > 0) {
-      setSelectedItemForSupplements(item);
-      setSelectedSupplements([]);
-      setShowSupplementModal(true);
-    } else {
-      // Pas de suppléments, ajouter directement
-      const promotion = itemPromotions[item.id];
-      const discount = getDiscountAmount(item.prix, promotion);
-      addToCart({
-        ...item,
-        prix: item.prix - discount,
-        original_prix: item.prix,
-        promotion_title: promotion?.title,
-      });
-    }
+    // Ajouter directement sans suppléments
+    const promotion = itemPromotions[item.id];
+    const discount = getDiscountAmount(item.prix, promotion);
+    addToCart({
+      ...item,
+      prix: item.prix - discount,
+      original_prix: item.prix,
+      promotion_title: promotion?.title,
+    });
   };
 
   const handleConfirmSupplements = () => {
@@ -325,106 +314,6 @@ function MenuContent() {
         </div>
       )}
 
-      {/* Modal de sélection des suppléments */}
-      {showSupplementModal && selectedItemForSupplements && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-black text-[#101828]">Chwazi akòz ou vle</h3>
-              <button
-                onClick={() => {
-                  setShowSupplementModal(false);
-                  setSelectedItemForSupplements(null);
-                  setSelectedSupplements([]);
-                }}
-                className="rounded-xl p-2 text-[#98A2B3] hover:bg-gray-100 transition"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <p className="text-sm font-bold text-[#667085] mb-4">
-              {selectedItemForSupplements.nom}
-            </p>
-
-            <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
-              {(() => {
-                // Récupérer les suppléments du plat spécifique
-                const itemSupplements = selectedItemForSupplements 
-                  ? ((selectedItemForSupplements as any).supplements || [])
-                  : [];
-                
-                if (itemSupplements.length === 0) {
-                  return (
-                    <p className="text-center text-sm text-gray-500 py-4">
-                      Aucun supplément disponible pour ce plat
-                    </p>
-                  );
-                }
-                
-                return itemSupplements.map((supplement: Supplement) => (
-                  <button
-                    key={supplement.id}
-                    onClick={() => toggleSupplement(supplement)}
-                    className={`w-full flex items-center justify-between rounded-2xl border-2 p-4 transition-all ${
-                      selectedSupplements.find(s => s.id === supplement.id)
-                        ? "border-[#F4A640] bg-orange-50"
-                        : "border-gray-200 hover:border-[#F4A640]"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`rounded-xl p-2 ${
-                        selectedSupplements.find(s => s.id === supplement.id)
-                          ? "bg-[#F4A640] text-white"
-                          : "bg-gray-100 text-[#98A2B3]"
-                      }`}>
-                        <Check size={20} strokeWidth={3} />
-                      </div>
-                      <span className="font-bold text-[#101828]">{supplement.nom}</span>
-                    </div>
-                    <span className="font-black text-[#F4A640]">
-                      {Number(supplement.prix) === 0 ? "Gratuit" : `+${supplement.prix} HTG`}
-                    </span>
-                  </button>
-                ));
-              })()}
-            </div>
-
-            <div className="space-y-3">
-              {selectedSupplements.length > 0 && (
-                <div className="rounded-2xl bg-gray-50 p-4">
-                  <p className="text-xs font-black uppercase tracking-widest text-[#98A2B3] mb-2">
-                    Akòz ou chwazi yo
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedSupplements.map(sup => (
-                      <span key={sup.id} className="inline-flex items-center gap-1 rounded-xl bg-white px-3 py-1.5 text-xs font-bold text-[#101828] border border-gray-200">
-                        {sup.nom}
-                        <span className="text-[#F4A640]">+{sup.prix} HTG</span>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className="flex justify-between text-sm font-bold">
-                      <span>Total akòz</span>
-                      <span className="text-[#F4A640]">
-                        +{selectedSupplements.reduce((sum, sup) => sum + sup.prix, 0)} HTG
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleConfirmSupplements}
-                className="w-full rounded-2xl bg-[#F4A640] py-4 text-base font-black text-white shadow-lg shadow-[#F4A640]/20 transition hover:bg-[#101828] active:scale-95"
-              >
-                Ajoute nan panyen
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

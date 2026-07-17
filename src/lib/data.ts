@@ -78,6 +78,7 @@ export interface RestaurantOrder {
   paymentMethod?: string | null;
   paymentProofUrl?: string | null;
   paymentStatus?: string | null;
+  notes?: string | null;
 }
 
 export type PeriodType = "day" | "week" | "month" | "year" | "all";
@@ -202,6 +203,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     paymentMethod: cmd.payment_method ?? null,
     paymentProofUrl: cmd.payment_proof_url ?? null,
     paymentStatus: cmd.payment_status ?? null,
+    notes: cmd.notes ?? null,
   }));
 }
 
