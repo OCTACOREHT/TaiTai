@@ -64,43 +64,60 @@ export default function NotificationDropdown() {
     loadCriticalStocks();
   }, []);
 
-  // Écouter les nouvelles commandes en temps réel
+  // Système de polling pour détecter les nouvelles commandes (fonctionne tout le temps)
   useEffect(() => {
-    const channel = supabase
-      .channel("new-orders-notification")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "commandes",
-        },
-        (payload) => {
-          const order = payload.new as Order;
+    let pollInterval: NodeJS.Timeout;
+    let currentOrderCount = pendingOrders.length;
+
+    const checkNewOrders = async () => {
+      try {
+        const { data } = await supabase
+          .from("commandes")
+          .select("id, numero_commande, client_nom, total, statut, created_at")
+          .eq("statut", "En attente")
+          .order("created_at", { ascending: false });
+
+        if (data && data.length > currentOrderCount) {
+          // Nouvelle commande détectée
+          const latestOrder = data[0];
           
           // Éviter les doublons
-          if (order.id === lastOrderId) return;
+          if (latestOrder.id !== lastOrderId) {
+            console.log("Nouvelle commande détectée:", latestOrder);
+            
+            // Mettre à jour la liste
+            setPendingOrders(data);
+            currentOrderCount = data.length;
 
-          // Mettre à jour la liste des commandes en attente
-          if (order.statut === "En attente") {
-            setPendingOrders(prev => [order, ...prev]);
+            // Afficher la popup
+            setNewOrder(latestOrder);
+            setShowNewOrderPopup(true);
+            setLastOrderId(latestOrder.id);
+
+            // Cacher automatiquement après 10 secondes
+            setTimeout(() => {
+              setShowNewOrderPopup(false);
+            }, 10000);
           }
-
-          // Afficher la popup
-          setNewOrder(order);
-          setShowNewOrderPopup(true);
-          setLastOrderId(order.id);
-
-          // Cacher automatiquement après 10 secondes
-          setTimeout(() => {
-            setShowNewOrderPopup(false);
-          }, 20000);
+        } else if (data) {
+          setPendingOrders(data);
+          currentOrderCount = data.length;
         }
-      )
-      .subscribe();
+      } catch (error) {
+        console.error("Erreur lors de la vérification des commandes:", error);
+      }
+    };
+
+    // Vérifier immédiatement au chargement
+    checkNewOrders();
+
+    // Vérifier toutes les 5 secondes
+    pollInterval = setInterval(checkNewOrders, 5000);
 
     return () => {
-      supabase.removeChannel(channel);
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
     };
   }, [lastOrderId]);
 
