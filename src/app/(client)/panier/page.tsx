@@ -372,6 +372,23 @@ export default function PanierPage() {
         }),
       );
 
+      // Créer une notification pour la nouvelle commande
+      try {
+        await fetch("/api/notifications/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "order",
+            title: "Nouvelle commande",
+            message: `Commande #${commande.numero_commande} - ${formData.client_nom} - ${total} HTG`,
+            link: "/commandes",
+          }),
+        });
+      } catch (notifError) {
+        console.error("[notification creation]", notifError);
+        // Ne pas bloquer la commande si la notification échoue
+      }
+
       try {
         await sendConfirmationEmail(commande.id, clientEmail);
       } catch (emailError) {

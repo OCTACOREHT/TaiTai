@@ -29,6 +29,20 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchNotifications = async () => {
     try {
+      // Vérifier si la table notifications existe
+      const { data: setupCheck, error: setupError } = await supabase
+        .from("notifications")
+        .select("id")
+        .limit(1);
+
+      // Si la table n'existe pas, ne pas essayer de récupérer les notifications
+      if (setupError && setupError.code === "42P01") {
+        console.warn("Table notifications n'existe pas. Exécutez database/create-notifications-table.sql");
+        setNotifications([]);
+        setUnreadCount(0);
+        return;
+      }
+
       // Récupérer les notifications non lues
       const { data, error } = await supabase
         .from("notifications")
@@ -43,6 +57,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       setUnreadCount(data?.length || 0);
     } catch (error) {
       console.error("Erreur lors de la récupération des notifications:", error);
+      setNotifications([]);
+      setUnreadCount(0);
     }
   };
 
