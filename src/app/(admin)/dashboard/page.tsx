@@ -103,6 +103,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <PageBreadCrumb pageTitle="Dashboard restaurant" />
 
+      {/* Alerte notifications non configurées */}
+      <NotificationAlert />
+      
       {(stockAlerts.lowStock > 0 || stockAlerts.outOfStock > 0) && (
         <div className="space-y-3">
           {stockAlerts.outOfStock > 0 && (
@@ -207,6 +210,128 @@ export default function DashboardPage() {
 
       {/* Debug notifications (seulement en développement) */}
       <NotificationDebug />
+    </div>
+  );
+}
+
+// Composant d'alerte pour les notifications non configurées
+function NotificationAlert() {
+  const [showAlert, setShowAlert] = useState(false);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    // Vérifier le statut des notifications
+    fetch("/api/notifications/setup")
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success && data.needsSetup) {
+          setShowAlert(true);
+          setMessage(data.message);
+        }
+      })
+      .catch(() => {
+        // Erreur silencieuse
+      });
+  }, []);
+
+  if (!showAlert) return null;
+
+  return (
+    <div className="rounded-xl border-2 border-orange-500 bg-orange-50 p-4 shadow-lg">
+      <div className="flex items-start gap-3">
+        <div className="text-2xl">⚠️</div>
+        <div className="flex-1">
+          <h3 className="text-sm font-black text-orange-800">
+            Notifications non configurées
+          </h3>
+          <p className="mt-1 text-xs text-orange-700">
+            {message || "Les notifications ne fonctionnent pas. Exécutez le script SQL dans Supabase."}
+          </p>
+          <button
+            onClick={() => {
+              const sqlScript = `CREATE TABLE IF NOT EXISTS public.notifications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  type TEXT NOT NULL CHECK (type IN ('order', 'comment', 'stock_critical', 'stock_low')),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  link TEXT,
+  read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_read_created 
+  ON public.notifications(read, created_at DESC);
+
+-- Trigger pour nouvelles commandes
+CREATE OR REPLACE FUNCTION notify_new_order()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.notifications (type, title, message, link)
+  VALUES ('order', 'Nouvelle commande', 'Commande #' || NEW.numero_commande || ' - ' || NEW.client_nom || ' - ' || NEW.total || ' HTG', '/commandes');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_new_order ON public.commandes;
+CREATE TRIGGER trigger_notify_new_order
+  AFTER INSERT ON public.commandes
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_new_order();
+
+-- Trigger pour stocks critiques
+CREATE OR REPLACE FUNCTION notify_stock_critical()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.stock_quantity = 0 AND NEW.disponible = true THEN
+    INSERT INTO public.notifications (type, title, message, link)
+    VALUES ('stock_critical', 'Stock critique', 'Rupture de stock: ' || NEW.nom, '/stocks');
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_stock_critical ON public.menu_items;
+CREATE TRIGGER trigger_notify_stock_critical
+  AFTER UPDATE OF stock_quantity ON public.menu_items
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_stock_critical();
+
+-- Trigger pour stocks faibles
+CREATE OR REPLACE FUNCTION notify_stock_low()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.stock_quantity > 0 AND NEW.stock_quantity <= 5 AND NEW.disponible = true THEN
+    INSERT INTO public.notifications (type, title, message, link)
+    VALUES ('stock_low', 'Stock faible', 'Stock bas: ' || NEW.nom || ' (' || NEW.stock_quantity || ' restants)', '/stocks');
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_notify_stock_low ON public.menu_items;
+CREATE TRIGGER trigger_notify_stock_low
+  AFTER UPDATE OF stock_quantity ON public.menu_items
+  FOR EACH ROW
+  EXECUTE FUNCTION notify_stock_low();`;
+
+              navigator.clipboard.writeText(sqlScript).then(() => {
+                alert("✅ Script SQL copié !\n\n1. Ouvrez Supabase Dashboard\n2. Allez dans SQL Editor\n3. Collez le script\n4. Cliquez sur Run");
+              }).catch(() => {
+                alert("Erreur lors de la copie. Veuillez copier manuellement depuis le fichier database/create-notifications-table.sql");
+              });
+            }}
+            className="mt-2 rounded-lg bg-orange-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-orange-600"
+          >
+            📋 Copier le script SQL complet
+          </button>
+        </div>
+        <button
+          onClick={() => setShowAlert(false)}
+          className="text-orange-500 hover:text-orange-700"
+        >
+          ✕
+        </button>
+      </div>
     </div>
   );
 }

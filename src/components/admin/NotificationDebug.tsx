@@ -45,6 +45,26 @@ export default function NotificationDebug() {
     return null;
   }
 
+  // Afficher un indicateur simple si les notifications ne sont pas configurées
+  if (!showDebug && (!setupStatus || !setupStatus.success)) {
+    return (
+      <div className="fixed bottom-4 right-4 z-50">
+        <div className="rounded-lg border-2 border-red-500 bg-white p-4 shadow-2xl max-w-sm">
+          <h3 className="mb-2 text-sm font-black text-red-600">⚠️ Notifications non configurées</h3>
+          <p className="mb-3 text-xs text-gray-700">
+            Les notifications ne fonctionnent pas car la table n'existe pas dans Supabase.
+          </p>
+          <button
+            onClick={() => setShowDebug(true)}
+            className="w-full rounded-lg bg-red-500 px-3 py-2 text-xs font-bold text-white hover:bg-red-600"
+          >
+            Voir les détails
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <button
