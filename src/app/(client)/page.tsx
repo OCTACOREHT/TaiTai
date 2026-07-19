@@ -289,64 +289,84 @@ export default function ClientHomePage() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {(homeDishes.length > 0 ? homeDishes : []).map((dish) => (
-            <div
-              key={dish.id}
-              className="group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 hover:border-transparent hover:shadow-xl"
-            >
-              <div className="relative h-56 md:h-64 w-full overflow-hidden">
-                <img
-                  src={dish.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"}
-                  alt={dish.nom}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                {dish.best_seller && (
-                  <div className="absolute left-4 top-4 flex items-center gap-2 rounded-xl bg-[#F4A640] px-3 py-1.5 text-[10px] font-bold text-white">
-                    <Flame size={13} fill="currentColor" />
-                    PI VANN
+          {(homeDishes.length > 0 ? homeDishes : []).map((dish) => {
+            const outOfStock = (dish.stock_quantity ?? 0) <= 0;
+
+            return (
+              <div
+                key={dish.id}
+                className={`group flex flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white transition-all duration-300 ${
+                  outOfStock ? "opacity-60 grayscale" : "hover:border-transparent hover:shadow-xl"
+                }`}
+              >
+                <div className="relative h-56 w-full overflow-hidden md:h-64">
+                  <img
+                    src={dish.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"}
+                    alt={dish.nom}
+                    className={`h-full w-full object-cover transition-transform duration-700 ${
+                      outOfStock ? "" : "group-hover:scale-110"
+                    }`}
+                  />
+                  {dish.best_seller && (
+                    <div className="absolute left-4 top-4 flex items-center gap-2 rounded-xl bg-[#F4A640] px-3 py-1.5 text-[10px] font-bold text-white">
+                      <Flame size={13} fill="currentColor" />
+                      PI VANN
+                    </div>
+                  )}
+                  {outOfStock && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/45">
+                      <span className="rounded-2xl bg-white px-5 py-3 text-sm font-black uppercase tracking-widest text-[#101828] shadow-xl">
+                        Pa disponib
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-4 right-4 rounded-xl bg-white/90 backdrop-blur-md px-4 py-2 text-base font-black text-[#101828] border border-white/20">
+                    {dish.prix} HTG
                   </div>
-                )}
-                <div className="absolute bottom-4 right-4 rounded-xl bg-white/90 backdrop-blur-md px-4 py-2 text-base font-black text-[#101828] border border-white/20">
-                  {dish.prix} HTG
+                </div>
+                <div className="flex flex-1 flex-col space-y-4 p-5 md:p-6">
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="break-words text-lg font-bold leading-tight text-[#101828]">{dish.nom}</h3>
+                      <span className="shrink-0 rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#98A2B3]">
+                        {dish.categorie}
+                      </span>
+                    </div>
+                    <p className="line-clamp-2 text-xs leading-relaxed font-medium text-[#667085]">{dish.description || ""}</p>
+                  </div>
+                  <div className="mt-auto flex items-center justify-between pt-2">
+                    <div className="flex items-center gap-3 text-xs font-bold text-[#667085]">
+                      <span className="inline-flex items-center gap-1.5">
+                        <div className="rounded-lg bg-gray-50 p-1.5 text-[#98A2B3]">
+                          <Clock size={15} />
+                        </div>
+                        {dish.temps_prep} min
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <div className="rounded-lg bg-gray-50 p-1.5 text-[#F4A640]">
+                          <CalendarDays size={15} />
+                        </div>
+                        {dish.jour || "Tout jou"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleAddDish(dish)}
+                      disabled={outOfStock}
+                      title={outOfStock ? "Plat la pa disponib" : "Ajoute nan panyen"}
+                      className={`flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-lg transition-all duration-300 active:scale-90 ${
+                        outOfStock
+                          ? "cursor-not-allowed bg-gray-300 shadow-none"
+                          : "bg-[#F4A640] shadow-[#F4A640]/20 hover:rotate-90 hover:bg-[#101828]"
+                      }`}
+                    >
+                      <Plus size={24} strokeWidth={3} />
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-1 flex-col space-y-4 p-5 md:p-6">
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="break-words text-lg font-bold leading-tight text-[#101828]">{dish.nom}</h3>
-                    <span className="shrink-0 rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-[#98A2B3]">
-                      {dish.categorie}
-                    </span>
-                  </div>
-                  <p className="line-clamp-2 text-xs leading-relaxed font-medium text-[#667085]">{dish.description || ""}</p>
-                </div>
-                <div className="mt-auto flex items-center justify-between pt-2">
-                  <div className="flex items-center gap-3 text-xs font-bold text-[#667085]">
-                    <span className="inline-flex items-center gap-1.5">
-                      <div className="rounded-lg bg-gray-50 p-1.5 text-[#98A2B3]">
-                        <Clock size={15} />
-                      </div>
-                      {dish.temps_prep} min
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <div className="rounded-lg bg-gray-50 p-1.5 text-[#F4A640]">
-                        <CalendarDays size={15} />
-                      </div>
-                      {dish.jour || "Tout jou"}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleAddDish(dish)}
-                    title="Ajoute nan panyen"
-                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#F4A640] text-white shadow-lg shadow-[#F4A640]/20 transition-all duration-300 hover:rotate-90 hover:bg-[#101828] active:scale-90"
-                  >
-                    <Plus size={24} strokeWidth={3} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex justify-center">

@@ -439,7 +439,7 @@ export default function PanierPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-5 lg:px-6">
-      <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:gap-16">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
       <div className="space-y-6 sm:space-y-8 lg:space-y-10">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-[#101828] sm:text-4xl">Rezime</h1>
@@ -450,9 +450,9 @@ export default function PanierPage() {
           {cart.map((item) => (
             <div
               key={item.id}
-              className="flex flex-col gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:gap-6 sm:p-5"
+              className="grid gap-4 rounded-3xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md sm:grid-cols-[150px_minmax(0,1fr)_auto_auto] sm:items-center sm:gap-6 sm:p-5"
             >
-             <div className="h-56 w-full overflow-hidden rounded-2xl">
+              <div className="h-56 w-full overflow-hidden rounded-2xl sm:h-40 sm:w-[150px]">
                 <img
                   src={item.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"}
                   alt={item.nom}
@@ -507,7 +507,7 @@ export default function PanierPage() {
               </div>
               <button
                 onClick={() => removeItem(item.id)}
-                className="self-end rounded-xl p-3 text-[#98A2B3] transition hover:bg-red-50 hover:text-red-500 sm:self-auto"
+                className="flex items-center justify-center rounded-xl p-3 text-[#98A2B3] transition hover:bg-red-50 hover:text-red-500 sm:self-auto"
               >
                 <Trash2 size={22} />
               </button>
