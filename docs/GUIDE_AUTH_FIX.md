@@ -1,86 +1,86 @@
 # Guide de correction de l'authentification
 
-## Problème identifié
+## Problème résolu
 
-Lorsqu'un utilisateur créait un compte et se déconnectait, il ne pouvait plus se reconnecter avec son email. Le message d'erreur indiquait que l'email n'était pas trouvé dans la base de données, même pour "mot de passe oublié".
+Les utilisateurs ne pouvaient plus se connecter avec leurs anciens identifiants après la mise à jour du système de sécurité.
 
-## Cause du problème
+## Solution implémentée
 
-Dans `src/context/AuthContext.tsx`, les fonctions `signIn()` et `resetPassword()` utilisaient la méthode `.single()` de Supabase, qui retourne une erreur lorsque aucun résultat n'est trouvé. Cela causait des problèmes de gestion d'erreur.
+### 1. Système de double vérification
 
-## Solution appliquée
+Le système vérifie maintenant deux types de mots de passe :
 
-Remplacement de `.single()` par `.maybeSingle()` dans les fonctions critiques :
+- **Nouveaux comptes** : Mot de passe hashé (SHA-256, 64 caractères)
+- **Anciens comptes** : Mot de passe en clair (pour compatibilité)
 
-### Avant (ligne 128 et 222)
-```typescript
-.single();
+### 2. Migration automatique
+
+Lorsqu'un utilisateur se connecte avec un ancien mot de passe en clair, le système le hash automatiquement pour les prochaines connexions.
+
+### 3. Email unique
+
+Un email ne peut être utilisé qu'une seule fois. Si quelqu'un essaie de créer un compte avec un email existant, il est redirigé vers "Mot de passe oublié".
+
+## Actions à effectuer
+
+### Étape 1 : Supprimer les anciens comptes (optionnel mais recommandé)
+
+Si vous voulez repartir à zéro :
+
+1. Ouvrez Supabase Dashboard
+2. Allez dans SQL Editor
+3. Exécutez le script `database/delete-all-clients.sql`
+
+**Attention** : Cette action supprime tous les clients et leurs commandes !
+
+### Étape 2 : Tester le système
+
+1. **Créer un nouveau compte** :
+   - Allez sur la page d'inscription
+   - Remplissez le formulaire
+   - Le compte est créé avec un mot de passe hashé
+
+2. **Se connecter** :
+   - Utilisez les identifiants du nouveau compte
+   - La connexion devrait fonctionner
+
+3. **Tester "Mot de passe oublié"** :
+   - Cliquez sur "Ou bliye modpas ou ?"
+   - Entrez votre email
+   - Définissez un nouveau mot de passe
+
+## Messages d'erreur
+
+- "Imel oswa modpas la pa korek." : Email ou mot de passe incorrect
+- "Imel sa a deja itilize. Tanpri klike sou 'Ou bliye modpas ou ?' pou rekòmanse." : Email déjà utilisé
+- "Nimewo telefòn sa a deja itilize." : Numéro de téléphone déjà utilisé
+
+## Vérification dans la console
+
+Ouvrez la console du navigateur (F12) pour voir les logs de connexion :
+
+```
+Tentative de connexion: { email: "test@example.com", hash: "abc123..." }
+Utilisateur trouvé: { userData: {...}, userError: null }
+Comparaison hash: { storedHash: "...", hash: "...", match: true }
 ```
 
-### Après
-```typescript
-.maybeSingle();
-```
+## Sécurité
 
-## Fichiers modifiés
-
-- **`src/context/AuthContext.tsx`**
-  - Ligne 128: `signIn()` - changé `.single()` → `.maybeSingle()`
-  - Ligne 222: `resetPassword()` - changé `.single()` → `.maybeSingle()`
-
-## Différence entre `.single()` et `.maybeSingle()`
-
-- **`.single()`**: Retourne une erreur si 0 ou plusieurs résultats sont trouvés
-- **`.maybeSingle()`**: Retourne `null` dans `data` si aucun résultat, sans erreur
-
-## Test de la correction
-
-1. **Créer un compte:**
-   - Aller sur `/menu`
-   - Cliquer sur "Konekte"
-   - Sélectionner "Enskripsyon"
-   - Remplir le formulaire
-   - Créer le compte
-
-2. **Se déconnecter:**
-   - Cliquer sur le menu utilisateur
-   - Cliquer sur "Dekonekte"
-
-3. **Se reconnecter:**
-   - Cliquer sur "Konekte"
-   - Entrer l'email et mot de passe
-   - La connexion doit fonctionner
-
-4. **Test mot de passe oublié:**
-   - Cliquer sur "Konekte"
-   - Cliquer sur "Ou bliye modpas ou ?"
-   - Entrer l'email
-   - Entrer un nouveau mot de passe
-   - Le message "Modpas la chanje" doit apparaître
-   - Se connecter avec le nouveau mot de passe
-
-## Vérification de la base de données
-
-Pour vérifier que les comptes sont bien créés:
-
-```sql
--- Vérifier les clients dans la base
-SELECT id, nom, email, telephone, created_at 
-FROM public.clients 
-ORDER BY created_at DESC 
-LIMIT 10;
-```
-
-## Notes importantes
-
-- Les emails sont normalisés (lowercase + trim) avant insertion
 - Les mots de passe sont hashés avec SHA-256
-- La session expire après 2 heures d'inactivité
-- Le token de session est stocké dans localStorage
+- Les sessions expirent après 2 heures d'inactivité
+- Le mot de passe doit contenir :
+  - Minimum 8 caractères
+  - Au moins une minuscule
+  - Au moins une majuscule
+  - Au moins un chiffre
+  - Au moins un caractère spécial
 
-## Si le problème persiste
+## Support
 
-1. Vérifier les logs de la console navigateur (F12)
-2. Vérifier que la table `clients` existe dans Supabase
-3. Vérifier les policies RLS sur la table `clients`
-4. Tester la connexion directement avec Supabase Dashboard
+Si le problème persiste :
+
+1. Vérifiez la console du navigateur pour les erreurs
+2. Vérifiez que la table `clients` existe dans Supabase
+3. Vérifiez que la colonne `mot_de_passe_hash` existe
+4. Exécutez le script de suppression si nécessaire

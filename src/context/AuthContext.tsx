@@ -197,6 +197,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       throw new Error(passwordError);
     }
 
+    // Vérifier si l'email existe déjà
     const { data: existingEmail } = await supabase
       .from("clients")
       .select("id")
@@ -204,9 +205,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     if (existingEmail) {
-      throw new Error("Gen yon kont ki deja itilize imel sa a.");
+      throw new Error("Imel sa a deja itilize. Tanpri klike sou 'Ou bliye modpas ou ?' pou rekòmanse.");
     }
 
+    // Vérifier si le téléphone existe déjà
     const { data: existingPhone } = await supabase
       .from("clients")
       .select("id")
@@ -234,7 +236,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (error?.code === "23505") {
-      throw new Error("Gen yon kont ki deja itilize imel sa a.");
+      if (error.message.includes("email")) {
+        throw new Error("Imel sa a deja itilize. Tanpri klike sou 'Ou bliye modpas ou ?' pou rekòmanse.");
+      }
+      throw new Error("Nimewo telefòn sa a deja itilize.");
     }
 
     if (error || !data) {

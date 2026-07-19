@@ -5,6 +5,7 @@ import AdminAccessGuard from "@/components/auth/AdminAccessGuard";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
+import { NotificationProvider } from "@/context/NotificationContext";
 import React from "react";
 
 export default function AdminLayout({
@@ -28,7 +29,9 @@ export default function AdminLayout({
       >
         <AppHeader />
         <div className="mx-auto w-full max-w-(--breakpoint-2xl) p-4 md:p-6">
-          <AdminAccessGuard>{children}</AdminAccessGuard>
+          <NotificationProvider>
+            <AdminAccessGuard>{children}</AdminAccessGuard>
+          </NotificationProvider>
         </div>
       </div>
     </div>
