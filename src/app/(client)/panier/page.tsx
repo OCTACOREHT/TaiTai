@@ -372,34 +372,6 @@ export default function PanierPage() {
         }),
       );
 
-      // Créer une notification pour la nouvelle commande via BroadcastChannel
-      try {
-        const orderNotification = {
-          id: commande.id,
-          numero_commande: commande.numero_commande,
-          client_nom: formData.client_nom,
-          total: total,
-          statut: "En attente",
-          created_at: new Date().toISOString(),
-        };
-        
-        // Sauvegarder dans localStorage (backup)
-        localStorage.setItem("taitai_new_order", JSON.stringify(orderNotification));
-        
-        // Envoyer via BroadcastChannel (fonctionne en production)
-        const channel = new BroadcastChannel("taitai_notifications");
-        channel.postMessage({
-          type: "new_order",
-          payload: orderNotification,
-        });
-        channel.close();
-        
-        console.log("✅ Notification envoyée:", orderNotification);
-      } catch (notifError) {
-        console.error("[notification creation]", notifError);
-        // Ne pas bloquer la commande si la notification échoue
-      }
-
       try {
         await sendConfirmationEmail(commande.id, clientEmail);
       } catch (emailError) {

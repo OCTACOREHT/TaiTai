@@ -12,7 +12,6 @@ import type { CmsUser } from "@/types/cms";
 import {
   BadgePercent,
   BarChart3,
-  Bell,
   ChefHat,
   ClipboardCheck,
   Globe,
@@ -28,7 +27,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useNotifications } from "@/context/NotificationContext";
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} strokeWidth={2} /> },
@@ -52,8 +50,6 @@ const AppSidebar: React.FC = () => {
   const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
   const [user, setUser] = useState<CmsUser | null>(null);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const { notifications, unreadCount, markAsRead } = useNotifications();
 
   useEffect(() => {
     const session = getAdminSession();
@@ -147,79 +143,6 @@ const AppSidebar: React.FC = () => {
             </ul>
           </div>
         </nav>
-      </div>
-
-      {/* Notifications */}
-      <div className="px-3 pb-2">
-        <div className="relative">
-          <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className="flex items-center justify-center rounded-xl p-2 text-gray-400 transition hover:bg-gray-50 hover:text-brand-500 relative"
-            title="Notifications"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white">
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
-          </button>
-
-          {showNotifications && (
-            <div className="absolute bottom-full left-0 mb-2 w-80 rounded-2xl border border-gray-200 bg-white shadow-2xl z-50">
-              <div className="flex items-center justify-between border-b border-gray-100 p-4">
-                <h3 className="text-sm font-black text-gray-900">Notifications</h3>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={() => {
-                      notifications.forEach(n => markAsRead(n.id));
-                    }}
-                    className="text-xs font-bold text-brand-500 hover:text-brand-600"
-                  >
-                    Tout marquer lu
-                  </button>
-                )}
-              </div>
-              <div className="max-h-96 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-gray-500">
-                    Aucune notification
-                  </div>
-                ) : (
-                  notifications.slice(0, 10).map((notif) => (
-                    <a
-                      key={notif.id}
-                      href={notif.link || "#"}
-                      onClick={() => markAsRead(notif.id)}
-                      className={`block border-b border-gray-50 p-3 transition hover:bg-gray-50 ${
-                        !notif.read ? "bg-blue-50/50" : ""
-                      }`}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div className={`mt-0.5 h-2 w-2 rounded-full ${
-                          notif.type === "order" ? "bg-green-500" :
-                          notif.type === "comment" ? "bg-blue-500" :
-                          notif.type === "stock_critical" ? "bg-red-500" :
-                          "bg-orange-500"
-                        }`} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-900">{notif.title}</p>
-                          <p className="mt-0.5 text-xs text-gray-600 line-clamp-2">{notif.message}</p>
-                          <p className="mt-1 text-[10px] text-gray-400">
-                            {new Date(notif.created_at).toLocaleTimeString("fr-FR", { 
-                              hour: "2-digit", 
-                              minute: "2-digit" 
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    </a>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* User block — bottom of sidebar */}
