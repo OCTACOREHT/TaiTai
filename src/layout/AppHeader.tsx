@@ -2,6 +2,7 @@
 
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import UserDropdown from "@/components/header/UserDropdown";
+import { Bell } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -101,6 +102,15 @@ const AppHeader: React.FC = () => {
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
             <ThemeToggleButton />
+            <button
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              title="Notifications"
+            >
+              <Bell size={20} />
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white animate-pulse">
+                !
+              </span>
+            </button>
           </div>
           <UserDropdown />
         </div>
