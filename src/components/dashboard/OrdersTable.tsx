@@ -132,9 +132,10 @@ export function OrdersTable({
                     <div className="relative min-w-[170px]">
                       <select
                         value={order.status}
+                        disabled={order.status === "En attente"}
                         onChange={(event) => onStatusChange(order.id, event.target.value as OrderStatus)}
                         className={cn(
-                          "w-full appearance-none rounded-xl border px-4 py-2.5 pr-10 text-xs font-bold transition-all focus:outline-none focus:ring-2",
+                          "w-full appearance-none rounded-xl border px-4 py-2.5 pr-10 text-xs font-bold transition-all focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60",
                           order.status === "En attente"
                             ? "border-amber-200 bg-amber-50 text-amber-700 focus:ring-amber-200"
                             : order.status === "En préparation"
@@ -155,6 +156,11 @@ export function OrdersTable({
                       <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-current opacity-60">
                         <ChevronDown size={14} strokeWidth={3} />
                       </div>
+                      {order.status === "En attente" && (
+                        <p className="mt-1 text-[10px] font-semibold text-amber-600">
+                          Validez d’abord la commande pour pouvoir la traiter.
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <div

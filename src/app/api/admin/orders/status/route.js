@@ -63,7 +63,7 @@ export async function PATCH(request) {
   let client;
 
   try {
-    const { orderId, status } = await request.json();
+    const { orderId, status, validated = false } = await request.json();
 
     if (!orderId || !allowedStatuses.has(status)) {
       return NextResponse.json({ error: "Commande ou statut invalide." }, { status: 400 });
@@ -87,6 +87,14 @@ export async function PATCH(request) {
     if (!existingOrder) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
+    }
+
+    if (existingOrder.statut === "En attente" && !validated) {
+      await client.query("ROLLBACK");
+      return NextResponse.json(
+        { error: "La commande doit d’abord être validée depuis la page Validation commandes avant de changer de statut." },
+        { status: 409 },
+      );
     }
 
     if (status === "Annulee" && existingOrder.statut !== "Annulee") {

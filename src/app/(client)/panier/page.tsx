@@ -413,20 +413,22 @@ export default function PanierPage() {
 
   if (cart.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 text-center space-y-8">
-        <div className="h-28 w-28 rounded-3xl bg-gray-50 flex items-center justify-center text-[#98A2B3] border border-gray-100">
-          <ShoppingCart size={56} />
+      <div className="mx-auto w-full max-w-5xl px-3 py-10 text-center sm:px-5 sm:py-16">
+        <div className="flex flex-col items-center justify-center space-y-8">
+          <div className="flex h-24 w-24 items-center justify-center rounded-3xl border border-gray-100 bg-gray-50 text-[#98A2B3] sm:h-28 sm:w-28">
+            <ShoppingCart size={48} className="sm:h-14 sm:w-14" />
+          </div>
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold text-[#101828] sm:text-4xl">Panyen ou vid</h1>
+            <p className="text-base text-[#667085] font-medium sm:text-lg">Chwazi youn nan espesyalite nou yo !</p>
+          </div>
+          <button
+            onClick={() => router.push("/menu")}
+            className="rounded-2xl bg-brand-500 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-brand-500/20 transition hover:scale-105 active:scale-95 sm:px-10 sm:py-5 sm:text-base"
+          >
+            Gade meni an
+          </button>
         </div>
-        <div className="space-y-3">
-          <h1 className="text-4xl font-bold text-[#101828]">Panyen ou vid</h1>
-          <p className="text-[#667085] text-lg font-medium">Chwazi youn nan espesyalite nou yo !</p>
-        </div>
-        <button
-          onClick={() => router.push("/menu")}
-          className="rounded-2xl bg-brand-500 px-10 py-5 font-bold text-white shadow-lg shadow-brand-500/20 transition hover:scale-105 active:scale-95"
-        >
-          Gade meni an
-        </button>
       </div>
     );
   }
@@ -436,8 +438,9 @@ export default function PanierPage() {
   };
 
   return (
-    <div className="grid min-w-0 gap-10 lg:grid-cols-2 lg:gap-16">
-      <div className="space-y-10">
+    <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-5 lg:px-6">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:gap-16">
+      <div className="space-y-6 sm:space-y-8 lg:space-y-10">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-[#101828] sm:text-4xl">Rezime</h1>
           <p className="text-[#667085] font-medium">Verifye atik ou yo avan ou valide.</p>
@@ -512,7 +515,7 @@ export default function PanierPage() {
           ))}
         </div>
 
-        <div className="space-y-5 rounded-3xl bg-[#101828] p-5 text-white shadow-xl sm:p-8">
+        <div className="space-y-5 rounded-3xl bg-[#101828] p-4 text-white shadow-xl sm:p-6 lg:p-8">
           <div className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4">
             <label className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
               <Tag size={14} />
@@ -578,7 +581,7 @@ export default function PanierPage() {
           <p className="text-[#667085] font-medium">Livrezon disponib selman nan depatman Ouest.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8 rounded-3xl border border-gray-100 bg-white p-5 shadow-xl sm:p-10">
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-gray-100 bg-white p-4 shadow-xl sm:space-y-8 sm:p-6 lg:p-10">
           {!deliveryHasStarted && (
             <div className="rounded-3xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm font-black leading-6 text-amber-700">
               Livrezon yo kòmanse apati 12h midi. Ou ka prepare kòmann ou kounye a,
@@ -723,7 +726,7 @@ export default function PanierPage() {
               <CreditCard size={16} className="text-brand-500" />
               Mwayen peman
             </label>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
               {(["Sur place", "MonCash", "Zelle"] as PaymentMethod[]).map((method) => (
                 <button
                   key={method}
@@ -771,7 +774,7 @@ export default function PanierPage() {
           <button
             type="submit"
             disabled={loading || !livraisonDisponible}
-            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-brand-500 px-4 py-5 text-base font-black text-white shadow-xl shadow-brand-500/20 transition-all hover:bg-[#101828] hover:shadow-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:py-6 sm:text-xl"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-4 py-4 text-sm font-black text-white shadow-xl shadow-brand-500/20 transition-all hover:bg-[#101828] hover:shadow-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-3 sm:py-5 sm:text-base lg:py-6 lg:text-xl"
           >
             {loading ? (
               "Konfimasyon ap fet..."
@@ -797,6 +800,7 @@ export default function PanierPage() {
         type={alertConfig.type}
         onClose={closeAlert}
       />
+      </div>
     </div>
   );
 }

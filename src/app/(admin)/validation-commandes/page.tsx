@@ -79,7 +79,7 @@ export default function ValidationCommandesPage() {
     const response = await fetch("/api/admin/orders/status", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId, status }),
+      body: JSON.stringify({ orderId, status, validated: true }),
     });
 
     const payload = await response.json();
