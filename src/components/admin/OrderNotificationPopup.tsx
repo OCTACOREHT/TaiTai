@@ -9,7 +9,7 @@ interface OrderData {
   numero_commande: string;
   client_nom: string;
   client_tel: string;
-  client_email: string;
+  client_email?: string;
   adresse_livraison: string;
   total: number;
   payment_method: string;
@@ -23,6 +23,13 @@ export default function OrderNotificationPopup() {
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popupShownForRef = useRef<string | null>(null);
+  const ORDER_POPUP_WINDOW_MS = 30_000;
+
+  const isRecentOrder = (createdAt: string) => {
+    const createdAtTimestamp = new Date(createdAt).getTime();
+    const now = Date.now();
+    return now - createdAtTimestamp < ORDER_POPUP_WINDOW_MS;
+  };
 
   const showOrderPopup = (data: OrderData) => {
     if (popupShownForRef.current === data.id) return;
@@ -44,13 +51,17 @@ export default function OrderNotificationPopup() {
       try {
         const { data } = await supabase
           .from("commandes")
-          .select("id")
+          .select("id, numero_commande, client_nom, client_tel, adresse_livraison, total, payment_method, created_at")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (data?.id) {
           lastOrderIdRef.current = data.id;
+
+          if (isRecentOrder(data.created_at)) {
+            showOrderPopup(data as OrderData);
+          }
         }
       } catch (err) {
         console.error("[notif] Erreur chargement dernière commande:", err);
@@ -63,14 +74,17 @@ export default function OrderNotificationPopup() {
       try {
         const { data } = await supabase
           .from("commandes")
-          .select("id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, total, payment_method, created_at")
+          .select("id, numero_commande, client_nom, client_tel, adresse_livraison, total, payment_method, created_at")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
         if (data && data.id !== lastOrderIdRef.current) {
           lastOrderIdRef.current = data.id;
-          showOrderPopup(data as OrderData);
+
+          if (isRecentOrder(data.created_at)) {
+            showOrderPopup(data as OrderData);
+          }
         }
       } catch (error) {
         console.error("[notif] Erreur polling:", error);
@@ -135,10 +149,12 @@ export default function OrderNotificationPopup() {
               <p className="text-xs text-gray-600">{order.client_tel}</p>
             </div>
 
-            <div className="flex items-start gap-2">
-              <Mail size={16} className="mt-0.5 text-gray-400" />
-              <p className="text-xs text-gray-600">{order.client_email}</p>
-            </div>
+            {order.client_email && (
+              <div className="flex items-start gap-2">
+                <Mail size={16} className="mt-0.5 text-gray-400" />
+                <p className="text-xs text-gray-600">{order.client_email}</p>
+              </div>
+            )}
 
             <div className="flex items-start gap-2">
               <MapPin size={16} className="mt-0.5 text-gray-400" />
