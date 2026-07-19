@@ -6,6 +6,7 @@ import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
 import { NotificationProvider } from "@/context/NotificationContext";
+import NewOrderNotification from "@/components/admin/NewOrderNotification";
 import React from "react";
 
 export default function AdminLayout({
@@ -34,6 +35,9 @@ export default function AdminLayout({
           </NotificationProvider>
         </div>
       </div>
+
+      {/* Popup de notification pour nouvelles commandes */}
+      <NewOrderNotification />
     </div>
   );
 }
