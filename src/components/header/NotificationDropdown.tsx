@@ -1,27 +1,128 @@
 "use client";
 
-import { restaurantOrders, stockItems } from "@/lib/data";
+import { supabase } from "@/lib/supabase-client";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
+import { X, Bell, ShoppingCart } from "lucide-react";
+import "./NotificationDropdown.css";
+
+interface Order {
+  id: string;
+  numero_commande: string;
+  client_nom: string;
+  total: number;
+  statut: string;
+  created_at: string;
+}
+
+interface StockItem {
+  id: string;
+  nom: string;
+  stock_quantity: number;
+}
 
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+  const [criticalStocks, setCriticalStocks] = useState<StockItem[]>([]);
+  const [showNewOrderPopup, setShowNewOrderPopup] = useState(false);
+  const [newOrder, setNewOrder] = useState<Order | null>(null);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+
+  // Charger les commandes en attente
+  useEffect(() => {
+    const loadPendingOrders = async () => {
+      const { data } = await supabase
+        .from("commandes")
+        .select("id, numero_commande, client_nom, total, statut, created_at")
+        .eq("statut", "En attente")
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        setPendingOrders(data);
+      }
+    };
+
+    loadPendingOrders();
+  }, []);
+
+  // Charger les stocks critiques
+  useEffect(() => {
+    const loadCriticalStocks = async () => {
+      const { data } = await supabase
+        .from("menu_items")
+        .select("id, nom, stock_quantity")
+        .eq("disponible", true)
+        .lte("stock_quantity", 5);
+
+      if (data) {
+        setCriticalStocks(data);
+      }
+    };
+
+    loadCriticalStocks();
+  }, []);
+
+  // Écouter les nouvelles commandes en temps réel
+  useEffect(() => {
+    const channel = supabase
+      .channel("new-orders-notification")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "commandes",
+        },
+        (payload) => {
+          const order = payload.new as Order;
+          
+          // Éviter les doublons
+          if (order.id === lastOrderId) return;
+
+          // Mettre à jour la liste des commandes en attente
+          if (order.statut === "En attente") {
+            setPendingOrders(prev => [order, ...prev]);
+          }
+
+          // Afficher la popup
+          setNewOrder(order);
+          setShowNewOrderPopup(true);
+          setLastOrderId(order.id);
+
+          // Cacher automatiquement après 10 secondes
+          setTimeout(() => {
+            setShowNewOrderPopup(false);
+          }, 20000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [lastOrderId]);
 
   const alerts = [
     {
       id: "orders-pending",
       title: "Commandes en attente",
-      description: `${restaurantOrders.filter((order) => order.status === "En attente").length} tickets doivent encore passer en cuisine ou en salle.`,
+      description: `${pendingOrders.length} ticket${pendingOrders.length > 1 ? 's' : ''} doi${pendingOrders.length > 1 ? 'vent' : 't'} encore passer en cuisine ou en salle.`,
       href: "/commandes",
     },
     {
       id: "stock-critical",
       title: "Stocks critiques",
-      description: `${stockItems.filter((item) => item.status === "Critique").length} produits sont sous le seuil de securite.`,
+      description: `${criticalStocks.length} produit${criticalStocks.length > 1 ? 's' : ''} ${criticalStocks.length > 1 ? 'sont' : 'est'} sous le seuil de securite.`,
       href: "/stocks",
     },
   ];
+
+  const handleViewOrder = () => {
+    setShowNewOrderPopup(false);
+    window.location.href = "/commandes";
+  };
 
   return (
     <div className="relative">
@@ -76,6 +177,55 @@ export default function NotificationDropdown() {
           ))}
         </div>
       </Dropdown>
+
+      {/* Popup de nouvelle commande */}
+      {showNewOrderPopup && newOrder && (
+        <div className="fixed top-20 right-4 z-50 animate-slide-in">
+          <div className="w-96 rounded-2xl border-2 border-green-500 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-green-100 bg-green-50 p-4">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-green-600 animate-pulse" />
+                <h3 className="text-sm font-black text-green-800">NOUVELLE COMMANDE !</h3>
+              </div>
+              <button
+                onClick={() => setShowNewOrderPopup(false)}
+                className="rounded-lg p-1 text-green-600 hover:bg-green-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-green-100 p-2">
+                  <ShoppingCart className="h-6 w-6 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-gray-900">
+                    Commande #{newOrder.numero_commande}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Client: <span className="font-semibold">{newOrder.client_nom}</span>
+                  </p>
+                  <p className="mt-1 text-lg font-black text-green-600">
+                    {newOrder.total} HTG
+                  </p>
+                  <p className="mt-1 text-[10px] text-gray-400">
+                    {new Date(newOrder.created_at).toLocaleTimeString("fr-FR")}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleViewOrder}
+                className="mt-4 w-full rounded-xl bg-green-500 py-3 text-sm font-black text-white transition hover:bg-green-600"
+              >
+                Voir la commande
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
