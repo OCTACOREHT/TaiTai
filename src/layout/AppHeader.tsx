@@ -6,24 +6,24 @@ import { Bell } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase-client";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-  const [hasNewOrder, setHasNewOrder] = useState(false);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+  const router = useRouter();
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   const checkPendingOrders = async () => {
     try {
-      const { data } = await supabase
+      const { count } = await supabase
         .from("commandes")
-        .select("id")
-        .eq("statut", "En attente")
-        .limit(1)
-        .maybeSingle();
+        .select("id", { count: "exact" })
+        .eq("statut", "En attente");
 
-      setHasNewOrder(Boolean(data?.id));
+      setPendingOrdersCount(count ?? 0);
     } catch (error) {
       console.error("[header] Erreur vérification commandes en attente:", error);
     }
@@ -133,17 +133,19 @@ const AppHeader: React.FC = () => {
           <div className="flex items-center gap-2 2xsm:gap-3">
             <ThemeToggleButton />
             <button
+              type="button"
+              onClick={() => router.push("/validation-commandes")}
               className={`relative flex h-10 w-10 items-center justify-center rounded-lg transition ${
-                hasNewOrder
+                pendingOrdersCount > 0
                   ? "bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
                   : "text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
               }`}
-              title="Notifications"
+              title="Commandes en attente"
             >
-              <Bell size={20} className={hasNewOrder ? "animate-pulse" : ""} />
-              {hasNewOrder && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-black text-white animate-pulse">
-                  !
+              <Bell size={20} className={pendingOrdersCount > 0 ? "animate-pulse" : ""} />
+              {pendingOrdersCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-black text-white animate-pulse">
+                  {pendingOrdersCount > 99 ? "99+" : pendingOrdersCount}
                 </span>
               )}
             </button>
