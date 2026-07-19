@@ -6,10 +6,12 @@ import { Bell } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase-client";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  const [hasNewOrder, setHasNewOrder] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   const handleToggle = () => {
@@ -19,6 +21,32 @@ const AppHeader: React.FC = () => {
       toggleMobileSidebar();
     }
   };
+
+  // Détecter les nouvelles commandes
+  useEffect(() => {
+    const channel = supabase
+      .channel("header-new-orders")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "commandes",
+        },
+        () => {
+          // Afficher le badge pendant 5 secondes
+          setHasNewOrder(true);
+          setTimeout(() => {
+            setHasNewOrder(false);
+          }, 5000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <header className="sticky top-0 z-99999 flex w-full border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 lg:border-b">
@@ -107,9 +135,11 @@ const AppHeader: React.FC = () => {
               title="Notifications"
             >
               <Bell size={20} />
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white animate-pulse">
-                !
-              </span>
+              {hasNewOrder && (
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white animate-pulse">
+                  !
+                </span>
+              )}
             </button>
           </div>
           <UserDropdown />

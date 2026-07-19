@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { X, Bell, ShoppingCart, User, Phone, Mail, MapPin, CreditCard } from "lucide-react";
+import { supabase } from "@/lib/supabase-client";
 
 interface OrderData {
   id: string;
@@ -21,55 +22,55 @@ export default function OrderNotificationPopup() {
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Créer un canal de communication
-    const channel = new BroadcastChannel("taitai_new_order");
-    
-    // Écouter les messages
-    channel.onmessage = (event) => {
-      if (event.data.type === "new_order") {
-        const orderData = event.data.payload;
-        
-        // Éviter les doublons
-        if (orderData.id === lastOrderId) return;
+    // Récupérer la dernière commande au chargement
+    const fetchLastOrder = async () => {
+      const { data } = await supabase
+        .from("commandes")
+        .select("id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, total, payment_method, created_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-        console.log("🛒 Nouvelle commande reçue:", orderData);
-        
-        // Afficher la popup
-        setOrder(orderData);
-        setShowPopup(true);
-        setLastOrderId(orderData.id);
-
-        // Cacher automatiquement après 20 secondes
-        setTimeout(() => {
-          setShowPopup(false);
-        }, 20000);
+      if (data) {
+        setLastOrderId(data.id);
       }
     };
 
-    // Vérifier s'il y a une commande en attente au chargement
-    const checkPendingOrder = () => {
-      const pendingOrder = sessionStorage.getItem("taitai_pending_order");
-      if (pendingOrder) {
-        try {
-          const orderData = JSON.parse(pendingOrder);
-          if (orderData.id !== lastOrderId) {
-            setOrder(orderData);
-            setShowPopup(true);
-            setLastOrderId(orderData.id);
-            setTimeout(() => {
-              setShowPopup(false);
-            }, 20000);
-          }
-        } catch (error) {
-          console.error("Erreur:", error);
+    fetchLastOrder();
+
+    // Écouter les nouvelles commandes en temps réel
+    const channel = supabase
+      .channel("new-orders")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "commandes",
+        },
+        (payload) => {
+          const orderData = payload.new as OrderData;
+          
+          // Éviter les doublons
+          if (orderData.id === lastOrderId) return;
+
+          console.log("🛒 Nouvelle commande reçue:", orderData);
+          
+          // Afficher la popup
+          setOrder(orderData);
+          setShowPopup(true);
+          setLastOrderId(orderData.id);
+
+          // Cacher automatiquement après 20 secondes
+          setTimeout(() => {
+            setShowPopup(false);
+          }, 20000);
         }
-      }
-    };
-
-    checkPendingOrder();
+      )
+      .subscribe();
 
     return () => {
-      channel.close();
+      supabase.removeChannel(channel);
     };
   }, [lastOrderId]);
 
