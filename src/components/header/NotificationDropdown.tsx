@@ -68,9 +68,31 @@ export default function NotificationDropdown() {
   useEffect(() => {
     let pollInterval: NodeJS.Timeout;
     let currentOrderCount = pendingOrders.length;
+    let connectionErrorShown = false;
 
     const checkNewOrders = async () => {
       try {
+        // Test de connexion Supabase
+        const { data: testData, error: testError } = await supabase
+          .from("commandes")
+          .select("count")
+          .limit(1);
+
+        if (testError) {
+          if (!connectionErrorShown) {
+            console.error("❌ Erreur de connexion Supabase:", testError.message);
+            console.error("Vérifiez votre connexion internet et votre clé API Supabase");
+            connectionErrorShown = true;
+          }
+          return;
+        }
+
+        // Si on arrive ici, la connexion fonctionne
+        if (connectionErrorShown) {
+          console.log("✅ Connexion Supabase rétablie");
+          connectionErrorShown = false;
+        }
+
         const { data } = await supabase
           .from("commandes")
           .select("id, numero_commande, client_nom, total, statut, created_at")
@@ -83,7 +105,7 @@ export default function NotificationDropdown() {
           
           // Éviter les doublons
           if (latestOrder.id !== lastOrderId) {
-            console.log("Nouvelle commande détectée:", latestOrder);
+            console.log("🛒 Nouvelle commande détectée:", latestOrder.numero_commande);
             
             // Mettre à jour la liste
             setPendingOrders(data);
@@ -104,7 +126,7 @@ export default function NotificationDropdown() {
           currentOrderCount = data.length;
         }
       } catch (error) {
-        console.error("Erreur lors de la vérification des commandes:", error);
+        console.error("❌ Erreur lors de la vérification des commandes:", error);
       }
     };
 

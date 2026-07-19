@@ -21,7 +21,7 @@ import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DeliveryManagement } from "@/components/dashboard/DeliveryManagement";
-import NotificationDebug from "@/components/admin/NotificationDebug";
+import NotificationDiagnostic from "@/components/header/NotificationDiagnostic";
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetric[]>(initialMetrics);
@@ -208,8 +208,8 @@ export default function DashboardPage() {
       {/* Section de gestion des livraisons */}
       <DeliveryManagement />
 
-      {/* Debug notifications (seulement en développement) */}
-      <NotificationDebug />
+      {/* Diagnostic Supabase (seulement en développement) */}
+      <NotificationDiagnostic />
     </div>
   );
 }
