@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { X, Bell, ShoppingCart, User, Phone, Mail, MapPin, CreditCard } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 
@@ -19,27 +19,96 @@ interface OrderData {
 export default function OrderNotificationPopup() {
   const [showPopup, setShowPopup] = useState(false);
   const [order, setOrder] = useState<OrderData | null>(null);
-  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+  const lastOrderIdRef = useRef<string | null>(null);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const popupShownForRef = useRef<string | null>(null);
 
+  // Afficher la popup avec les données d'une commande
+  const showOrderPopup = (data: OrderData) => {
+    // Éviter d'afficher 2x la même commande
+    if (popupShownForRef.current === data.id) return;
+    popupShownForRef.current = data.id;
+
+    setOrder(data);
+    setShowPopup(true);
+
+    // Journaliser
+    console.log("🛒 Nouvelle commande détectée:", data.numero_commande);
+
+    // Cacher automatiquement après 20 secondes
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => {
+      setShowPopup(false);
+    }, 20000);
+  };
+
+  // Vérifier le sessionStorage (envoyé par le panier)
+  const checkSessionStorage = () => {
+    try {
+      const pending = sessionStorage.getItem("taitai_pending_order");
+      if (pending) {
+        const data: OrderData = JSON.parse(pending);
+        if (data.id && data.id !== lastOrderIdRef.current) {
+          lastOrderIdRef.current = data.id;
+          showOrderPopup(data);
+        }
+        sessionStorage.removeItem("taitai_pending_order");
+      }
+    } catch {
+      // Ignorer
+    }
+  };
+
+  // Écouter les messages BroadcastChannel (envoyés par le panier)
   useEffect(() => {
-    // Récupérer la dernière commande au chargement
-    const fetchLastOrder = async () => {
-      const { data } = await supabase
-        .from("commandes")
-        .select("id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, total, payment_method, created_at")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel("taitai_new_order");
+      channel.onmessage = (event: MessageEvent) => {
+        if (event.data?.type === "new_order" && event.data?.payload) {
+          const data: OrderData = event.data.payload;
+          if (data.id && data.id !== lastOrderIdRef.current) {
+            lastOrderIdRef.current = data.id;
+            showOrderPopup(data);
+          }
+        }
+      };
+    } catch (e) {
+      console.warn("[notif] BroadcastChannel non supporté", e);
+    }
 
-      if (data) {
-        setLastOrderId(data.id);
+    return () => {
+      if (channel) channel.close();
+    };
+  }, []);
+
+  // Initialisation et polling
+  useEffect(() => {
+    // 1. Vérifier sessionStorage au montage
+    checkSessionStorage();
+
+    // 2. Récupérer la dernière commande connue
+    const fetchLastOrderId = async () => {
+      try {
+        const { data } = await supabase
+          .from("commandes")
+          .select("id")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data?.id) {
+          lastOrderIdRef.current = data.id;
+        }
+      } catch (err) {
+        console.error("[notif] Erreur chargement dernière commande:", err);
       }
     };
+    fetchLastOrderId();
 
-    fetchLastOrder();
-
-    // Vérifier les nouvelles commandes toutes les 5 secondes
-    const pollInterval = setInterval(async () => {
+    // 3. Polling toutes les 5 secondes (backup si BroadcastChannel rate un message)
+    pollTimerRef.current = setInterval(async () => {
       try {
         const { data } = await supabase
           .from("commandes")
@@ -48,28 +117,20 @@ export default function OrderNotificationPopup() {
           .limit(1)
           .maybeSingle();
 
-        if (data && data.id !== lastOrderId) {
-          console.log("🛒 Nouvelle commande détectée:", data.numero_commande);
-          
-          // Afficher la popup
-          setOrder(data);
-          setShowPopup(true);
-          setLastOrderId(data.id);
-
-          // Cacher automatiquement après 20 secondes
-          setTimeout(() => {
-            setShowPopup(false);
-          }, 20000);
+        if (data && data.id !== lastOrderIdRef.current) {
+          lastOrderIdRef.current = data.id;
+          showOrderPopup(data);
         }
       } catch (error) {
-        console.error("Erreur lors de la vérification:", error);
+        console.error("[notif] Erreur polling:", error);
       }
-    }, 5000); // Vérifier toutes les 5 secondes
+    }, 5000);
 
     return () => {
-      clearInterval(pollInterval);
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
-  }, [lastOrderId]);
+  }, []);
 
   const handleViewOrder = () => {
     setShowPopup(false);
