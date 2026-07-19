@@ -372,32 +372,9 @@ export default function PanierPage() {
         }),
       );
 
-      // Envoyer notification au panel admin via BroadcastChannel
+      // La commande est déjà persistée en base. Le panel admin reçoit la nouvelle commande via Supabase Realtime.
       try {
-        const orderNotification = {
-          id: commande.id,
-          numero_commande: commande.numero_commande,
-          client_nom: formData.client_nom,
-          client_tel: formData.client_tel,
-          client_email: clientEmail,
-          adresse_livraison: adresseComplete,
-          total: total,
-          payment_method: formData.payment_method,
-          created_at: new Date().toISOString(),
-        };
-
-        // Sauvegarder dans sessionStorage (backup)
-        sessionStorage.setItem("taitai_pending_order", JSON.stringify(orderNotification));
-
-        // Envoyer via BroadcastChannel
-        const channel = new BroadcastChannel("taitai_new_order");
-        channel.postMessage({
-          type: "new_order",
-          payload: orderNotification,
-        });
-        channel.close();
-
-        console.log("✅ Notification envoyée au panel admin:", orderNotification);
+        console.log("✅ Commande enregistrée, attente de l'event Realtime admin pour l'affichage du popup:", commande.id);
       } catch (notifError) {
         console.error("[notification error]", notifError);
       }

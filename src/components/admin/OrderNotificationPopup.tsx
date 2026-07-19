@@ -24,71 +24,22 @@ export default function OrderNotificationPopup() {
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popupShownForRef = useRef<string | null>(null);
 
-  // Afficher la popup avec les données d'une commande
   const showOrderPopup = (data: OrderData) => {
-    // Éviter d'afficher 2x la même commande
     if (popupShownForRef.current === data.id) return;
     popupShownForRef.current = data.id;
 
     setOrder(data);
     setShowPopup(true);
 
-    // Journaliser
     console.log("🛒 Nouvelle commande détectée:", data.numero_commande);
 
-    // Cacher automatiquement après 20 secondes
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
       setShowPopup(false);
     }, 20000);
   };
 
-  // Vérifier le sessionStorage (envoyé par le panier)
-  const checkSessionStorage = () => {
-    try {
-      const pending = sessionStorage.getItem("taitai_pending_order");
-      if (pending) {
-        const data: OrderData = JSON.parse(pending);
-        if (data.id && data.id !== lastOrderIdRef.current) {
-          lastOrderIdRef.current = data.id;
-          showOrderPopup(data);
-        }
-        sessionStorage.removeItem("taitai_pending_order");
-      }
-    } catch {
-      // Ignorer
-    }
-  };
-
-  // Écouter les messages BroadcastChannel (envoyés par le panier)
   useEffect(() => {
-    let channel: BroadcastChannel | null = null;
-    try {
-      channel = new BroadcastChannel("taitai_new_order");
-      channel.onmessage = (event: MessageEvent) => {
-        if (event.data?.type === "new_order" && event.data?.payload) {
-          const data: OrderData = event.data.payload;
-          if (data.id && data.id !== lastOrderIdRef.current) {
-            lastOrderIdRef.current = data.id;
-            showOrderPopup(data);
-          }
-        }
-      };
-    } catch (e) {
-      console.warn("[notif] BroadcastChannel non supporté", e);
-    }
-
-    return () => {
-      if (channel) channel.close();
-    };
-  }, []);
-
-  // Initialisation et polling
-  useEffect(() => {
-    // 1. Vérifier sessionStorage au montage
-    checkSessionStorage();
-
-    // 2. Récupérer la dernière commande connue
     const fetchLastOrderId = async () => {
       try {
         const { data } = await supabase
@@ -105,9 +56,9 @@ export default function OrderNotificationPopup() {
         console.error("[notif] Erreur chargement dernière commande:", err);
       }
     };
+
     fetchLastOrderId();
 
-    // 3. Polling toutes les 5 secondes (backup si BroadcastChannel rate un message)
     pollTimerRef.current = setInterval(async () => {
       try {
         const { data } = await supabase
@@ -119,7 +70,7 @@ export default function OrderNotificationPopup() {
 
         if (data && data.id !== lastOrderIdRef.current) {
           lastOrderIdRef.current = data.id;
-          showOrderPopup(data);
+          showOrderPopup(data as OrderData);
         }
       } catch (error) {
         console.error("[notif] Erreur polling:", error);
