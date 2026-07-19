@@ -14,6 +14,21 @@ const AppHeader: React.FC = () => {
   const [hasNewOrder, setHasNewOrder] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
+  const checkPendingOrders = async () => {
+    try {
+      const { data } = await supabase
+        .from("commandes")
+        .select("id")
+        .eq("statut", "En attente")
+        .limit(1)
+        .maybeSingle();
+
+      setHasNewOrder(Boolean(data?.id));
+    } catch (error) {
+      console.error("[header] Erreur vérification commandes en attente:", error);
+    }
+  };
+
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
       toggleSidebar();
@@ -22,29 +37,16 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  // Détecter les nouvelles commandes
+  // Détecter les commandes encore en attente
   useEffect(() => {
-    const channel = supabase
-      .channel("header-new-orders")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "commandes",
-        },
-        () => {
-          // Afficher le badge pendant 5 secondes
-          setHasNewOrder(true);
-          setTimeout(() => {
-            setHasNewOrder(false);
-          }, 5000);
-        }
-      )
-      .subscribe();
+    checkPendingOrders();
+
+    const interval = setInterval(() => {
+      checkPendingOrders();
+    }, 5000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, []);
 
@@ -131,12 +133,16 @@ const AppHeader: React.FC = () => {
           <div className="flex items-center gap-2 2xsm:gap-3">
             <ThemeToggleButton />
             <button
-              className="relative flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              className={`relative flex h-10 w-10 items-center justify-center rounded-lg transition ${
+                hasNewOrder
+                  ? "bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+              }`}
               title="Notifications"
             >
-              <Bell size={20} />
+              <Bell size={20} className={hasNewOrder ? "animate-pulse" : ""} />
               {hasNewOrder && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white animate-pulse">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-[10px] font-black text-white animate-pulse">
                   !
                 </span>
               )}

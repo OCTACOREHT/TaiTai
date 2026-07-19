@@ -24,6 +24,7 @@ export default function OrderNotificationPopup() {
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popupShownForRef = useRef<string | null>(null);
   const ORDER_POPUP_WINDOW_MS = 30_000;
+  const POPUP_HIDE_DELAY_MS = 30_000;
 
   const isRecentOrder = (createdAt: string) => {
     const createdAtTimestamp = new Date(createdAt).getTime();
@@ -43,7 +44,7 @@ export default function OrderNotificationPopup() {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
       setShowPopup(false);
-    }, 20000);
+    }, POPUP_HIDE_DELAY_MS);
   };
 
   useEffect(() => {
@@ -106,16 +107,16 @@ export default function OrderNotificationPopup() {
 
   return (
     <div className="fixed top-20 right-4 z-50 animate-slide-in">
-      <div className="w-[450px] rounded-2xl border-2 border-green-500 bg-white shadow-2xl">
+      <div className="w-[450px] rounded-2xl border-2 border-brand-500 bg-white shadow-2xl shadow-brand-500/20">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-green-100 bg-green-50 p-4">
+        <div className="flex items-center justify-between border-b border-brand-100 bg-brand-50 p-4">
           <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-green-600 animate-pulse" />
-            <h3 className="text-sm font-black text-green-800">🛒 NOUVELLE COMMANDE !</h3>
+            <Bell className="h-5 w-5 text-brand-600 animate-pulse" />
+            <h3 className="text-sm font-black text-brand-700">🛒 NOUVELLE COMMANDE !</h3>
           </div>
           <button
             onClick={() => setShowPopup(false)}
-            className="rounded-lg p-1 text-green-600 hover:bg-green-100"
+            className="rounded-lg p-1 text-brand-600 hover:bg-brand-100"
           >
             <X size={18} />
           </button>
@@ -124,14 +125,14 @@ export default function OrderNotificationPopup() {
         {/* Contenu */}
         <div className="max-h-[500px] overflow-y-auto p-4">
           {/* Numéro et total */}
-          <div className="mb-4 flex items-center justify-between rounded-xl bg-green-50 p-3">
+          <div className="mb-4 flex items-center justify-between rounded-xl bg-brand-50 p-3">
             <div>
               <p className="text-xs font-bold text-gray-600">Commande</p>
-              <p className="text-lg font-black text-green-600">#{order.numero_commande}</p>
+              <p className="text-lg font-black text-brand-600">#{order.numero_commande}</p>
             </div>
             <div className="text-right">
               <p className="text-xs font-bold text-gray-600">Total</p>
-              <p className="text-lg font-black text-green-600">{order.total} HTG</p>
+              <p className="text-lg font-black text-brand-600">{order.total} HTG</p>
             </div>
           </div>
 
@@ -179,7 +180,7 @@ export default function OrderNotificationPopup() {
         <div className="border-t border-gray-100 p-3">
           <button
             onClick={handleViewOrder}
-            className="w-full rounded-xl bg-green-500 py-3 text-sm font-black text-white transition hover:bg-green-600"
+            className="w-full rounded-xl bg-brand-500 py-3 text-sm font-black text-white transition hover:bg-brand-600"
           >
             Voir la commande
           </button>
