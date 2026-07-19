@@ -56,18 +56,13 @@ export default function NotificationDiagnostic() {
     }
   };
 
-  // Ne pas afficher en production
-  if (process.env.NODE_ENV === "production") {
-    return null;
-  }
-
   return (
     <div className="fixed bottom-4 left-4 z-50">
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className="rounded-lg bg-gray-800 px-4 py-2 text-xs font-bold text-white shadow-lg"
+        className="rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-lg animate-pulse"
       >
-        🔍 Diagnostic Supabase
+        🔍 TEST CONNEXION
       </button>
 
       {showDetails && (

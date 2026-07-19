@@ -64,82 +64,59 @@ export default function NotificationDropdown() {
     loadCriticalStocks();
   }, []);
 
-  // Système de polling pour détecter les nouvelles commandes (fonctionne tout le temps)
+  // Système de notification via BroadcastChannel (fonctionne en production)
   useEffect(() => {
-    let pollInterval: NodeJS.Timeout;
-    let currentOrderCount = pendingOrders.length;
-    let connectionErrorShown = false;
-
-    const checkNewOrders = async () => {
-      try {
-        // Test de connexion Supabase
-        const { data: testData, error: testError } = await supabase
-          .from("commandes")
-          .select("count")
-          .limit(1);
-
-        if (testError) {
-          if (!connectionErrorShown) {
-            console.error("❌ Erreur de connexion Supabase:", testError.message);
-            console.error("Vérifiez votre connexion internet et votre clé API Supabase");
-            connectionErrorShown = true;
-          }
-          return;
-        }
-
-        // Si on arrive ici, la connexion fonctionne
-        if (connectionErrorShown) {
-          console.log("✅ Connexion Supabase rétablie");
-          connectionErrorShown = false;
-        }
-
-        const { data } = await supabase
-          .from("commandes")
-          .select("id, numero_commande, client_nom, total, statut, created_at")
-          .eq("statut", "En attente")
-          .order("created_at", { ascending: false });
-
-        if (data && data.length > currentOrderCount) {
-          // Nouvelle commande détectée
-          const latestOrder = data[0];
+    // Créer un canal de communication
+    const channel = new BroadcastChannel("taitai_notifications");
+    
+    // Écouter les messages
+    channel.onmessage = (event) => {
+      if (event.data.type === "new_order") {
+        const orderData = event.data.payload;
+        console.log("🛒 Nouvelle commande reçue:", orderData);
+        
+        // Éviter les doublons
+        if (orderData.id !== lastOrderId) {
+          // Mettre à jour la liste
+          setPendingOrders(prev => [orderData, ...prev]);
           
-          // Éviter les doublons
-          if (latestOrder.id !== lastOrderId) {
-            console.log("🛒 Nouvelle commande détectée:", latestOrder.numero_commande);
-            
-            // Mettre à jour la liste
-            setPendingOrders(data);
-            currentOrderCount = data.length;
+          // Afficher la popup
+          setNewOrder(orderData);
+          setShowNewOrderPopup(true);
+          setLastOrderId(orderData.id);
 
-            // Afficher la popup
-            setNewOrder(latestOrder);
-            setShowNewOrderPopup(true);
-            setLastOrderId(latestOrder.id);
-
-            // Cacher automatiquement après 10 secondes
-            setTimeout(() => {
-              setShowNewOrderPopup(false);
-            }, 10000);
-          }
-        } else if (data) {
-          setPendingOrders(data);
-          currentOrderCount = data.length;
+          // Cacher automatiquement après 10 secondes
+          setTimeout(() => {
+            setShowNewOrderPopup(false);
+          }, 10000);
         }
-      } catch (error) {
-        console.error("❌ Erreur lors de la vérification des commandes:", error);
       }
     };
 
     // Vérifier immédiatement au chargement
-    checkNewOrders();
+    const checkExistingOrder = () => {
+      const existingOrder = localStorage.getItem("taitai_new_order");
+      if (existingOrder) {
+        try {
+          const orderData = JSON.parse(existingOrder);
+          if (orderData.id !== lastOrderId) {
+            setNewOrder(orderData);
+            setShowNewOrderPopup(true);
+            setLastOrderId(orderData.id);
+            setTimeout(() => {
+              setShowNewOrderPopup(false);
+            }, 10000);
+          }
+        } catch (error) {
+          console.error("Erreur:", error);
+        }
+      }
+    };
 
-    // Vérifier toutes les 5 secondes
-    pollInterval = setInterval(checkNewOrders, 5000);
+    checkExistingOrder();
 
     return () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
+      channel.close();
     };
   }, [lastOrderId]);
 
