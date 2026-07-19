@@ -38,39 +38,36 @@ export default function OrderNotificationPopup() {
 
     fetchLastOrder();
 
-    // Écouter les nouvelles commandes en temps réel
-    const channel = supabase
-      .channel("new-orders")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "commandes",
-        },
-        (payload) => {
-          const orderData = payload.new as OrderData;
-          
-          // Éviter les doublons
-          if (orderData.id === lastOrderId) return;
+    // Vérifier les nouvelles commandes toutes les 5 secondes
+    const pollInterval = setInterval(async () => {
+      try {
+        const { data } = await supabase
+          .from("commandes")
+          .select("id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, total, payment_method, created_at")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-          console.log("🛒 Nouvelle commande reçue:", orderData);
+        if (data && data.id !== lastOrderId) {
+          console.log("🛒 Nouvelle commande détectée:", data.numero_commande);
           
           // Afficher la popup
-          setOrder(orderData);
+          setOrder(data);
           setShowPopup(true);
-          setLastOrderId(orderData.id);
+          setLastOrderId(data.id);
 
           // Cacher automatiquement après 20 secondes
           setTimeout(() => {
             setShowPopup(false);
           }, 20000);
         }
-      )
-      .subscribe();
+      } catch (error) {
+        console.error("Erreur lors de la vérification:", error);
+      }
+    }, 5000); // Vérifier toutes les 5 secondes
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [lastOrderId]);
 
