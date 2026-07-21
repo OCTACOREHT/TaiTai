@@ -1,4 +1,5 @@
-"use client";
+
++"use client";
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SelectInput, TextInput } from "@/components/common/CmsShared";
@@ -75,6 +76,33 @@ export default function EquipePage() {
 
   const confirmResetPassword = () => {
     if (!resetTarget || !newPassword.trim()) return;
+    
+    // Handle owner password change
+    if (resetTarget.id === "owner-01") {
+      const session = getAdminSession();
+      if (session && session.user.id === "owner-01") {
+        const updatedSession = {
+          ...session,
+          user: {
+            ...session.user,
+            password: newPassword.trim(),
+          },
+        };
+        const remember = typeof window !== "undefined" && !!window.localStorage.getItem("taitai-admin-session-persistent");
+        if (remember) {
+          window.localStorage.setItem("taitai-admin-session-persistent", JSON.stringify(updatedSession));
+        } else {
+          window.sessionStorage.setItem("taitai-admin-session", JSON.stringify(updatedSession));
+        }
+      }
+      setResetTarget(null);
+      setNewPassword("");
+      setShowPassword(false);
+      alert("Mot de passe du propriétaire mis à jour.");
+      return;
+    }
+    
+    // Handle team member password change
     const updated = users.map((u) =>
       u.id === resetTarget.id ? { ...u, password: newPassword.trim() } : u
     );
@@ -184,6 +212,22 @@ export default function EquipePage() {
                   lastLoginAt: null,
                 }}
                 currentUserId={currentUserId}
+                onResetPassword={() => {
+                  setResetTarget({
+                    id: "owner-01",
+                    name: "TaïTaï Admin",
+                    email: "taitai@gmail.com",
+                    password: "",
+                    role: "super_admin",
+                    title: "Proprietaire",
+                    avatar: "/images/user/owner.jpg",
+                    bio: "",
+                    active: true,
+                    lastLoginAt: null,
+                  });
+                  setNewPassword("");
+                  setShowPassword(false);
+                }}
               />
               {users.map((user) => (
                 <TeamRow
@@ -308,12 +352,13 @@ function TeamRow({
   onResetPassword?: () => void;
 }) {
   const isFullAccess = user.role === "super_admin" || user.role === "admin";
+  const isCurrentUser = user.id === currentUserId;
 
   return (
     <tr className="transition hover:bg-gray-50/60 dark:hover:bg-white/5">
       <td className="px-5 py-4">
         <p className="font-semibold text-gray-900 dark:text-white/90">{user.name}</p>
-        {user.id === currentUserId ? <p className="mt-1 text-xs font-bold text-brand-500">Session actuelle</p> : null}
+        {isCurrentUser ? <p className="mt-1 text-xs font-bold text-brand-500">Session actuelle</p> : null}
       </td>
       <td className="px-5 py-4 text-sm text-gray-600 dark:text-gray-400">{user.email}</td>
       <td className="px-5 py-4">
@@ -345,6 +390,8 @@ function TeamRow({
               <Trash2 className="h-4 w-4" />
               Supprimer
             </button>
+          ) : isCurrentUser ? (
+            <span className="text-xs font-bold text-gray-400">Compte actuel</span>
           ) : (
             <span className="text-xs font-bold text-gray-400">Protégé</span>
           )}
