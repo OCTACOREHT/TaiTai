@@ -228,11 +228,6 @@ CREATE POLICY "fournisseurs_admin_delete" ON public.fournisseurs
 -- ALTER PUBLICATION supabase_realtime ADD TABLE public.commandes;
 
 -- [7] SEED DATA
-INSERT INTO public.menu_items (nom, description, prix, categorie, temps_prep, best_seller, image_url) VALUES
-('Poulet grille TaiTai','Poulet marinÃ© 24h, Ã©pis maison, lÃ©gumes rÃ´tis.',1450,'Grillades',18,true,'https://images.unsplash.com/photo-1598103442097-8b74394b95c7?w=400'),
-('Bowl riz creole','Riz djondjon, bÅ“uf effilochÃ©, sauce citron piklÃ©.',1350,'Signature',12,true,'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400'),
-('Burger creole','Steak maison, pikliz doux, cheddar fumÃ©.',1290,'Burgers',14,true,'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400'),
-('Pates fruits de mer','Sauce crÃ¨me Ã©picÃ©e, crevettes, calamars, citron vert.',1890,'PÃ¢tes',16,false,'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400'),
-('Cheesecake coco','Base sablÃ©e, crÃ¨me coco, caramel salÃ©.',1000,'Desserts',8,false,'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400'),
-('Jus passion maison','Infusion passion, orange, citron vert.',550,'Boissons',4,true,'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400');
+-- Les données de test ont été supprimées pour la mise en production.
+-- Pour ajouter des données de test, décommenter et exécuter le script database/seed-data.sql
 

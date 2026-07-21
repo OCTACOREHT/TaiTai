@@ -47,7 +47,7 @@ ORDER BY table_name, ordinal_position;
 -- ============================================
 -- TEST (optionnel)
 -- ============================================
--- Ajouter des suppléments de test à un plat existant:
+-- Ajouter des suppléments à un plat existant:
 -- Remplacez 'VOTRE_PLAT_ID' par l'ID réel d'un plat
 
 -- UPDATE public.menu_items 
