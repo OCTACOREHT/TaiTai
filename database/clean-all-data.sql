@@ -10,7 +10,10 @@
 DELETE FROM public.commande_items;
 DELETE FROM public.commandes;
 
--- [2] Supprimer les avis clients
+-- [2] Supprimer les clients
+DELETE FROM public.clients;
+
+-- [3] Supprimer les avis clients
 DELETE FROM public.avis_clients;
 
 -- [3] Supprimer les promotions
@@ -45,7 +48,10 @@ SELECT
   'avis_clients' as table_name, COUNT(*) as count FROM public.avis_clients
 UNION ALL
 SELECT 
-  'fournisseurs' as table_name, COUNT(*) as count FROM public.fournisseurs;
+  'fournisseurs' as table_name, COUNT(*) as count FROM public.fournisseurs
+UNION ALL
+SELECT 
+  'clients' as table_name, COUNT(*) as count FROM public.clients;
 
 -- ============================================
 -- RÉSULTAT ATTENDU
