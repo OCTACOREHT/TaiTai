@@ -41,18 +41,18 @@ interface CmsContextValue extends CmsDataSnapshot {
   publishedStages: CmsStage[];
   alerts: CmsAlert[];
   canManageUsers: boolean;
-  signIn: (payload: SignInPayload) => AuthResponse;
+  signIn: (payload: SignInPayload) => Promise<AuthResponse>;
   signOut: () => void;
   saveArticle: (input: ArticleInput) => CmsArticle;
-  deleteArticle: (articleId: string) => void;
-  saveStage: (input: StageInput) => CmsStage;
-  deleteStage: (stageId: string) => void;
-  savePartner: (input: CmsPartner) => CmsPartner;
-  deletePartner: (partnerId: string) => void;
+  deleteArticle: (articleId: string) => Promise<void>;
+  saveStage: (input: StageInput) => Promise<CmsStage>;
+  deleteStage: (stageId: string) => Promise<void>;
+  savePartner: (input: CmsPartner) => Promise<CmsPartner>;
+  deletePartner: (partnerId: string) => Promise<void>;
   saveUser: (input: CmsUser) => Promise<SaveUserResponse>;
   deleteUser: (userId: string) => Promise<SaveUserResponse>;
-  updateHomePage: (patch: Partial<HomePageSettings>) => void;
-  updateSiteSettings: (patch: Partial<SiteSettings>) => void;
+  updateHomePage: (patch: Partial<HomePageSettings>) => Promise<void>;
+  updateSiteSettings: (patch: Partial<SiteSettings>) => Promise<void>;
   trackArticleView: (articleId: string) => void;
   trackArticleLinkClick: (articleId: string) => void;
   trackStageView: (stageId: string) => void;
@@ -230,8 +230,8 @@ function mapDbUser(row: Record<string, unknown>): CmsUser {
   };
 }
 
-function createCurrentUserFromSession() {
-  const session = getAdminSession();
+async function createCurrentUserFromSession() {
+  const session = await getAdminSession();
   if (!session?.user) {
     return null;
   }
@@ -256,8 +256,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const validateSession = async () => {
-      const sessionUser = createCurrentUserFromSession();
-      const token = getAdminToken();
+      const sessionUser = await createCurrentUserFromSession();
+      const token = await getAdminToken();
 
       if (!sessionUser || !token) {
         clearAdminSession();
@@ -306,7 +306,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
 
     const loadArticles = async () => {
       try {
-        const token = getAdminToken();
+        const token = await getAdminToken();
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
         const needsArticles =
@@ -460,8 +460,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     [data.articles],
   );
 
-  const signIn = ({ email }: SignInPayload): AuthResponse => {
-    const sessionUser = createCurrentUserFromSession();
+  const signIn = async ({ email }: SignInPayload): Promise<AuthResponse> => {
+    const sessionUser = await createCurrentUserFromSession();
 
     if (!sessionUser || sessionUser.email.toLowerCase() !== email.trim().toLowerCase()) {
       return {
@@ -484,8 +484,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     }));
   };
 
-  const deleteArticle = (articleId: string) => {
-    const token = getAdminToken();
+  const deleteArticle = async (articleId: string) => {
+    const token = await getAdminToken();
 
     if (!token) {
       return;
@@ -519,9 +519,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
       publishedAt: input.status === "published" ? new Date().toISOString() : null,
     }) as CmsArticle;
 
-  const saveStage = (input: StageInput) =>
-    {
-      const token = getAdminToken();
+  const saveStage = async (input: StageInput) => {
+    const token = await getAdminToken();
       const nextStage = {
         ...input,
         slug: input.slug || "",
@@ -565,15 +564,15 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
       return nextStage;
     };
 
-  const deleteStage = (stageId: string) => {
-    const token = getAdminToken();
+  const deleteStage = async (stageId: string) => {
+    const token = await getAdminToken();
     if (!token) return;
     setData((prev) => ({ ...prev, stages: prev.stages.filter((stage) => stage.id !== stageId) }));
     void fetch(`/api/admin/stages/${stageId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
   };
 
-  const savePartner = (input: CmsPartner) => {
-    const token = getAdminToken();
+  const savePartner = async (input: CmsPartner) => {
+    const token = await getAdminToken();
     if (!token) return input;
     const payload = {
       nom: input.name,
@@ -590,15 +589,15 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     return input;
   };
 
-  const deletePartner = (partnerId: string) => {
-    const token = getAdminToken();
+  const deletePartner = async (partnerId: string) => {
+    const token = await getAdminToken();
     if (!token) return;
     setData((prev) => ({ ...prev, partners: prev.partners.filter((partner) => partner.id !== partnerId) }));
     void fetch(`/api/admin/partners/${partnerId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
   };
 
   const saveUser = async (input: CmsUser): Promise<SaveUserResponse> => {
-    const token = getAdminToken();
+    const token = await getAdminToken();
     if (!token) return { success: false, message: "Session admin absente." };
     
     const payload = { 
@@ -640,7 +639,7 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const deleteUser = async (userId: string): Promise<SaveUserResponse> => {
-    const token = getAdminToken();
+    const token = await getAdminToken();
     if (!token) return { success: false, message: "Session admin absente." };
     
     try {
@@ -661,8 +660,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const updateHomePage = (patch: Partial<HomePageSettings>) => {
-    const token = getAdminToken();
+  const updateHomePage = async (patch: Partial<HomePageSettings>) => {
+    const token = await getAdminToken();
     setData((prev) => {
       const next = { ...prev, homePage: { ...prev.homePage, ...patch } };
       if (token) {
@@ -702,8 +701,8 @@ export const CmsProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const updateSiteSettings = (patch: Partial<SiteSettings>) => {
-    const token = getAdminToken();
+  const updateSiteSettings = async (patch: Partial<SiteSettings>) => {
+    const token = await getAdminToken();
     setData((prev) => {
       const next = { ...prev, siteSettings: { ...prev.siteSettings, ...patch } };
       if (token) {

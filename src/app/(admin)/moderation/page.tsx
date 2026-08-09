@@ -5,6 +5,8 @@ import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { supabase } from "@/lib/supabase-client";
 import { CheckCircle2, XCircle, Loader2, MessageSquare, Star } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
 
 type Review = {
   id: string;
@@ -20,6 +22,16 @@ export default function ModerationPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "approved">("pending");
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
+  const [successModal, setSuccessModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Succès",
+    message: "",
+  });
 
   const loadReviews = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -38,7 +50,12 @@ export default function ModerationPage() {
     const { data, error } = await query;
 
     if (error) {
-      alert("Erreur lors du chargement des avis : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur lors du chargement des avis : " + error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
     } else {
       setReviews(data || []);
     }
@@ -62,9 +79,19 @@ export default function ModerationPage() {
     setUpdatingId(null);
 
     if (error) {
-      alert("Erreur lors de la mise à jour : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de mise à jour",
+        message: "Erreur lors de la mise à jour : " + error.message,
+        details: "Veuillez réessayer.",
+      });
     } else {
       await loadReviews(false);
+      setSuccessModal({
+        isOpen: true,
+        title: "Avis modéré",
+        message: active ? "L'avis a été approuvé et est maintenant visible." : "L'avis a été désapprouvé.",
+      });
     }
   };
 
@@ -80,9 +107,19 @@ export default function ModerationPage() {
     setUpdatingId(null);
 
     if (error) {
-      alert("Erreur lors de la suppression : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de suppression",
+        message: "Erreur lors de la suppression : " + error.message,
+        details: "Veuillez réessayer.",
+      });
     } else {
       await loadReviews(false);
+      setSuccessModal({
+        isOpen: true,
+        title: "Avis supprimé",
+        message: "L'avis a été supprimé définitivement.",
+      });
     }
   };
 
@@ -91,6 +128,20 @@ export default function ModerationPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal((prev) => ({ ...prev, isOpen: false }))}
+        title={successModal.title}
+        message={successModal.message}
+        details={successModal.details}
+      />
       <PageBreadCrumb pageTitle="Modération des avis" />
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">

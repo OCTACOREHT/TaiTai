@@ -1,7 +1,7 @@
 "use client";
 
 import { canAccessAdminPath, getDefaultAdminPath } from "@/lib/admin-access";
-import { setAdminSession } from "@/lib/admin-auth";
+import { setAdminSession, verifyAdminPassword } from "@/lib/admin-auth";
 import { getStoredTeamUsers } from "@/lib/admin-team";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -27,30 +27,46 @@ export default function SignInForm() {
     setSubmitting(true);
 
     const normalizedEmail = email.trim().toLowerCase();
-    const ownerUser = {
-      id: "owner-01",
-      name: "Ta\u00efta\u00ef Admin",
-      email: normalizedEmail,
-      password: "",
-      role: "super_admin" as const,
-      title: "Proprietaire",
-      avatar: "/images/user/owner.jpg",
-      bio: "Gestionnaire principal Ta\u00efta\u00ef",
-      active: true,
-      lastLoginAt: new Date().toISOString(),
-    };
+    
+    // Vérifier si c'est l'admin principal
+    if (normalizedEmail === "taitai@gmail.com") {
+      const isValid = await verifyAdminPassword(normalizedEmail, password);
+      
+      if (isValid) {
+        const ownerUser = {
+          id: "owner-01",
+          name: "TaïTaï Admin",
+          email: normalizedEmail,
+          password: password,
+          role: "super_admin" as const,
+          title: "Proprietaire",
+          avatar: "/images/user/owner.jpg",
+          bio: "Gestionnaire principal TaïTaï",
+          active: true,
+          lastLoginAt: new Date().toISOString(),
+        };
+
+        const destination = canAccessAdminPath(nextPath, ownerUser.role)
+          ? nextPath
+          : getDefaultAdminPath(ownerUser.role);
+
+        setAdminSession({ token: "taitai-session-active", user: ownerUser }, remember);
+        window.location.href = destination;
+        return;
+      }
+    }
+    
+    // Vérifier les membres de l'équipe
     const teamUser = getStoredTeamUsers().find(
       (user) => user.active && user.email.toLowerCase() === normalizedEmail && user.password === password,
     );
-    const authenticatedUser =
-      normalizedEmail === "taitai@gmail.com" && password === "1234" ? ownerUser : teamUser || null;
 
-    if (authenticatedUser) {
-      const destination = canAccessAdminPath(nextPath, authenticatedUser.role)
+    if (teamUser) {
+      const destination = canAccessAdminPath(nextPath, teamUser.role)
         ? nextPath
-        : getDefaultAdminPath(authenticatedUser.role);
+        : getDefaultAdminPath(teamUser.role);
 
-      setAdminSession({ token: "taitai-session-active", user: authenticatedUser }, remember);
+      setAdminSession({ token: "taitai-session-active", user: teamUser }, remember);
       window.location.href = destination;
       return;
     }
@@ -67,14 +83,14 @@ export default function SignInForm() {
         <div className="mb-8 flex justify-center">
           <Image
             src="/images/logo/tailogo.png"
-            alt="Ta\u00efta\u00ef"
+            alt="TaïTaï"
             width={180}
             height={72}
             priority
             className="h-auto w-44 object-contain"
           />
         </div>
-        <h1 className="sr-only">Connexion Ta\u00efta\u00ef</h1>
+        <h1 className="sr-only">Connexion TaïTaï</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

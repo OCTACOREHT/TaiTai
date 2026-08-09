@@ -52,9 +52,18 @@ const AppSidebar: React.FC = () => {
   const [user, setUser] = useState<CmsUser | null>(null);
 
   useEffect(() => {
-    const session = getAdminSession();
-    setRole(session?.user.role || null);
-    setUser(session?.user || null);
+    const loadSession = async () => {
+      try {
+        const session = await getAdminSession();
+        setRole(session?.user?.role || null);
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error("Erreur lors du chargement de la session:", error);
+        setRole(null);
+        setUser(null);
+      }
+    };
+    loadSession();
   }, [pathname]);
 
   const handleLogout = () => {

@@ -8,6 +8,8 @@ import { exportToExcel } from "@/lib/export-excel";
 import { supabase } from "@/lib/supabase-client";
 import { Download, Loader2, MapPin, Phone, PlusIcon, RefreshCcw, Store, Upload } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
 
 type Supplier = {
   id: string;
@@ -30,6 +32,16 @@ export default function FournisseursPage() {
     photo_url: null as string | null,
   });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
+  const [successModal, setSuccessModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Succès",
+    message: "",
+  });
 
   const loadSuppliers = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -39,7 +51,12 @@ export default function FournisseursPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      alert("Erreur lors du chargement des fournisseurs : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur lors du chargement des fournisseurs : " + error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
     } else {
       setSuppliers(data || []);
     }
@@ -66,11 +83,21 @@ export default function FournisseursPage() {
     });
 
     if (error) {
-      alert("Erreur lors de l'ajout du fournisseur : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur d'ajout",
+        message: "Erreur lors de l'ajout du fournisseur : " + error.message,
+        details: "Veuillez réessayer.",
+      });
     } else {
       setDraft({ nom: "", telephone: "", adresse: "", photo_url: null });
       setIsModalOpen(false);
       await loadSuppliers();
+      setSuccessModal({
+        isOpen: true,
+        title: "Fournisseur ajouté",
+        message: "Le fournisseur a été ajouté avec succès.",
+      });
     }
 
     setSaving(false);
@@ -78,7 +105,12 @@ export default function FournisseursPage() {
 
   const exportSuppliers = () => {
     if (suppliers.length === 0) {
-      alert("Aucun fournisseur a exporter.");
+      setErrorModal({
+        isOpen: true,
+        title: "Export impossible",
+        message: "Aucun fournisseur à exporter.",
+        details: "La liste des fournisseurs est vide.",
+      });
       return;
     }
 
@@ -98,6 +130,20 @@ export default function FournisseursPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal((prev) => ({ ...prev, isOpen: false }))}
+        title={successModal.title}
+        message={successModal.message}
+        details={successModal.details}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Fournisseurs" />
         <div className="flex flex-wrap gap-3">
@@ -250,7 +296,12 @@ export default function FournisseursPage() {
                       const file = e.target.files?.[0];
                       if (!file) return;
                       if (file.size > 5 * 1024 * 1024) {
-                        alert("Fichier trop volumineux. La taille maximale est de 5 MB.");
+                        setErrorModal({
+                          isOpen: true,
+                          title: "Fichier trop volumineux",
+                          message: "Fichier trop volumineux. La taille maximale est de 5 MB.",
+                          details: "Compressez l'image ou choisissez un fichier plus petit.",
+                        });
                         return;
                       }
                       setUploadingPhoto(true);
@@ -266,7 +317,12 @@ export default function FournisseursPage() {
                           .getPublicUrl(fileName);
                         setDraft((current) => ({ ...current, photo_url: publicUrl }));
                       } catch (err) {
-                        alert("Erreur lors de l'upload: " + (err instanceof Error ? err.message : "Erreur inconnue"));
+                        setErrorModal({
+                          isOpen: true,
+                          title: "Erreur d'upload",
+                          message: "Erreur lors de l'upload: " + (err instanceof Error ? err.message : "Erreur inconnue"),
+                          details: "Impossible d'ajouter la photo du fournisseur.",
+                        });
                       } finally {
                         setUploadingPhoto(false);
                       }

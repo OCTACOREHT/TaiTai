@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase-client";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import { useDeliveryZones } from "@/hooks/useDeliveryZones";
 import {
   ArrowRight,
   CheckCircle2,
@@ -123,36 +124,25 @@ export default function PanierPage() {
     }
   }, [user]);
 
-  // Charger les zones de livraison depuis Supabase
-  useEffect(() => {
-    async function loadDeliveryZones() {
-      try {
-        const { data, error } = await supabase
-          .from("delivery_zones")
-          .select("*")
-          .eq("active", true)
-          .order("departement", { ascending: true })
-          .order("frais", { ascending: true });
+  // Utiliser le hook pour charger les zones de livraison avec synchronisation Realtime
+  const { zones: deliveryZones, loading: zonesLoading, lastUpdate } = useDeliveryZones();
 
-        if (!error && data && data.length > 0) {
-          const zones = data.map((z) => ({
-            zone: z.zone,
-            frais: z.frais,
-            label: z.label,
-          }));
-          setZonesLivraison(zones);
-        } else {
-          // Fallback sur les valeurs par défaut
-          setZonesLivraison(ZONES_LIVRAISON_DEFAULT);
-        }
-      } catch (error) {
-        console.error("Failed to load delivery zones:", error);
-        setZonesLivraison(ZONES_LIVRAISON_DEFAULT);
+  // Mettre à jour les zones quand elles changent (utiliser lastUpdate comme déclencheur)
+  useEffect(() => {
+    if (deliveryZones.length > 0) {
+      setZonesLivraison(deliveryZones);
+    }
+  }, [deliveryZones, lastUpdate]);
+
+  // Réinitialiser la zone sélectionnée si elle n'existe plus dans les nouvelles zones
+  useEffect(() => {
+    if (formData.zone_livraison && deliveryZones.length > 0) {
+      const zoneExists = deliveryZones.some((z) => z.zone === formData.zone_livraison);
+      if (!zoneExists) {
+        setFormData((prev) => ({ ...prev, zone_livraison: "" }));
       }
     }
-
-    loadDeliveryZones();
-  }, []);
+  }, [deliveryZones, formData.zone_livraison]);
 
   useEffect(() => {
     const interval = window.setInterval(() => setCurrentTime(new Date()), 60 * 1000);

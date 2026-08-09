@@ -16,7 +16,7 @@ export const metadata = {
     default: "TaïTaï - Fast Food Créole | Livraison à Port-au-Prince",
     template: "%s | TaïTaï Fast Food"
   },
-  description: "TaïTaï - Le meilleur fast food créole de Port-au-Prince. Commandez en ligne : poulet grillé, burgers créoles, pâtes, desserts. Livraison rapide dans tout l'Ouest. Goûtez l'authenticité de la cuisine haïtienne !",
+  description: "TaïTaï - Le meilleur fast food créole de Port-au-Prince. Commandez en ligne : poulet grillé, burgers créoles, pâtes, déjeuners. Livraison rapide dans tout l'Ouest. Goûtez l'authenticité de la cuisine haïtienne !",
   keywords: ["taitaï", "taitai", "fast food", "créole", "haïtien", "Port-au-Prince", "livraison", "poulet grillé", "burger créole", "riz", "commande en ligne", "restaurant haïtien"],
   authors: [{ name: "TaïTaï Restaurant" }],
   creator: "TaïTaï",

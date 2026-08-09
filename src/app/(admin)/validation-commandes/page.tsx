@@ -51,7 +51,12 @@ export default function ValidationCommandesPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      alert("Erreur lors du chargement des commandes : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur lors du chargement des commandes : " + error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
       setOrders([]);
     } else {
       setOrders((data || []) as PendingOrder[]);
@@ -110,7 +115,12 @@ export default function ValidationCommandesPage() {
 
     const payload = await response.json();
     if (payload.emailError) {
-      alert("Commande mise a jour, mais email non envoye : " + payload.emailError);
+      setErrorModal({
+        isOpen: true,
+        title: "Email non envoyé",
+        message: "Commande mise à jour, mais email non envoyé : " + payload.emailError,
+        details: "Le statut a été modifié, mais le client n'a pas reçu d'email.",
+      });
     }
 
     await loadOrders();

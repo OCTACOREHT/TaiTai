@@ -117,6 +117,11 @@ function ReceiptModal({
   const [items, setItems] = useState<OrderItem[]>([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -198,11 +203,16 @@ function ReceiptModal({
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (error) {
-      alert("Erreur : " + (error as Error).message);
-    } finally {
-      setDownloadingPdf(false);
-    }
+      } catch (error) {
+        setErrorModal({
+          isOpen: true,
+          title: "Erreur de téléchargement",
+          message: "Erreur : " + (error as Error).message,
+          details: "Impossible de télécharger le PDF du reçu.",
+        });
+      } finally {
+        setDownloadingPdf(false);
+      }
   };
 
   return (
@@ -211,6 +221,13 @@ function ReceiptModal({
       onClick={handleOverlayClick}
       className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
     >
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       <div className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[32px] bg-white shadow-2xl dark:bg-gray-900">
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-4 dark:border-gray-800 sm:px-8">
           <div>
@@ -374,7 +391,12 @@ export default function RechercheRecuPage() {
       setSentIds((current) => new Set(current).add(order.id));
       setToast(`Reçu envoyé à ${payload.recipientEmail || order.resolvedEmail}`);
     } catch (error) {
-      alert("Erreur : " + (error as Error).message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur d'envoi",
+        message: "Erreur : " + (error as Error).message,
+        details: "Impossible d'envoyer le reçu au client.",
+      });
     } finally {
       setSendingId(null);
     }
@@ -594,7 +616,12 @@ export default function RechercheRecuPage() {
                                 link.remove();
                                 window.URL.revokeObjectURL(url);
                               } catch (error) {
-                                alert("Erreur : " + (error as Error).message);
+                                setErrorModal({
+                                  isOpen: true,
+                                  title: "Erreur de téléchargement",
+                                  message: "Erreur : " + (error as Error).message,
+                                  details: "Impossible de télécharger le PDF.",
+                                });
                               }
                             })();
                           }}

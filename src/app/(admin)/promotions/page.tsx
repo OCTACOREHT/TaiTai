@@ -6,6 +6,8 @@ import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { supabase } from "@/lib/supabase-client";
 import { Loader2, PlusIcon, Tag, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
 
 type MenuOption = {
   id: string;
@@ -45,6 +47,16 @@ export default function PromotionsPage() {
   const [draft, setDraft] = useState(emptyDraft);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
+  const [successModal, setSuccessModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Succès",
+    message: "",
+  });
 
   const menuById = useMemo(
     () => new Map(menuItems.map((item) => [item.id, item.nom])),
@@ -67,13 +79,23 @@ export default function PromotionsPage() {
     ]);
 
     if (menuResult.error) {
-      alert("Erreur menu : " + menuResult.error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur menu : " + menuResult.error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
     } else {
       setMenuItems(menuResult.data || []);
     }
 
     if (promoResult.error) {
-      alert("Erreur promotions : " + promoResult.error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur promotions : " + promoResult.error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
     } else {
       setPromotions((promoResult.data || []) as Promotion[]);
     }
@@ -93,17 +115,29 @@ export default function PromotionsPage() {
     const discountValue = Number(draft.discount_value);
 
     if (!draft.title.trim() || !Number.isFinite(discountValue) || discountValue <= 0) {
-      alert("Veuillez saisir un titre et une reduction valide.");
+      setErrorModal({
+        isOpen: true,
+        title: "Informations manquantes",
+        message: "Veuillez saisir un titre et une réduction valide.",
+      });
       return;
     }
 
     if (draft.scope === "item" && !draft.menu_item_id) {
-      alert("Veuillez choisir le plat concerne.");
+      setErrorModal({
+        isOpen: true,
+        title: "Plat non sélectionné",
+        message: "Veuillez choisir le plat concerné.",
+      });
       return;
     }
 
     if (draft.scope === "order" && !draft.code.trim()) {
-      alert("Veuillez saisir un code promo.");
+      setErrorModal({
+        isOpen: true,
+        title: "Code manquant",
+        message: "Veuillez saisir un code promo.",
+      });
       return;
     }
 
@@ -125,12 +159,22 @@ export default function PromotionsPage() {
     setSaving(false);
 
     if (error) {
-      alert("Erreur lors de la creation : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de création",
+        message: "Erreur lors de la création : " + error.message,
+        details: "Veuillez réessayer.",
+      });
       return;
     }
 
     setPromotions((current) => [data as Promotion, ...current]);
     setDraft(emptyDraft);
+    setSuccessModal({
+      isOpen: true,
+      title: "Promotion créée",
+      message: "La promotion a été créée avec succès.",
+    });
   };
 
   const togglePromotion = async (promotion: Promotion) => {
@@ -145,10 +189,21 @@ export default function PromotionsPage() {
       .eq("id", promotion.id);
 
     if (error) {
-      alert("Erreur de mise a jour : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de mise à jour",
+        message: "Erreur de mise à jour : " + error.message,
+        details: "Veuillez réessayer.",
+      });
       setPromotions((current) =>
         current.map((item) => (item.id === promotion.id ? promotion : item)),
       );
+    } else {
+      setSuccessModal({
+        isOpen: true,
+        title: "Promotion modifiée",
+        message: nextActive ? "La promotion a été activée." : "La promotion a été désactivée.",
+      });
     }
   };
 
@@ -162,13 +217,38 @@ export default function PromotionsPage() {
     const { error } = await supabase.from("promotions").delete().eq("id", promotion.id);
 
     if (error) {
-      alert("Erreur de suppression : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de suppression",
+        message: "Erreur de suppression : " + error.message,
+        details: "Veuillez réessayer.",
+      });
       setPromotions(previousPromotions);
+    } else {
+      setSuccessModal({
+        isOpen: true,
+        title: "Promotion supprimée",
+        message: "La promotion a été supprimée définitivement.",
+      });
     }
   };
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal((prev) => ({ ...prev, isOpen: false }))}
+        title={successModal.title}
+        message={successModal.message}
+        details={successModal.details}
+      />
       <PageBreadCrumb pageTitle="Promotions" />
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">

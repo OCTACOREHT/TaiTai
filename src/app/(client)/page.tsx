@@ -80,7 +80,7 @@ export default function ClientHomePage() {
   // Structured data pour le SEO
   const restaurantSchema = {
     name: "TaïTaï Fast Food",
-    description: "Le meilleur fast food créole de Port-au-Prince. Spécialités haïtiennes : poulet grillé, burgers créoles, pâtes, desserts.",
+    description: "Le meilleur fast food créole de Port-au-Prince. Spécialités haïtiennes : poulet grillé, burgers créoles, pâtes, déjeuners.",
     image: "/images/og-image.jpg",
     servesCuisine: ["Créole", "Haïtienne", "Fast Food"],
     priceRange: "$$",

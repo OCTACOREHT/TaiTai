@@ -13,10 +13,20 @@ export default function UserDropdown() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<CmsUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const session = getAdminSession();
-    if (session?.user) setUser(session.user);
+    const loadSession = async () => {
+      try {
+        const session = await getAdminSession();
+        if (session?.user) setUser(session.user);
+      } catch (error) {
+        console.error("Erreur lors du chargement de la session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadSession();
   }, []);
 
   const toggleDropdown = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -34,12 +44,16 @@ export default function UserDropdown() {
   const displayName = user?.name ?? "Utilisateur";
   const displayEmail = user?.email ?? "";
   const displayRole = user?.role ? (roleLabels[user.role] ?? user.role) : "";
-  const initials = displayName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = loading
+    ? "..."
+    : user?.name
+      ? user.name
+          .split(" ")
+          .map((w) => w[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase()
+      : "??";
 
   return (
     <div className="relative">

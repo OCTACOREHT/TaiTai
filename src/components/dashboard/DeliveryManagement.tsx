@@ -78,6 +78,12 @@ export function DeliveryManagement() {
 
   const handleUpdateZone = async (id: string, updates: Partial<DeliveryZone>) => {
     try {
+      // Si le prix change, mettre à jour le label automatiquement
+      const zoneToUpdate = zones.find((z) => z.id === id);
+      if (zoneToUpdate && updates.frais !== undefined && updates.frais !== zoneToUpdate.frais) {
+        updates.label = `${zoneToUpdate.zone} - ${updates.frais} HTG`;
+      }
+
       const { error } = await supabase
         .from("delivery_zones")
         .update(updates)
@@ -92,13 +98,6 @@ export function DeliveryManagement() {
       setZones((current) =>
         current.map((zone) => {
           if (zone.id !== id) return zone;
-          
-          // Si le prix a changé, mettre à jour le label automatiquement
-          if (updates.frais !== undefined && updates.frais !== zone.frais) {
-            const newLabel = `${zone.zone} - ${updates.frais} HTG`;
-            return { ...zone, ...updates, label: newLabel };
-          }
-          
           return { ...zone, ...updates };
         })
       );

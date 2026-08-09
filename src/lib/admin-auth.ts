@@ -1,4 +1,5 @@
 import { CmsUser } from "@/types/cms";
+import { getAdminPassword } from "./admin-passwords";
 
 const ADMIN_TOKEN_KEY = "taitai-admin-token";
 const ADMIN_SESSION_KEY = "taitai-admin-session";
@@ -16,7 +17,7 @@ function createOwnerSession(token = "taitai-session-active"): StoredAdminSession
       id: "owner-01",
       name: "TaïTaï Admin",
       email: "taitai@gmail.com",
-      password: "",
+      password: "taitai2024", // Mot de passe par défaut
       role: "super_admin",
       title: "Proprietaire",
       avatar: "/images/user/owner.jpg",
@@ -33,12 +34,13 @@ function repairOwnerSession(token = "taitai-session-active") {
   return session;
 }
 
-export function getAdminToken() {
-  return getAdminSession()?.token || null;
+export async function getAdminToken(): Promise<string | null> {
+  const session = await getAdminSession();
+  return session?.token || null;
 }
 
-export function setAdminToken(token: string) {
-  const session = getAdminSession();
+export async function setAdminToken(token: string) {
+  const session = await getAdminSession();
   if (!session) {
     return;
   }
@@ -50,7 +52,18 @@ export function clearAdminToken() {
   clearAdminSession();
 }
 
-export function getAdminSession(): StoredAdminSession | null {
+export async function verifyAdminPassword(email: string, password: string): Promise<boolean> {
+  // Vérifier si c'est l'admin principal
+  if (email === "taitai@gmail.com") {
+    const adminPassword = await getAdminPassword("owner-01");
+    if (adminPassword && password === adminPassword.password_hash) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export async function getAdminSession(): Promise<StoredAdminSession | null> {
   if (typeof window === "undefined") {
     return null;
   }
@@ -88,6 +101,14 @@ export function getAdminSession(): StoredAdminSession | null {
       };
       setAdminSession(repairedSession, true);
       return repairedSession;
+    }
+
+    // Charger le mot de passe depuis la base de données pour l'owner
+    if (session?.user?.id === "owner-01") {
+      const dbPassword = await getAdminPassword("owner-01");
+      if (dbPassword) {
+        session.user.password = dbPassword.password_hash;
+      }
     }
 
     return session;

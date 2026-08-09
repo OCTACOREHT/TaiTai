@@ -1,12 +1,15 @@
 
-+"use client";
+"use client";
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SelectInput, TextInput } from "@/components/common/CmsShared";
 import { createTeamUser, getStoredTeamUsers, roleLabels, saveStoredTeamUsers, type StoredTeamUser } from "@/lib/admin-team";
 import { getAdminSession } from "@/lib/admin-auth";
+import { updateAdminPassword } from "@/lib/admin-passwords";
 import { CheckCircle2, KeyRound, ShieldCheck, Trash2, UserPlus, UsersRound, X, Edit3 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
 
 const emptyDraft = {
   name: "",
@@ -23,10 +26,23 @@ export default function EquipePage() {
   const [resetTarget, setResetTarget] = useState<StoredTeamUser | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
+  const [successModal, setSuccessModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Succès",
+    message: "",
+  });
 
   useEffect(() => {
-    setUsers(getStoredTeamUsers());
-    setCurrentUserId(getAdminSession()?.user?.id || null);
+    const loadSession = async () => {
+      const session = await getAdminSession();
+      setCurrentUserId(session?.user?.id || null);
+    };
+    loadSession();
   }, []);
 
   const metrics = useMemo(
@@ -51,7 +67,12 @@ export default function EquipePage() {
     const password = draft.password.trim();
 
     if (!name || !email || !password) {
-      alert("Veuillez remplir le nom, l'email et le mot de passe.");
+      setErrorModal({
+        isOpen: true,
+        title: "Champs manquants",
+        message: "Veuillez remplir le nom, l'email et le mot de passe.",
+        details: "Tous les champs sont obligatoires pour créer un compte.",
+      });
       return;
     }
 
@@ -59,7 +80,12 @@ export default function EquipePage() {
       email === "taitai@gmail.com" || users.some((user) => user.email.toLowerCase() === email);
 
     if (emailAlreadyUsed) {
-      alert("Cet email est deja utilise par un compte admin.");
+      setErrorModal({
+        isOpen: true,
+        title: "Email déjà utilisé",
+        message: "Cet email est déjà utilisé par un compte admin.",
+        details: "Veuillez utiliser une adresse email différente.",
+      });
       return;
     }
 
@@ -74,12 +100,27 @@ export default function EquipePage() {
     setDeleteTarget(null);
   };
 
-  const confirmResetPassword = () => {
+  const confirmResetPassword = async () => {
     if (!resetTarget || !newPassword.trim()) return;
     
     // Handle owner password change
     if (resetTarget.id === "owner-01") {
-      const session = getAdminSession();
+      const session = await getAdminSession();
+      
+      // Sauvegarder dans la base de données
+      const saved = await updateAdminPassword("owner-01", newPassword.trim());
+      
+      if (!saved) {
+        setErrorModal({
+          isOpen: true,
+          title: "Erreur",
+          message: "Impossible de sauvegarder le mot de passe dans la base de données.",
+          details: "Veuillez réessayer ou contacter le support.",
+        });
+        return;
+      }
+      
+      // Mettre à jour la session locale
       if (session && session.user.id === "owner-01") {
         const updatedSession = {
           ...session,
@@ -98,7 +139,12 @@ export default function EquipePage() {
       setResetTarget(null);
       setNewPassword("");
       setShowPassword(false);
-      alert("Mot de passe du propriétaire mis à jour.");
+      setSuccessModal({
+        isOpen: true,
+        title: "Mot de passe mis à jour",
+        message: "Le mot de passe de l'administrateur principal a été modifié avec succès.",
+        details: "Utilisez le nouveau mot de passe pour vous connecter.",
+      });
       return;
     }
     
@@ -110,10 +156,30 @@ export default function EquipePage() {
     setResetTarget(null);
     setNewPassword("");
     setShowPassword(false);
+    setSuccessModal({
+      isOpen: true,
+      title: "Mot de passe mis à jour",
+      message: "Le mot de passe a été modifié avec succès.",
+      details: "La personne pourra se connecter immédiatement avec ce mot de passe.",
+    });
   };
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal((prev) => ({ ...prev, isOpen: false }))}
+        title={successModal.title}
+        message={successModal.message}
+        details={successModal.details}
+      />
       <PageBreadCrumb pageTitle="Equipe" />
 
       <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
@@ -376,16 +442,6 @@ function TeamRow({
       </td>
       <td className="px-5 py-4">
         <div className="flex items-center justify-end gap-2">
-          {onResetPassword && (
-            <button
-              type="button"
-              onClick={onResetPassword}
-              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-3 text-sm font-bold text-amber-600 transition hover:bg-amber-100"
-            >
-              <KeyRound className="h-4 w-4" />
-              Mot de passe
-            </button>
-          )}
           {onDelete ? (
             <button
               type="button"
@@ -395,7 +451,7 @@ function TeamRow({
               <Trash2 className="h-4 w-4" />
               Supprimer
             </button>
-          ) : isCurrentUser && user.role === "super_admin" ? (
+          ) : isCurrentUser && user.role === "super_admin" && onResetPassword ? (
             <button
               type="button"
               onClick={onResetPassword}
@@ -404,6 +460,15 @@ function TeamRow({
             >
               <Edit3 className="h-4 w-4" />
               Modifier
+            </button>
+          ) : onResetPassword ? (
+            <button
+              type="button"
+              onClick={onResetPassword}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-amber-50 px-3 text-sm font-bold text-amber-600 transition hover:bg-amber-100"
+            >
+              <KeyRound className="h-4 w-4" />
+              Mot de passe
             </button>
           ) : isCurrentUser ? (
             <span className="text-xs font-bold text-gray-400">Compte actuel</span>

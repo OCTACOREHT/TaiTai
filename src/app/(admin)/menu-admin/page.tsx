@@ -16,9 +16,10 @@ import { supabase } from "@/lib/supabase-client";
 import { AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { ErrorModal } from "@/components/ui/ErrorModal";
+import { SuccessModal } from "@/components/ui/SuccessModal";
 import { ImagePlus, Loader2, PlusIcon, X } from "lucide-react";
 
-const categories = ["Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
+const categories = ["Grillades", "Signature", "Burgers", "Pâtes", "Déjeuner", "Boissons"];
 
 type MenuDraft = {
   nom: string;
@@ -84,6 +85,11 @@ export default function MenuPage() {
     title: "Erreur",
     message: "",
   });
+  const [successModal, setSuccessModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Succès",
+    message: "",
+  });
 
   const loadItems = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -139,7 +145,12 @@ export default function MenuPage() {
     }
 
     if (!file.type.startsWith("image/")) {
-      alert("Veuillez choisir une image.");
+      setErrorModal({
+        isOpen: true,
+        title: "Format invalide",
+        message: "Veuillez choisir une image.",
+        details: "Formats acceptés : JPG, PNG, WEBP.",
+      });
       event.target.value = "";
       return;
     }
@@ -214,14 +225,22 @@ export default function MenuPage() {
 
   const addSupplement = () => {
     if (!newSupplementNom.trim()) {
-      alert("Veuillez saisir un nom pour le supplément.");
+      setErrorModal({
+        isOpen: true,
+        title: "Nom manquant",
+        message: "Veuillez saisir un nom pour le supplément.",
+      });
       return;
     }
 
     // Si le prix est vide, considérer comme gratuit (0)
     const prix = newSupplementPrix === "" ? 0 : Number(newSupplementPrix);
     if (!Number.isFinite(prix) || prix < 0) {
-      alert("Le prix doit être un nombre positif ou zéro (0 = gratuit).");
+      setErrorModal({
+        isOpen: true,
+        title: "Prix invalide",
+        message: "Le prix doit être un nombre positif ou zéro (0 = gratuit).",
+      });
       return;
     }
 
@@ -265,7 +284,12 @@ export default function MenuPage() {
     const tempsPrep = Number(draft.temps_prep);
 
     if (!draft.nom.trim() || !Number.isFinite(prix) || prix <= 0) {
-      alert("Veuillez saisir au minimum un nom et un prix valide.");
+      setErrorModal({
+        isOpen: true,
+        title: "Informations manquantes",
+        message: "Veuillez saisir au minimum un nom et un prix valide.",
+        details: "Le nom du plat et le prix sont obligatoires.",
+      });
       return;
     }
 
@@ -302,7 +326,12 @@ export default function MenuPage() {
         : await query.insert(payload);
 
       if (error) {
-        alert(`Erreur lors de ${editingItem ? "la modification" : "l'ajout"} du plat : ` + error.message);
+        setErrorModal({
+          isOpen: true,
+          title: "Erreur d'enregistrement",
+          message: `Erreur lors de ${editingItem ? "la modification" : "l'ajout"} du plat : ` + error.message,
+          details: "Veuillez réessayer ou contacter le support si le problème persiste.",
+        });
         return;
       }
 
@@ -310,6 +339,12 @@ export default function MenuPage() {
       setIsFormModalOpen(false);
       setEditingItem(null);
       resetFormState();
+      setSuccessModal({
+        isOpen: true,
+        title: "Plat enregistré",
+        message: editingItem ? "Le plat a été modifié avec succès." : "Le plat a été ajouté avec succès.",
+        details: "Le plat est maintenant visible sur le site client.",
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erreur inconnue.";
       setErrorModal({
@@ -331,6 +366,13 @@ export default function MenuPage() {
         title={errorModal.title}
         message={errorModal.message}
         details={errorModal.details}
+      />
+      <SuccessModal
+        isOpen={successModal.isOpen}
+        onClose={() => setSuccessModal((prev) => ({ ...prev, isOpen: false }))}
+        title={successModal.title}
+        message={successModal.message}
+        details={successModal.details}
       />
       {(stockAlerts.lowStock > 0 || stockAlerts.outOfStock > 0) && (
         <div className="space-y-3">

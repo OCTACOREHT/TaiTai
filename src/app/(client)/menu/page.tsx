@@ -43,7 +43,7 @@ function MenuContent() {
   const [selectedItemForSupplements, setSelectedItemForSupplements] = useState<MenuItem | null>(null);
   const [selectedSupplements, setSelectedSupplements] = useState<Supplement[]>([]);
 
-  const categories = ["Tous", "Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
+  const categories = ["Tous", "Grillades", "Signature", "Burgers", "Pâtes", "Déjeuner", "Boissons"];
   const daysOfWeek = ["Tous", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
   const categoryLabels: Record<string, string> = {
     Tous: "Tout",
@@ -51,7 +51,7 @@ function MenuContent() {
     Signature: "Espesyal",
     Burgers: "Bègè",
     "Pâtes": "Pat",
-    Desserts: "Desè",
+    "Déjeuner": "Deje",
     Boissons: "Bwason",
   };
 

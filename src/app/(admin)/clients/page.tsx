@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase-client";
 import { Clock, Download, Loader2, Mail, Phone, RefreshCcw, ShoppingBag, Trophy, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
 
 type ClientAccount = {
   id: string;
@@ -34,6 +35,11 @@ const formatDateTime = (value?: string | null) => {
 export default function ClientsPage() {
   const [clients, setClients] = useState<ClientAccount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
 
   const loadClients = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -50,7 +56,12 @@ export default function ClientsPage() {
     ]);
 
     if (error) {
-      alert("Erreur lors du chargement des clients : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur lors du chargement des clients : " + error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
     } else {
       const stats = new Map<string, { order_count: number; total_spent: number }>();
 
@@ -100,7 +111,12 @@ export default function ClientsPage() {
 
   const exportClients = () => {
     if (clients.length === 0) {
-      alert("Aucun client a exporter.");
+      setErrorModal({
+        isOpen: true,
+        title: "Export impossible",
+        message: "Aucun client à exporter.",
+        details: "La liste des clients est vide.",
+      });
       return;
     }
 
@@ -140,6 +156,13 @@ export default function ClientsPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Clients" />
         <div className="flex flex-wrap gap-3">

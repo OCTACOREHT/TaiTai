@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase-client";
 import { AlertTriangle, CheckCircle2, Loader2, Package, RefreshCcw, Save } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
 
 type StockDish = {
   id: string;
@@ -27,6 +28,11 @@ export default function StocksPage() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set());
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
 
   const loadStocks = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -39,7 +45,12 @@ export default function StocksPage() {
       .order("nom", { ascending: true });
 
     if (error) {
-      alert("Erreur lors du chargement du stock : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de chargement",
+        message: "Erreur lors du chargement du stock : " + error.message,
+        details: "Veuillez rafraîchir la page.",
+      });
     } else {
       const nextItems = (data || []).map((item) => ({ ...item, stock_quantity: item.stock_quantity ?? 0 }));
       setItems((current) => {
@@ -91,7 +102,12 @@ export default function StocksPage() {
     setSavingId(null);
 
     if (error) {
-      alert("Erreur lors de la mise a jour du stock : " + error.message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de mise à jour",
+        message: "Erreur lors de la mise à jour du stock : " + error.message,
+        details: "Veuillez réessayer.",
+      });
     } else {
       setDirtyIds((current) => {
         const next = new Set(current);
@@ -103,6 +119,13 @@ export default function StocksPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Stocks" />
         <button
