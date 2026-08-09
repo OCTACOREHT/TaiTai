@@ -5,6 +5,7 @@ import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { supabase } from "@/lib/supabase-client";
 import { CheckCircle2, Eye, Loader2, RefreshCcw, X, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
 
 type PendingOrderItem = {
   id: string;
@@ -35,6 +36,11 @@ export default function ValidationCommandesPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [previewOrder, setPreviewOrder] = useState<PendingOrder | null>(null);
   const [viewedProofs, setViewedProofs] = useState<Record<string, boolean>>({});
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
 
   const loadOrders = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -82,10 +88,28 @@ export default function ValidationCommandesPage() {
       body: JSON.stringify({ orderId, status, validated: true }),
     });
 
-    const payload = await response.json();
     if (!response.ok) {
-      alert("Impossible de mettre a jour la commande : " + (payload.error || "Erreur inconnue."));
-    } else if (payload.emailError) {
+      let errorMessage = "Impossible de mettre a jour la commande.";
+      try {
+        const payload = await response.json();
+        errorMessage = payload.error || errorMessage;
+      } catch {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
+      }
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de mise a jour",
+        message: errorMessage,
+        details: "La commande n'a pas pu etre modifiee.",
+      });
+      await loadOrders();
+      setUpdatingId(null);
+      return;
+    }
+
+    const payload = await response.json();
+    if (payload.emailError) {
       alert("Commande mise a jour, mais email non envoye : " + payload.emailError);
     }
 
@@ -103,6 +127,13 @@ export default function ValidationCommandesPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <PageBreadCrumb pageTitle="Validation commandes" />
         <button

@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
 
 interface OrderResult {
   id: string;
@@ -288,6 +289,11 @@ export default function RechercheRecuPage() {
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
   const [previewOrder, setPreviewOrder] = useState<OrderResult | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
 
   const loadAll = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -346,12 +352,25 @@ export default function RechercheRecuPage() {
         body: JSON.stringify({ orderId: order.id }),
       });
 
-      const payload = await response.json();
       if (!response.ok) {
-        alert("Erreur : " + (payload.error || "Impossible d'envoyer le reçu."));
+        let errorMessage = "Impossible d'envoyer le reçu.";
+        try {
+          const payload = await response.json();
+          errorMessage = payload.error || errorMessage;
+        } catch {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        }
+        setErrorModal({
+          isOpen: true,
+          title: "Erreur d'envoi",
+          message: errorMessage,
+          details: "Le reçu n'a pas pu être envoyé au client.",
+        });
         return;
       }
 
+      const payload = await response.json();
       setSentIds((current) => new Set(current).add(order.id));
       setToast(`Reçu envoyé à ${payload.recipientEmail || order.resolvedEmail}`);
     } catch (error) {
@@ -363,6 +382,13 @@ export default function RechercheRecuPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       <PageBreadCrumb pageTitle="Reçus clients" />
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}

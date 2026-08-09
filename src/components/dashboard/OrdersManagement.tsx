@@ -9,6 +9,7 @@ import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { useEffect, useState } from "react";
 import { OrdersTable } from "./OrdersTable";
 import { Toast } from "@/components/ui/toast/Toast";
+import { ErrorModal } from "@/components/ui/ErrorModal";
 import { supabase } from "@/lib/supabase-client";
 
 const cn = (...classes: Array<string | false | null | undefined>) =>
@@ -30,6 +31,11 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
   const [sendingReceiptOrderId, setSendingReceiptOrderId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [sentReceiptIds, setSentReceiptIds] = useState<string[]>([]);
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
 
   useEffect(() => {
     try {
@@ -116,15 +122,27 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
       body: JSON.stringify({ orderId, status: nextStatus }),
     });
 
-    const payload = await response.json();
-
     if (!response.ok) {
-      alert("Erreur lors de la mise a jour : " + (payload.error || "Statut non modifie."));
+      let errorMessage = "Statut non modifie.";
+      try {
+        const payload = await response.json();
+        errorMessage = payload.error || errorMessage;
+      } catch {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
+      }
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de mise a jour",
+        message: errorMessage,
+        details: "Le statut de la commande n'a pas pu etre modifie.",
+      });
       const data = await getCommandes();
       setOrders(data);
       return;
     }
 
+    const payload = await response.json();
     if (payload.emailError) {
       alert("Statut modifie, mais l'email n'a pas pu etre envoye : " + payload.emailError);
     }
@@ -140,13 +158,25 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
         body: JSON.stringify({ orderId: order.id }),
       });
 
-      const payload = await response.json();
-
       if (!response.ok) {
-        alert("Impossible d'envoyer le reçu : " + (payload.error || "Erreur inconnue."));
+        let errorMessage = "Impossible d'envoyer le reçu.";
+        try {
+          const payload = await response.json();
+          errorMessage = payload.error || errorMessage;
+        } catch {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
+        }
+        setErrorModal({
+          isOpen: true,
+          title: "Erreur d'envoi",
+          message: errorMessage,
+          details: "Le reçu n'a pas pu être envoyé au client.",
+        });
         return;
       }
 
+      const payload = await response.json();
       setToast(`Reçu envoyé à ${payload.recipientEmail || order.clientEmail || "client"}`);
       markReceiptAsSent(order.id);
     } catch (error) {
@@ -158,6 +188,13 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
       <div className="grid gap-4 md:grid-cols-5">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">

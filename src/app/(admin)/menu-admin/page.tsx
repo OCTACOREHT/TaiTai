@@ -15,6 +15,7 @@ import { MenuItem, getMenuItems } from "@/lib/data";
 import { supabase } from "@/lib/supabase-client";
 import { AlertTriangle, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { ErrorModal } from "@/components/ui/ErrorModal";
 import { ImagePlus, Loader2, PlusIcon, X } from "lucide-react";
 
 const categories = ["Grillades", "Signature", "Burgers", "Pâtes", "Desserts", "Boissons"];
@@ -78,6 +79,11 @@ export default function MenuPage() {
   const [stockAlerts, setStockAlerts] = useState<{ lowStock: number; outOfStock: number; items: any[] }>({ lowStock: 0, outOfStock: 0, items: [] });
   const [newSupplementNom, setNewSupplementNom] = useState("");
   const [newSupplementPrix, setNewSupplementPrix] = useState("");
+  const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; details?: string }>({
+    isOpen: false,
+    title: "Erreur",
+    message: "",
+  });
 
   const loadItems = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -190,12 +196,19 @@ export default function MenuPage() {
       body: formData,
     });
 
-    const payload = await response.json();
-
     if (!response.ok) {
-      throw new Error(payload.error || "Upload impossible.");
+      let errorMessage = "Upload impossible.";
+      try {
+        const payload = await response.json();
+        errorMessage = payload.error || errorMessage;
+      } catch {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
+      }
+      throw new Error(errorMessage);
     }
 
+    const payload = await response.json();
     return payload.url as string;
   };
 
@@ -299,7 +312,12 @@ export default function MenuPage() {
       resetFormState();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erreur inconnue.";
-      alert("Erreur lors de l'enregistrement : " + message);
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur d'enregistrement",
+        message: message,
+        details: "Impossible d'enregistrer le plat. Veuillez réessayer.",
+      });
     } finally {
       setSaving(false);
     }
@@ -307,6 +325,13 @@ export default function MenuPage() {
 
   return (
     <div className="space-y-6">
+      <ErrorModal
+        isOpen={errorModal.isOpen}
+        onClose={() => setErrorModal((prev) => ({ ...prev, isOpen: false }))}
+        title={errorModal.title}
+        message={errorModal.message}
+        details={errorModal.details}
+      />
       {(stockAlerts.lowStock > 0 || stockAlerts.outOfStock > 0) && (
         <div className="space-y-3">
           {stockAlerts.outOfStock > 0 && (

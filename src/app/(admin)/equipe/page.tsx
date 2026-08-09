@@ -5,7 +5,7 @@ import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SelectInput, TextInput } from "@/components/common/CmsShared";
 import { createTeamUser, getStoredTeamUsers, roleLabels, saveStoredTeamUsers, type StoredTeamUser } from "@/lib/admin-team";
 import { getAdminSession } from "@/lib/admin-auth";
-import { CheckCircle2, KeyRound, ShieldCheck, Trash2, UserPlus, UsersRound, X } from "lucide-react";
+import { CheckCircle2, KeyRound, ShieldCheck, Trash2, UserPlus, UsersRound, X, Edit3 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
 const emptyDraft = {
@@ -181,9 +181,14 @@ export default function EquipePage() {
 
       <section className="rounded-2xl border border-gray-200 bg-white shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
         <div className="border-b border-gray-100 px-5 py-5 dark:border-gray-800 sm:px-6">
-          <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
-            Comptes equipe
-          </h3>
+          <div>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-white/90">
+              Comptes equipe
+            </h3>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              L'administrateur principal peut modifier son mot de passe en cliquant sur le bouton "Modifier".
+            </p>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -389,6 +394,16 @@ function TeamRow({
             >
               <Trash2 className="h-4 w-4" />
               Supprimer
+            </button>
+          ) : isCurrentUser && user.role === "super_admin" ? (
+            <button
+              type="button"
+              onClick={onResetPassword}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-brand-50 px-3 text-sm font-bold text-brand-600 transition hover:bg-brand-100"
+              title="Modifier le mot de passe"
+            >
+              <Edit3 className="h-4 w-4" />
+              Modifier
             </button>
           ) : isCurrentUser ? (
             <span className="text-xs font-bold text-gray-400">Compte actuel</span>

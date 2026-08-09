@@ -24,8 +24,12 @@ export async function POST(request: Request) {
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
       return NextResponse.json(
-        { error: "Fichier trop volumineux. Taille max: 5 MB." },
+        { 
+          error: `Image trop volumineuse (${fileSizeMB} MB).`,
+          details: `La taille maximale autorisée est de 5 MB. Veuillez compresser l'image ou en choisir une plus petite.`
+        },
         { status: 400 }
       );
     }
