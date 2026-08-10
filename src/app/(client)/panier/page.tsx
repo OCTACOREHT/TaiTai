@@ -757,7 +757,7 @@ export default function PanierPage() {
                 <span className="text-xs font-bold text-[#667085]">Image oswa PDF, 8 MB maksimom.</span>
                 <input
                   type="file"
-                  accept="image/png,image/jpeg,image/webp,application/pdf"
+                  accept="image/*,application/pdf,.heic,.heif"
                   className="hidden"
                   onChange={(e) => setPaymentProofFile(e.target.files?.[0] ?? null)}
                 />
