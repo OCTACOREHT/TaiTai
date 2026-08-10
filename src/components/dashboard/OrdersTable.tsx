@@ -270,9 +270,24 @@ export function OrdersTable({
                           </p>
                         </div>
                       )}
-                      <div className="mt-4 flex justify-between rounded-xl border-2 border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
-                        <span className="font-black text-gray-900 dark:text-white">Total</span>
-                        <span className="font-black text-brand-500">{formatCurrency(order.total)}</span>
+                      <div className="mt-4 space-y-2 rounded-xl border-2 border-gray-300 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                        {order.fraisLivraison ? (
+                          <>
+                            <div className="flex justify-between text-sm font-medium text-gray-600 dark:text-gray-400">
+                              <span>Sous-total plats</span>
+                              <span>{formatCurrency(order.total - order.fraisLivraison)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm font-medium text-brand-600 dark:text-brand-400">
+                              <span>Frais de livraison</span>
+                              <span>{formatCurrency(order.fraisLivraison)}</span>
+                            </div>
+                            <div className="border-t border-gray-200 pt-2 dark:border-gray-700" />
+                          </>
+                        ) : null}
+                        <div className="flex justify-between text-base">
+                          <span className="font-black text-gray-900 dark:text-white">Total</span>
+                          <span className="font-black text-brand-500">{formatCurrency(order.total)}</span>
+                        </div>
                       </div>
                     </div>
                   </TableCell>

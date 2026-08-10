@@ -1,4 +1,4 @@
-﻿-- TaiTai Restaurant SaaS Database Schema
+-- TaiTai Restaurant SaaS Database Schema
 -- Optimized for Next.js / Supabase
 
 -- [1] EXTENSIONS
@@ -94,6 +94,7 @@ CREATE TABLE public.commandes (
   payment_method TEXT DEFAULT 'Sur place' CHECK (payment_method IN ('Sur place','MonCash','Zelle')),
   payment_proof_url TEXT,
   payment_status TEXT DEFAULT 'Valide' CHECK (payment_status IN ('A verifier','Valide','Refuse')),
+  frais_livraison INTEGER NOT NULL DEFAULT 0,
   total INTEGER NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

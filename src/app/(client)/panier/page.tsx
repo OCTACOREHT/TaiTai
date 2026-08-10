@@ -155,7 +155,7 @@ export default function PanierPage() {
   const fraisLivraison = livraisonDisponible && selectedZone ? selectedZone.frais : 0;
   const sousTotal = cart.reduce((acc, item) => acc + item.prix * item.quantity, 0);
   const discountTotal = getDiscountAmount(sousTotal, appliedPromo);
-  const total = Math.max(0, sousTotal - discountTotal);
+  const total = Math.max(0, sousTotal - discountTotal + fraisLivraison);
   const proofRequired = formData.payment_method === "MonCash" || formData.payment_method === "Zelle";
 
   const applyPromoCode = async () => {
@@ -328,6 +328,7 @@ export default function PanierPage() {
           adresse_livraison: adresseComplete,
           table_numero: null,
           notes: formData.notes,
+          frais_livraison: fraisLivraison,
           total,
           statut: "En attente",
           payment_method: formData.payment_method,

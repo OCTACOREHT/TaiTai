@@ -1,4 +1,4 @@
-﻿import { supabase } from "./supabase-client";
+import { supabase } from "./supabase-client";
 
 export type DashboardMetricKind = "currency" | "number";
 export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "Livré" | "Annulee";
@@ -70,6 +70,7 @@ export interface RestaurantOrder {
   clientUserId?: string | null;
   table: string;
   total: number;
+  fraisLivraison?: number;
   status: OrderStatus;
   channel: OrderChannel;
   placedAt: string;
@@ -189,6 +190,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     clientUserId: cmd.client_user_id ?? null,
     table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
     total: cmd.total,
+    fraisLivraison: Number(cmd.frais_livraison || 0),
     status: cmd.statut as OrderStatus,
     channel: cmd.canal as OrderChannel,
     placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),

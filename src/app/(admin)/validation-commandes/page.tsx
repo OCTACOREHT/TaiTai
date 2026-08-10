@@ -21,6 +21,7 @@ type PendingOrder = {
   client_tel: string | null;
   client_user_id: string | null;
   adresse_livraison: string | null;
+  frais_livraison: number | null;
   total: number;
   statut: string;
   payment_method: string | null;
@@ -46,7 +47,7 @@ export default function ValidationCommandesPage() {
     if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from("commandes")
-      .select("id, numero_commande, client_nom, client_tel, client_user_id, adresse_livraison, total, statut, payment_method, payment_status, payment_proof_url, created_at, commande_items(id, nom_plat, quantite, sous_total)")
+      .select("id, numero_commande, client_nom, client_tel, client_user_id, adresse_livraison, frais_livraison, total, statut, payment_method, payment_status, payment_proof_url, created_at, commande_items(id, nom_plat, quantite, sous_total)")
       .eq("statut", "En attente")
       .order("created_at", { ascending: false });
 
@@ -214,7 +215,19 @@ export default function ValidationCommandesPage() {
 
                 <div className="w-full space-y-3 lg:w-64">
                   <div className="rounded-2xl bg-gray-50 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Total</p>
+                    {order.frais_livraison ? (
+                      <div className="mb-2 space-y-1 border-b border-gray-200 pb-2 text-xs text-gray-500">
+                        <div className="flex justify-between">
+                          <span>Plats:</span>
+                          <span className="font-semibold">{order.total - order.frais_livraison} HTG</span>
+                        </div>
+                        <div className="flex justify-between text-brand-600">
+                          <span>Livraison:</span>
+                          <span className="font-semibold">+{order.frais_livraison} HTG</span>
+                        </div>
+                      </div>
+                    ) : null}
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-500">Total a payer</p>
                     <p className="mt-1 text-2xl font-black text-gray-900">{order.total} HTG</p>
                   </div>
 
