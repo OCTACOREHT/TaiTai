@@ -81,6 +81,7 @@ export interface RestaurantOrder {
   paymentProofUrl?: string | null;
   paymentStatus?: string | null;
   notes?: string | null;
+  archivedAt?: string | null;
 }
 
 export type PeriodType = "day" | "week" | "month" | "year" | "all";
@@ -159,6 +160,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
   const { data, error } = await supabase
     .from("commandes")
     .select("*, commande_items(*)")
+    .is("archived_at", null)
     .order("created_at", { ascending: false });
   
   if (error) throw error;
@@ -208,7 +210,63 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     paymentProofUrl: cmd.payment_proof_url ?? null,
     paymentStatus: cmd.payment_status ?? null,
     notes: cmd.notes ?? null,
+    archivedAt: cmd.archived_at ?? null,
   }));
+}
+
+export async function getArchivedCommandes(): Promise<{ date: string; label: string; orders: RestaurantOrder[] }[]> {
+  const { data, error } = await supabase
+    .from("commandes")
+    .select("*, commande_items(*)")
+    .not("archived_at", "is", null)
+    .order("archived_at", { ascending: false });
+
+  if (error) throw error;
+
+  const orders = (data || []).map((cmd: any) => ({
+    id: cmd.id,
+    numero: cmd.numero_commande,
+    customer: cmd.client_nom,
+    clientTel: cmd.client_tel ?? null,
+    clientEmail: cmd.client_email ?? null,
+    clientUserId: cmd.client_user_id ?? null,
+    table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
+    total: cmd.total,
+    fraisLivraison: Number(cmd.frais_livraison || 0),
+    status: cmd.statut as OrderStatus,
+    channel: cmd.canal as OrderChannel,
+    placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
+    date: cmd.created_at,
+    items: (cmd.commande_items ?? []).map((item: any) => ({
+      name: item.nom_plat,
+      quantity: Number(item.quantite) || 0,
+      price: Number(item.prix_unitaire) || 0,
+      category: "Divers",
+      supplements: item.supplements || [],
+    })),
+    paymentMethod: cmd.payment_method ?? null,
+    paymentProofUrl: cmd.payment_proof_url ?? null,
+    paymentStatus: cmd.payment_status ?? null,
+    notes: cmd.notes ?? null,
+    archivedAt: cmd.archived_at ?? null,
+  }));
+
+  // Group by archive day
+  const groups: Record<string, { date: string; label: string; orders: RestaurantOrder[] }> = {};
+  orders.forEach((order) => {
+    const archiveDate = new Date(order.archivedAt!);
+    const key = archiveDate.toDateString();
+    if (!groups[key]) {
+      groups[key] = {
+        date: key,
+        label: archiveDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
+        orders: [],
+      };
+    }
+    groups[key].orders.push(order);
+  });
+
+  return Object.values(groups);
 }
 
 export function aggregateSalesTrend(orders: RestaurantOrder[]): SalesPoint[] {

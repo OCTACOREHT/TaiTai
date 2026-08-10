@@ -27,6 +27,7 @@ type PendingOrder = {
   payment_method: string | null;
   payment_status: string | null;
   payment_proof_url: string | null;
+  notes: string | null;
   created_at: string;
   commande_items?: PendingOrderItem[];
 };
@@ -47,7 +48,7 @@ export default function ValidationCommandesPage() {
     if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from("commandes")
-      .select("id, numero_commande, client_nom, client_tel, client_user_id, adresse_livraison, frais_livraison, total, statut, payment_method, payment_status, payment_proof_url, created_at, commande_items(id, nom_plat, quantite, sous_total)")
+      .select("id, numero_commande, client_nom, client_tel, client_user_id, adresse_livraison, frais_livraison, total, statut, payment_method, payment_status, payment_proof_url, notes, created_at, commande_items(id, nom_plat, quantite, sous_total)")
       .eq("statut", "En attente")
       .order("created_at", { ascending: false });
 
@@ -211,6 +212,13 @@ export default function ValidationCommandesPage() {
                       </div>
                     ))}
                   </div>
+
+                  {order.notes && (
+                    <div className="rounded-xl border-2 border-orange-200 bg-orange-50 px-4 py-3">
+                      <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-orange-600">Enstriksyon espesyal</p>
+                      <p className="text-sm font-bold text-gray-900">{order.notes}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="w-full space-y-3 lg:w-64">

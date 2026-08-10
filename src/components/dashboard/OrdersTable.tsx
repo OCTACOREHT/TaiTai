@@ -3,7 +3,7 @@
 import { cn } from "@/components/common/CmsShared";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { OrderStatus, RestaurantOrder, formatCurrency, orderStatusOptions } from "@/lib/data";
-import { ChevronDown, CheckCircle2, Clock, ChefHat, Mail, Package, Phone } from "lucide-react";
+import { ChevronDown, CheckCircle2, Clock, ChefHat, Mail, Package, Phone, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface OrdersTableProps {
@@ -12,6 +12,7 @@ interface OrdersTableProps {
   sendingReceiptOrderId?: string | null;
   onStatusChange?: (orderId: string, status: OrderStatus) => void;
   sentReceiptIds?: string[];
+  onDeleteOrder?: (orderId: string) => void;
 }
 
 export function OrdersTable({
@@ -20,6 +21,7 @@ export function OrdersTable({
   sendingReceiptOrderId,
   onStatusChange,
   sentReceiptIds = [],
+  onDeleteOrder,
 }: OrdersTableProps) {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
@@ -212,6 +214,7 @@ export function OrdersTable({
                 </TableCell>
 
                 <TableCell className="py-5 text-right">
+                  <div className="flex items-center justify-end gap-2">
                   {(() => {
                     const isSent = sentReceiptIds.includes(order.id);
                     const isSending = sendingReceiptOrderId === order.id;
@@ -240,6 +243,18 @@ export function OrdersTable({
                       </button>
                     );
                   })()}
+                  {order.status === "Annulee" && onDeleteOrder && (
+                    <button
+                      type="button"
+                      onClick={() => onDeleteOrder(order.id)}
+                      title="Supprimer cette commande annulée"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition hover:bg-red-100"
+                    >
+                      <Trash2 size={13} />
+                      Supprimer
+                    </button>
+                  )}
+                  </div>
                 </TableCell>
               </TableRow>
               {expandedOrder === order.id && (
