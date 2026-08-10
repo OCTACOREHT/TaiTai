@@ -153,7 +153,11 @@ export default function PanierPage() {
   const deliveryHasStarted = currentTime.getHours() >= DELIVERY_START_HOUR;
   const selectedZone = zonesLivraison.find((z) => z.zone === formData.zone_livraison);
   const fraisLivraison = livraisonDisponible && selectedZone ? selectedZone.frais : 0;
-  const sousTotal = cart.reduce((acc, item) => acc + item.prix * item.quantity, 0);
+  const getItemUnitPrice = (item: any) => {
+    const suppTotal = (item.supplements || []).reduce((acc: number, sup: any) => acc + (Number(sup.prix) || 0), 0);
+    return item.prix + suppTotal;
+  };
+  const sousTotal = cart.reduce((acc, item) => acc + getItemUnitPrice(item) * item.quantity, 0);
   const discountTotal = getDiscountAmount(sousTotal, appliedPromo);
   const total = Math.max(0, sousTotal - discountTotal + fraisLivraison);
   const proofRequired = formData.payment_method === "MonCash" || formData.payment_method === "Zelle";
@@ -340,15 +344,18 @@ export default function PanierPage() {
 
       if (cmdError) throw new Error("Ere pandan komann nan: " + cmdError.message);
 
-      const itemsToInsert = cart.map((item) => ({
-        commande_id: commande.id,
-        menu_item_id: item.id,
-        nom_plat: item.nom,
-        prix_unitaire: item.prix,
-        quantite: item.quantity,
-        sous_total: item.prix * item.quantity,
-        supplements: item.supplements || [],
-      }));
+      const itemsToInsert = cart.map((item) => {
+        const unitPrice = getItemUnitPrice(item);
+        return {
+          commande_id: commande.id,
+          menu_item_id: item.id,
+          nom_plat: item.nom,
+          prix_unitaire: unitPrice,
+          quantite: item.quantity,
+          sous_total: unitPrice * item.quantity,
+          supplements: item.supplements || [],
+        };
+      });
 
       const { error: itemsError } = await supabase.from("commande_items").insert(itemsToInsert);
       if (itemsError) throw new Error("Ere pandan anrejistreman plat yo: " + itemsError.message);
@@ -457,7 +464,7 @@ export default function PanierPage() {
               <div className="w-full min-w-0 flex-grow space-y-2">
                 <h3 className="break-words text-lg font-bold text-[#101828]">{item.nom}</h3>
                 <p className="text-sm font-black text-brand-500">
-                  {item.prix} HTG
+                  {getItemUnitPrice(item)} HTG
                   {"original_prix" in item && item.original_prix ? (
                     <span className="ml-2 text-xs text-gray-400 line-through">{item.original_prix} HTG</span>
                   ) : null}
