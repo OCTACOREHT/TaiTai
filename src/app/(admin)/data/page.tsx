@@ -79,14 +79,15 @@ export default function DataPage() {
       const ordersData = await getCommandes();
       setOrders(ordersData);
 
-      // Calculate metrics
-      const totalRevenue = ordersData.reduce((acc, curr) => acc + curr.total, 0);
-      const totalOrders = ordersData.length;
+      // Calculate metrics (hors commandes annulées)
+      const activeOrders = ordersData.filter((o) => o.status !== "Annulee");
+      const totalRevenue = activeOrders.reduce((acc, curr) => acc + curr.total, 0);
+      const totalOrders = activeOrders.length;
       const averageTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
-      // Count today's orders
+      // Count today's orders (hors annulées)
       const today = new Date().toDateString();
-      const todayOrders = ordersData.filter(
+      const todayOrders = activeOrders.filter(
         (o) => new Date(o.date).toDateString() === today
       ).length;
 

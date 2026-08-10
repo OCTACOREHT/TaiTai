@@ -58,16 +58,16 @@ export default function DashboardPage() {
       // Calculate metrics for the selected period
       const periodStats = aggregateSalesByPeriod(ordersData, selectedPeriod);
 
-      // Filtrer les commandes du jour
+      // Filtrer les commandes du jour (hors annulées)
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
-      const todayOrders = ordersData.filter(o => new Date(o.date) >= todayStart);
+      const todayOrders = ordersData.filter(o => new Date(o.date) >= todayStart && o.status !== "Annulee");
 
-      // Filtrer les 7 derniers jours pour le revenu hebdomadaire (pour la métrique par défaut)
+      // Filtrer les 7 derniers jours (hors annulées)
       const weekStart = new Date();
       weekStart.setDate(weekStart.getDate() - 6);
       weekStart.setHours(0, 0, 0, 0);
-      const weekOrders = ordersData.filter(o => new Date(o.date) >= weekStart);
+      const weekOrders = ordersData.filter(o => new Date(o.date) >= weekStart && o.status !== "Annulee");
 
       const weekRevenue = weekOrders.reduce((acc, curr) => acc + curr.total, 0);
       const todayRevenue = todayOrders.reduce((acc, curr) => acc + curr.total, 0);

@@ -227,12 +227,14 @@ export function aggregateSalesTrend(orders: RestaurantOrder[]): SalesPoint[] {
 
   const windowStart = slots[0].start;
 
-  orders.forEach(order => {
-    const d = new Date(order.date);
-    if (d < windowStart) return;
-    const slot = slots.find(s => d >= s.start && d <= s.end);
-    if (slot) slot.total += order.total;
-  });
+  orders
+    .filter((o) => o.status !== "Annulee")
+    .forEach((order) => {
+      const d = new Date(order.date);
+      if (d < windowStart) return;
+      const slot = slots.find((s) => d >= s.start && d <= s.end);
+      if (slot) slot.total += order.total;
+    });
 
   return slots.map(s => ({ label: s.label, total: s.total }));
 }
@@ -240,32 +242,36 @@ export function aggregateSalesTrend(orders: RestaurantOrder[]): SalesPoint[] {
 export function aggregateDishSales(orders: RestaurantOrder[]): DishSale[] {
   const sales: Record<string, { name: string, category: string, quantity: number, revenue: number }> = {};
 
-  orders.forEach(order => {
-    order.items.forEach(item => {
-      if (!sales[item.name]) {
-        sales[item.name] = { name: item.name, category: item.category || "Divers", quantity: 0, revenue: 0 };
-      }
-      sales[item.name].quantity += item.quantity;
-      sales[item.name].revenue += item.price * item.quantity;
+  orders
+    .filter((o) => o.status !== "Annulee")
+    .forEach((order) => {
+      order.items.forEach((item) => {
+        if (!sales[item.name]) {
+          sales[item.name] = { name: item.name, category: item.category || "Divers", quantity: 0, revenue: 0 };
+        }
+        sales[item.name].quantity += item.quantity;
+        sales[item.name].revenue += item.price * item.quantity;
+      });
     });
-  });
 
   return Object.values(sales)
     .sort((a, b) => b.quantity - a.quantity)
-    .map(s => ({ ...s, trend: "stable" as const }));
+    .map((s) => ({ ...s, trend: "stable" as const }));
 }
 
 export function aggregatePeakHours(orders: RestaurantOrder[]): HourlyVolume[] {
   const hours: Record<string, number> = {};
   for (let i = 8; i <= 23; i++) hours[`${i}h`] = 0;
 
-  orders.forEach(order => {
-    const h = new Date(order.date).getHours();
-    const label = `${h}h`;
-    if (hours[label] !== undefined) {
-      hours[label]++;
-    }
-  });
+  orders
+    .filter((o) => o.status !== "Annulee")
+    .forEach((order) => {
+      const h = new Date(order.date).getHours();
+      const label = `${h}h`;
+      if (hours[label] !== undefined) {
+        hours[label]++;
+      }
+    });
 
   return Object.entries(hours).map(([hour, orders]) => ({ hour, orders }));
 }
@@ -302,7 +308,7 @@ export function aggregateSalesByPeriod(orders: RestaurantOrder[], period: Period
       break;
   }
 
-  const filteredOrders = orders.filter(order => new Date(order.date) >= startDate);
+  const filteredOrders = orders.filter((order) => order.status !== "Annulee" && new Date(order.date) >= startDate);
   const revenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
 
   return {
@@ -313,6 +319,8 @@ export function aggregateSalesByPeriod(orders: RestaurantOrder[], period: Period
 }
 
 export function aggregateSalesTrendByPeriod(orders: RestaurantOrder[], period: PeriodType): SalesPoint[] {
+  const validOrders = orders.filter((o) => o.status !== "Annulee");
+
   if (period === "day") {
     // Par heure pour le jour
     const hours: Record<string, number> = {};
@@ -323,7 +331,7 @@ export function aggregateSalesTrendByPeriod(orders: RestaurantOrder[], period: P
       hours[`${i}h`] = 0;
     }
 
-    orders.forEach(order => {
+    validOrders.forEach((order) => {
       const orderDate = new Date(order.date);
       if (orderDate.toDateString() === now.toDateString()) {
         const hour = orderDate.getHours();
@@ -348,14 +356,14 @@ export function aggregateSalesTrendByPeriod(orders: RestaurantOrder[], period: P
 
     const windowStart = slots[0].start;
 
-    orders.forEach(order => {
+    validOrders.forEach((order) => {
       const d = new Date(order.date);
       if (d < windowStart) return;
-      const slot = slots.find(s => d >= s.start && d <= s.end);
+      const slot = slots.find((s) => d >= s.start && d <= s.end);
       if (slot) slot.total += order.total;
     });
 
-    return slots.map(s => ({ label: s.label, total: s.total }));
+    return slots.map((s) => ({ label: s.label, total: s.total }));
   } else if (period === "month") {
     // Par semaine pour le mois
     const now = new Date();
@@ -382,13 +390,13 @@ export function aggregateSalesTrendByPeriod(orders: RestaurantOrder[], period: P
       weekNumber++;
     }
 
-    orders.forEach(order => {
+    validOrders.forEach((order) => {
       const d = new Date(order.date);
-      const week = weeks.find(w => d >= w.start && d <= w.end);
+      const week = weeks.find((w) => d >= w.start && d <= w.end);
       if (week) week.total += order.total;
     });
 
-    return weeks.map(w => ({ label: w.label, total: w.total }));
+    return weeks.map((w) => ({ label: w.label, total: w.total }));
   } else if (period === "year") {
     // Par mois pour l'année
     const monthNames = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Aoû", "Sep", "Oct", "Nov", "Déc"];
@@ -400,18 +408,18 @@ export function aggregateSalesTrendByPeriod(orders: RestaurantOrder[], period: P
       months.push({ start, end, label: monthNames[i], total: 0 });
     }
 
-    orders.forEach(order => {
+    validOrders.forEach((order) => {
       const d = new Date(order.date);
-      const month = months.find(m => d >= m.start && d <= m.end);
+      const month = months.find((m) => d >= m.start && d <= m.end);
       if (month) month.total += order.total;
     });
 
-    return months.map(m => ({ label: m.label, total: m.total }));
+    return months.map((m) => ({ label: m.label, total: m.total }));
   } else {
     // "all" - par mois sur toute l'historique
     const monthMap: Record<string, { start: Date; label: string; total: number }> = {};
 
-    orders.forEach(order => {
+    validOrders.forEach((order) => {
       const date = new Date(order.date);
       const year = date.getFullYear();
       const month = date.getMonth();

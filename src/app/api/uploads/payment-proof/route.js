@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase-client";
+import { createClient } from "@supabase/supabase-js";
 const { saveUploadedFile } = require("@/server/uploads");
 
 export const runtime = "nodejs";
+
+// Use service role key to bypass RLS on storage uploads (server-side only)
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
 
 const maxFileSize = 8 * 1024 * 1024;
 
@@ -38,7 +44,7 @@ export async function POST(request) {
     const filePath = `proofs/${filename}`;
 
     // Upload directly to Supabase Storage (cloud) so serverless read-only disk doesn't fail
-    const { data: storageData, error: storageError } = await supabase.storage
+    const { data: storageData, error: storageError } = await supabaseAdmin.storage
       .from("payment-proofs")
       .upload(filePath, file, {
         cacheControl: "3600",
@@ -46,7 +52,7 @@ export async function POST(request) {
       });
 
     if (!storageError && storageData) {
-      const { data: publicUrlData } = supabase.storage
+      const { data: publicUrlData } = supabaseAdmin.storage
         .from("payment-proofs")
         .getPublicUrl(filePath);
 
