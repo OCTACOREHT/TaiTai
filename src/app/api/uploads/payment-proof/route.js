@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-
+import { supabase } from "@/lib/supabase-client";
 const { saveUploadedFile } = require("@/server/uploads");
 
 export const runtime = "nodejs";
 
 const maxFileSize = 8 * 1024 * 1024;
-const allowedTypes = new Set([
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-  "application/pdf",
-]);
 
 export async function POST(request) {
   try {
@@ -41,14 +32,49 @@ export async function POST(request) {
       );
     }
 
-    const upload = await saveUploadedFile(file);
+    const timestamp = Date.now();
+    const extension = file.name ? file.name.split(".").pop() : "jpg";
+    const filename = `proof_${timestamp}_${Math.random().toString(36).substring(7)}.${extension}`;
+    const filePath = `proofs/${filename}`;
 
-    return NextResponse.json({
-      url: upload.publicUrl,
-      filename: upload.filename,
-    });
+    // Upload directly to Supabase Storage (cloud) so serverless read-only disk doesn't fail
+    const { data: storageData, error: storageError } = await supabase.storage
+      .from("payment-proofs")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (!storageError && storageData) {
+      const { data: publicUrlData } = supabase.storage
+        .from("payment-proofs")
+        .getPublicUrl(filePath);
+
+      if (publicUrlData?.publicUrl) {
+        return NextResponse.json({
+          url: publicUrlData.publicUrl,
+          filename: filename,
+        });
+      }
+    }
+
+    if (storageError) {
+      console.error("[Supabase Storage upload error]", storageError);
+      return NextResponse.json(
+        { error: `Erreur de stockage: ${storageError.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Impossible d'obtenir l'URL publique du justificatif." },
+      { status: 500 }
+    );
   } catch (err) {
-    console.error("[payment-proof upload]", err?.message || err, err?.stack);
-    return NextResponse.json({ error: `Impossible d'uploader le justificatif: ${err?.message || err}` }, { status: 500 });
+    console.error("[payment-proof upload]", err?.message || err);
+    return NextResponse.json(
+      { error: `Impossible d'uploader le justificatif: ${err?.message || err}` },
+      { status: 500 }
+    );
   }
 }

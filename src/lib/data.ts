@@ -66,6 +66,7 @@ export interface RestaurantOrder {
   id: string;
   numero: string;
   customer: string;
+  clientTel?: string | null;
   clientEmail?: string | null;
   clientUserId?: string | null;
   table: string;
@@ -184,6 +185,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     id: cmd.id,
     numero: cmd.numero_commande,
     customer: cmd.client_nom,
+    clientTel: cmd.client_tel ?? null,
     clientEmail:
       (cmd.client_email as string | null) ??
       (cmd.client_user_id ? clientEmails[cmd.client_user_id] ?? null : null),

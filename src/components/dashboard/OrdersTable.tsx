@@ -3,7 +3,7 @@
 import { cn } from "@/components/common/CmsShared";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { OrderStatus, RestaurantOrder, formatCurrency, orderStatusOptions } from "@/lib/data";
-import { ChevronDown, CheckCircle2, Clock, ChefHat, Mail, Package } from "lucide-react";
+import { ChevronDown, CheckCircle2, Clock, ChefHat, Mail, Package, Phone } from "lucide-react";
 import { useState } from "react";
 
 interface OrdersTableProps {
@@ -79,6 +79,12 @@ export function OrdersTable({
                     <span className="text-xs italic text-gray-500 dark:text-gray-400">
                       {order.table}
                     </span>
+                    {order.clientTel && (
+                      <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                        <Phone size={10} />
+                        {order.clientTel}
+                      </span>
+                    )}
                     {order.clientEmail ? (
                       <a
                         href={`mailto:${order.clientEmail}`}
