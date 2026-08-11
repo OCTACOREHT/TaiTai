@@ -157,10 +157,25 @@ export async function getMenuItems(): Promise<MenuItem[]> {
 }
 
 export async function getCommandes(): Promise<RestaurantOrder[]> {
-  const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
-  if (!res.ok) throw new Error("Impossible de charger les commandes.");
-  const payload = await res.json();
-  return mapOrders(payload.orders || []);
+  try {
+    const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
+    if (res.ok) {
+      const payload = await res.json();
+      if (Array.isArray(payload.orders)) {
+        return mapOrders(payload.orders);
+      }
+    }
+  } catch (e) {
+    console.warn("[getCommandes fallback to Supabase]", e);
+  }
+
+  const { data, error } = await supabase
+    .from("commandes")
+    .select("*, commande_items(*)")
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return mapOrders(data || []);
 }
 
 // Helper that maps raw DB rows to RestaurantOrder
@@ -196,17 +211,49 @@ function mapOrders(orders: any[]): RestaurantOrder[] {
 
 // Same as getCommandes but includes archived orders — used by stats/data page
 export async function getAllCommandes(): Promise<RestaurantOrder[]> {
-  const res = await fetch("/api/admin/orders/list?archived=all", { cache: "no-store" });
-  if (!res.ok) throw new Error("Impossible de charger toutes les commandes.");
-  const payload = await res.json();
-  return mapOrders(payload.orders || []);
+  try {
+    const res = await fetch("/api/admin/orders/list?archived=all", { cache: "no-store" });
+    if (res.ok) {
+      const payload = await res.json();
+      if (Array.isArray(payload.orders)) {
+        return mapOrders(payload.orders);
+      }
+    }
+  } catch (e) {
+    console.warn("[getAllCommandes fallback to Supabase]", e);
+  }
+
+  const { data, error } = await supabase
+    .from("commandes")
+    .select("*, commande_items(*)")
+    .order("created_at", { ascending: false });
+
+  if (error) return [];
+  return mapOrders(data || []);
 }
 
 export async function getArchivedCommandes(): Promise<{ date: string; label: string; orders: RestaurantOrder[] }[]> {
-  const res = await fetch("/api/admin/orders/list?archived=true", { cache: "no-store" });
-  if (!res.ok) throw new Error("Impossible de charger l'historique.");
-  const payload = await res.json();
-  const orders = mapOrders(payload.orders || []);
+  let orders: RestaurantOrder[] = [];
+  try {
+    const res = await fetch("/api/admin/orders/list?archived=true", { cache: "no-store" });
+    if (res.ok) {
+      const payload = await res.json();
+      if (Array.isArray(payload.orders)) {
+        orders = mapOrders(payload.orders);
+      }
+    }
+  } catch (e) {
+    console.warn("[getArchivedCommandes fallback]", e);
+  }
+
+  if (orders.length === 0) {
+    const { data } = await supabase
+      .from("commandes")
+      .select("*, commande_items(*)")
+      .not("archived_at", "is", null)
+      .order("archived_at", { ascending: false });
+    orders = mapOrders(data || []);
+  }
 
   // Group by archive day
   const groups: Record<string, { date: string; label: string; orders: RestaurantOrder[] }> = {};
