@@ -214,6 +214,44 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
   }));
 }
 
+// Same as getCommandes but includes archived orders — used by stats/data page
+export async function getAllCommandes(): Promise<RestaurantOrder[]> {
+  const { data, error } = await supabase
+    .from("commandes")
+    .select("*, commande_items(*)")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+
+  return (data || []).map((cmd: any) => ({
+    id: cmd.id,
+    numero: cmd.numero_commande,
+    customer: cmd.client_nom,
+    clientTel: cmd.client_tel ?? null,
+    clientEmail: cmd.client_email ?? null,
+    clientUserId: cmd.client_user_id ?? null,
+    table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
+    total: cmd.total,
+    fraisLivraison: Number(cmd.frais_livraison || 0),
+    status: cmd.statut as OrderStatus,
+    channel: cmd.canal as OrderChannel,
+    placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
+    date: cmd.created_at,
+    items: (cmd.commande_items ?? []).map((item: any) => ({
+      name: item.nom_plat,
+      quantity: Number(item.quantite) || 0,
+      price: Number(item.prix_unitaire) || 0,
+      category: "Divers",
+      supplements: item.supplements || [],
+    })),
+    paymentMethod: cmd.payment_method ?? null,
+    paymentProofUrl: cmd.payment_proof_url ?? null,
+    paymentStatus: cmd.payment_status ?? null,
+    notes: cmd.notes ?? null,
+    archivedAt: cmd.archived_at ?? null,
+  }));
+}
+
 export async function getArchivedCommandes(): Promise<{ date: string; label: string; orders: RestaurantOrder[] }[]> {
   const { data, error } = await supabase
     .from("commandes")

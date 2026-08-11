@@ -7,7 +7,7 @@ import {
   aggregateSalesTrend,
   aggregateDishSales,
   aggregatePeakHours,
-  getCommandes,
+  getAllCommandes,
   formatCurrency,
   formatNumber,
   type RestaurantOrder,
@@ -61,6 +61,7 @@ export default function DataPage() {
   const [peakHours, setPeakHours] = useState<HourlyVolume[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandFilters, setExpandFilters] = useState(false);
+  const [exportDay, setExportDay] = useState<string>(() => new Date().toISOString().split("T")[0]);
   
   const [filters, setFilters] = useState<FilterOptions>({
     dateFrom: "",
@@ -76,7 +77,7 @@ export default function DataPage() {
     if (showLoading) setLoading(true);
 
     try {
-      const ordersData = await getCommandes();
+      const ordersData = await getAllCommandes();
       setOrders(ordersData);
 
       // Calculate metrics (hors commandes annulées)
@@ -232,6 +233,44 @@ export default function DataPage() {
     exportToExcel({
       filename: `commandes_${new Date().toISOString().split("T")[0]}.xls`,
       sheetName: "Commandes",
+      headers,
+      rows,
+    });
+  };
+
+  const exportByDayExcel = () => {
+    const dayOrders = orders.filter((o) => {
+      const d = new Date(o.date).toISOString().split("T")[0];
+      return d === exportDay && o.status !== "Annulee";
+    });
+
+    if (dayOrders.length === 0) {
+      alert(`Aucune commande valide pour le ${new Date(exportDay + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.`);
+      return;
+    }
+
+    const headers = ["N° Commande", "Client", "Téléphone", "Email", "Canal", "Plats", "Montant (HTG)", "Frais livraison (HTG)", "Total (HTG)", "Statut", "Heure"];
+    const rows = dayOrders.map((o) => [
+      o.numero,
+      o.customer,
+      o.clientTel ?? "",
+      o.clientEmail ?? "",
+      o.channel ?? "",
+      o.items.map((i) => `${i.quantity}x ${i.name}`).join(" | "),
+      o.total - (o.fraisLivraison ?? 0),
+      o.fraisLivraison ?? 0,
+      o.total,
+      o.status,
+      o.placedAt,
+    ]);
+
+    // Summary row
+    const totalRevenue = dayOrders.reduce((s, o) => s + o.total, 0);
+    rows.push(["", "", "", "", "", `TOTAL — ${dayOrders.length} commande(s)`, "", "", totalRevenue, "", ""]);
+
+    exportToExcel({
+      filename: `commandes_${exportDay}.xls`,
+      sheetName: `Journée du ${exportDay}`,
       headers,
       rows,
     });
@@ -665,6 +704,40 @@ export default function DataPage() {
                 <Download size={16} />
                 Excel Plats
               </button>
+            </div>
+
+            {/* Export par journée */}
+            <div className="border-t pt-4 mt-2">
+              <p className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <CalendarDays size={16} className="text-emerald-600" />
+                Exporter les commandes d'une journée spécifique
+              </p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-600 mb-1">Choisir la date</label>
+                  <input
+                    type="date"
+                    value={exportDay}
+                    onChange={(e) => setExportDay(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="flex-shrink-0">
+                  <div className="text-xs text-gray-500 mb-1">
+                    {orders.filter((o) => {
+                      const d = new Date(o.date).toISOString().split("T")[0];
+                      return d === exportDay && o.status !== "Annulee";
+                    }).length} commande(s) ce jour
+                  </div>
+                  <button
+                    onClick={exportByDayExcel}
+                    className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow transition-colors"
+                  >
+                    <Download size={16} />
+                    Exporter en Excel
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
