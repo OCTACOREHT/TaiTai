@@ -6,42 +6,42 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || ""
 );
 
-// DELETE /api/admin/orders/delete — permanently delete a cancelled order
+// DELETE /api/admin/orders/delete — permanently delete an order
 export async function DELETE(request: Request) {
-  const { orderId } = await request.json();
+  try {
+    const { orderId } = await request.json();
 
-  if (!orderId) {
-    return NextResponse.json({ error: "orderId manquant." }, { status: 400 });
-  }
+    if (!orderId) {
+      return NextResponse.json({ error: "orderId manquant." }, { status: 400 });
+    }
 
-  // Safety check: only allow deleting cancelled orders
-  const { data: order, error: fetchError } = await supabaseAdmin
-    .from("commandes")
-    .select("id, statut")
-    .eq("id", orderId)
-    .single();
+    // 1. Delete commande_items first (cascade safety)
+    const { error: itemsError } = await supabaseAdmin
+      .from("commande_items")
+      .delete()
+      .eq("commande_id", orderId);
 
-  if (fetchError || !order) {
-    return NextResponse.json({ error: "Commande introuvable." }, { status: 404 });
-  }
+    if (itemsError) {
+      console.warn("[delete order items warning]", itemsError.message);
+    }
 
-  if (order.statut !== "Annulee") {
+    // 2. Delete the order from commandes table
+    const { error: cmdError } = await supabaseAdmin
+      .from("commandes")
+      .delete()
+      .eq("id", orderId);
+
+    if (cmdError) {
+      console.error("[delete order error]", cmdError.message);
+      return NextResponse.json({ error: cmdError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("[delete order exception]", err);
     return NextResponse.json(
-      { error: "Seules les commandes annulées peuvent être supprimées." },
-      { status: 403 }
+      { error: (err as Error).message || "Erreur interne de suppression" },
+      { status: 500 }
     );
   }
-
-  // Delete commande_items first (cascade safety)
-  await supabaseAdmin.from("commande_items").delete().eq("commande_id", orderId);
-
-  // Delete the order
-  const { error } = await supabaseAdmin.from("commandes").delete().eq("id", orderId);
-
-  if (error) {
-    console.error("[delete order]", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ success: true });
 }

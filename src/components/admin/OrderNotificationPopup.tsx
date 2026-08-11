@@ -4,6 +4,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { X, Bell, ShoppingCart, User, Phone, Mail, MapPin, CreditCard } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
 
+interface OrderItem {
+  id?: string;
+  nom_plat: string;
+  quantite: number;
+  prix_unitaire: number;
+  sous_total?: number;
+}
+
 interface OrderData {
   id: string;
   numero_commande: string;
@@ -14,6 +22,7 @@ interface OrderData {
   total: number;
   payment_method: string;
   created_at: string;
+  commande_items?: OrderItem[];
 }
 
 export default function OrderNotificationPopup() {
@@ -24,7 +33,41 @@ export default function OrderNotificationPopup() {
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const popupShownForRef = useRef<string | null>(null);
   const ORDER_POPUP_WINDOW_MS = 30_000;
-  const POPUP_HIDE_DELAY_MS = 30_000;
+  const POPUP_HIDE_DELAY_MS = 15_000;
+
+  const playNotificationSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+
+      // Tone 1: C5 (523.25 Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+      gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start();
+      osc1.stop(ctx.currentTime + 0.35);
+
+      // Tone 2: E5 (659.25 Hz) - Chime effect
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.15);
+      gain2.gain.setValueAtTime(0.4, ctx.currentTime + 0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(ctx.currentTime + 0.15);
+      osc2.stop(ctx.currentTime + 0.6);
+    } catch (err) {
+      console.warn("[notif audio error]", err);
+    }
+  };
 
   const isRecentOrder = (createdAt: string) => {
     const createdAtTimestamp = new Date(createdAt).getTime();
@@ -38,6 +81,7 @@ export default function OrderNotificationPopup() {
 
     setOrder(data);
     setShowPopup(true);
+    playNotificationSound();
 
     console.log("🛒 Nouvelle commande détectée:", data.numero_commande);
 
@@ -47,50 +91,32 @@ export default function OrderNotificationPopup() {
     }, POPUP_HIDE_DELAY_MS);
   };
 
+  const fetchLatestOrder = async () => {
+    try {
+      const { data } = await supabase
+        .from("commandes")
+        .select("id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, total, payment_method, created_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total)")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.id) {
+        if (lastOrderIdRef.current !== data.id) {
+          lastOrderIdRef.current = data.id;
+          if (isRecentOrder(data.created_at)) {
+            showOrderPopup(data as OrderData);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[notif] Erreur chargement dernière commande:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchLastOrderId = async () => {
-      try {
-        const { data } = await supabase
-          .from("commandes")
-          .select("id, numero_commande, client_nom, client_tel, adresse_livraison, total, payment_method, created_at")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+    fetchLatestOrder();
 
-        if (data?.id) {
-          lastOrderIdRef.current = data.id;
-
-          if (isRecentOrder(data.created_at)) {
-            showOrderPopup(data as OrderData);
-          }
-        }
-      } catch (err) {
-        console.error("[notif] Erreur chargement dernière commande:", err);
-      }
-    };
-
-    fetchLastOrderId();
-
-    pollTimerRef.current = setInterval(async () => {
-      try {
-        const { data } = await supabase
-          .from("commandes")
-          .select("id, numero_commande, client_nom, client_tel, adresse_livraison, total, payment_method, created_at")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (data && data.id !== lastOrderIdRef.current) {
-          lastOrderIdRef.current = data.id;
-
-          if (isRecentOrder(data.created_at)) {
-            showOrderPopup(data as OrderData);
-          }
-        }
-      } catch (error) {
-        console.error("[notif] Erreur polling:", error);
-      }
-    }, 5000);
+    pollTimerRef.current = setInterval(fetchLatestOrder, 5000);
 
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
@@ -167,6 +193,28 @@ export default function OrderNotificationPopup() {
               <p className="text-xs text-gray-600">{order.payment_method}</p>
             </div>
           </div>
+
+          {/* Plats commandés */}
+          {order.commande_items && order.commande_items.length > 0 && (
+            <div className="mt-3 border-t border-gray-100 pt-3">
+              <p className="mb-2 text-xs font-black uppercase tracking-wider text-gray-700 flex items-center gap-1.5">
+                <ShoppingCart size={14} className="text-brand-500" />
+                Détails des plats ({order.commande_items.length}) :
+              </p>
+              <div className="space-y-1.5 rounded-xl border border-gray-200 bg-gray-50/80 p-3">
+                {order.commande_items.map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-gray-900">
+                      {item.quantite}x {item.nom_plat}
+                    </span>
+                    <span className="font-black text-brand-600">
+                      {(item.sous_total || item.prix_unitaire * item.quantite)} HTG
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Heure */}
           <div className="mt-3 border-t border-gray-100 pt-3">

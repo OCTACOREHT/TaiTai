@@ -157,40 +157,20 @@ export async function getMenuItems(): Promise<MenuItem[]> {
 }
 
 export async function getCommandes(): Promise<RestaurantOrder[]> {
-  const { data, error } = await supabase
-    .from("commandes")
-    .select("*, commande_items(*)")
-    .is("archived_at", null)
-    .order("created_at", { ascending: false });
-  
-  if (error) throw error;
+  const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
+  if (!res.ok) throw new Error("Impossible de charger les commandes.");
+  const payload = await res.json();
+  return mapOrders(payload.orders || []);
+}
 
-  const orders = data || [];
-  const missing = orders.filter((cmd: any) => !cmd.client_email && cmd.client_user_id);
-  const clientEmails: Record<string, string> = {};
-
-  if (missing.length > 0) {
-    const userIds = [...new Set(missing.map((cmd: any) => cmd.client_user_id as string))];
-    const { data: clients, error: clientsError } = await supabase
-      .from("clients")
-      .select("id, email")
-      .in("id", userIds);
-
-    if (!clientsError && clients) {
-      clients.forEach((client: { id: string; email: string | null }) => {
-        clientEmails[client.id] = String(client.email || "");
-      });
-    }
-  }
-
+// Helper that maps raw DB rows to RestaurantOrder
+function mapOrders(orders: any[]): RestaurantOrder[] {
   return orders.map((cmd: any) => ({
     id: cmd.id,
     numero: cmd.numero_commande,
     customer: cmd.client_nom,
     clientTel: cmd.client_tel ?? null,
-    clientEmail:
-      (cmd.client_email as string | null) ??
-      (cmd.client_user_id ? clientEmails[cmd.client_user_id] ?? null : null),
+    clientEmail: cmd.client_email ?? null,
     clientUserId: cmd.client_user_id ?? null,
     table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
     total: cmd.total,
@@ -200,7 +180,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
     date: cmd.created_at,
     items: (cmd.commande_items ?? []).map((item: any) => ({
-      name: item.nom_plat,
+      name: item.nom_plat || "",
       quantity: Number(item.quantite) || 0,
       price: Number(item.prix_unitaire) || 0,
       category: "Divers",
@@ -216,78 +196,17 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
 
 // Same as getCommandes but includes archived orders — used by stats/data page
 export async function getAllCommandes(): Promise<RestaurantOrder[]> {
-  const { data, error } = await supabase
-    .from("commandes")
-    .select("*, commande_items(*)")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-
-  return (data || []).map((cmd: any) => ({
-    id: cmd.id,
-    numero: cmd.numero_commande,
-    customer: cmd.client_nom,
-    clientTel: cmd.client_tel ?? null,
-    clientEmail: cmd.client_email ?? null,
-    clientUserId: cmd.client_user_id ?? null,
-    table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
-    total: cmd.total,
-    fraisLivraison: Number(cmd.frais_livraison || 0),
-    status: cmd.statut as OrderStatus,
-    channel: cmd.canal as OrderChannel,
-    placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
-    date: cmd.created_at,
-    items: (cmd.commande_items ?? []).map((item: any) => ({
-      name: item.nom_plat,
-      quantity: Number(item.quantite) || 0,
-      price: Number(item.prix_unitaire) || 0,
-      category: "Divers",
-      supplements: item.supplements || [],
-    })),
-    paymentMethod: cmd.payment_method ?? null,
-    paymentProofUrl: cmd.payment_proof_url ?? null,
-    paymentStatus: cmd.payment_status ?? null,
-    notes: cmd.notes ?? null,
-    archivedAt: cmd.archived_at ?? null,
-  }));
+  const res = await fetch("/api/admin/orders/list?archived=all", { cache: "no-store" });
+  if (!res.ok) throw new Error("Impossible de charger toutes les commandes.");
+  const payload = await res.json();
+  return mapOrders(payload.orders || []);
 }
 
 export async function getArchivedCommandes(): Promise<{ date: string; label: string; orders: RestaurantOrder[] }[]> {
-  const { data, error } = await supabase
-    .from("commandes")
-    .select("*, commande_items(*)")
-    .not("archived_at", "is", null)
-    .order("archived_at", { ascending: false });
-
-  if (error) throw error;
-
-  const orders = (data || []).map((cmd: any) => ({
-    id: cmd.id,
-    numero: cmd.numero_commande,
-    customer: cmd.client_nom,
-    clientTel: cmd.client_tel ?? null,
-    clientEmail: cmd.client_email ?? null,
-    clientUserId: cmd.client_user_id ?? null,
-    table: cmd.table_numero || cmd.adresse_livraison || cmd.canal,
-    total: cmd.total,
-    fraisLivraison: Number(cmd.frais_livraison || 0),
-    status: cmd.statut as OrderStatus,
-    channel: cmd.canal as OrderChannel,
-    placedAt: new Date(cmd.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
-    date: cmd.created_at,
-    items: (cmd.commande_items ?? []).map((item: any) => ({
-      name: item.nom_plat,
-      quantity: Number(item.quantite) || 0,
-      price: Number(item.prix_unitaire) || 0,
-      category: "Divers",
-      supplements: item.supplements || [],
-    })),
-    paymentMethod: cmd.payment_method ?? null,
-    paymentProofUrl: cmd.payment_proof_url ?? null,
-    paymentStatus: cmd.payment_status ?? null,
-    notes: cmd.notes ?? null,
-    archivedAt: cmd.archived_at ?? null,
-  }));
+  const res = await fetch("/api/admin/orders/list?archived=true", { cache: "no-store" });
+  if (!res.ok) throw new Error("Impossible de charger l'historique.");
+  const payload = await res.json();
+  const orders = mapOrders(payload.orders || []);
 
   // Group by archive day
   const groups: Record<string, { date: string; label: string; orders: RestaurantOrder[] }> = {};

@@ -131,7 +131,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     const response = await fetch("/api/admin/orders/status", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId, status: nextStatus }),
+      body: JSON.stringify({ orderId, status: nextStatus, validated: true }),
     });
 
     if (!response.ok) {
