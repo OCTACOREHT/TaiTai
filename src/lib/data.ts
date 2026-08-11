@@ -157,24 +157,29 @@ export async function getMenuItems(): Promise<MenuItem[]> {
 }
 
 export async function getCommandes(): Promise<RestaurantOrder[]> {
+  // Try API route first (uses service_role key — bypasses RLS, returns items correctly)
   try {
     const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
     if (res.ok) {
       const payload = await res.json();
-      if (Array.isArray(payload.orders)) {
+      if (Array.isArray(payload.orders) && payload.orders.length > 0) {
         return mapOrders(payload.orders);
       }
     }
   } catch (e) {
-    console.warn("[getCommandes fallback to Supabase]", e);
+    console.warn("[getCommandes api failed, using Supabase fallback]", e);
   }
 
+  // Fallback: direct Supabase with explicit columns (no archived_at filter — avoids column-not-found errors)
   const { data, error } = await supabase
     .from("commandes")
-    .select("*, commande_items(*)")
+    .select("id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total, supplements)")
     .order("created_at", { ascending: false });
 
-  if (error) return [];
+  if (error) {
+    console.error("[getCommandes Supabase error]", error.message);
+    return [];
+  }
   return mapOrders(data || []);
 }
 
@@ -215,7 +220,7 @@ export async function getAllCommandes(): Promise<RestaurantOrder[]> {
     const res = await fetch("/api/admin/orders/list?archived=all", { cache: "no-store" });
     if (res.ok) {
       const payload = await res.json();
-      if (Array.isArray(payload.orders)) {
+      if (Array.isArray(payload.orders) && payload.orders.length > 0) {
         return mapOrders(payload.orders);
       }
     }
@@ -225,10 +230,13 @@ export async function getAllCommandes(): Promise<RestaurantOrder[]> {
 
   const { data, error } = await supabase
     .from("commandes")
-    .select("*, commande_items(*)")
+    .select("id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total, supplements)")
     .order("created_at", { ascending: false });
 
-  if (error) return [];
+  if (error) {
+    console.error("[getAllCommandes Supabase error]", error.message);
+    return [];
+  }
   return mapOrders(data || []);
 }
 
@@ -238,7 +246,7 @@ export async function getArchivedCommandes(): Promise<{ date: string; label: str
     const res = await fetch("/api/admin/orders/list?archived=true", { cache: "no-store" });
     if (res.ok) {
       const payload = await res.json();
-      if (Array.isArray(payload.orders)) {
+      if (Array.isArray(payload.orders) && payload.orders.length > 0) {
         orders = mapOrders(payload.orders);
       }
     }
@@ -249,9 +257,9 @@ export async function getArchivedCommandes(): Promise<{ date: string; label: str
   if (orders.length === 0) {
     const { data } = await supabase
       .from("commandes")
-      .select("*, commande_items(*)")
+      .select("id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total, supplements)")
       .not("archived_at", "is", null)
-      .order("archived_at", { ascending: false });
+      .order("created_at", { ascending: false });
     orders = mapOrders(data || []);
   }
 

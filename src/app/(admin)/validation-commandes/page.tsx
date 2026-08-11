@@ -46,6 +46,21 @@ export default function ValidationCommandesPage() {
 
   const loadOrders = async (showLoading = true) => {
     if (showLoading) setLoading(true);
+    try {
+      const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
+      if (res.ok) {
+        const payload = await res.json();
+        if (Array.isArray(payload.orders)) {
+          const pending = payload.orders.filter((o: any) => o.statut === "En attente");
+          setOrders(pending);
+          if (showLoading) setLoading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[validation loadOrders fallback]", e);
+    }
+
     const { data, error } = await supabase
       .from("commandes")
       .select("id, numero_commande, client_nom, client_tel, client_user_id, adresse_livraison, frais_livraison, total, statut, payment_method, payment_status, payment_proof_url, notes, created_at, commande_items(id, nom_plat, quantite, sous_total)")

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { cn } from "@/components/common/CmsShared";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { OrderStatus, RestaurantOrder, formatCurrency, orderStatusOptions } from "@/lib/data";
@@ -60,8 +61,8 @@ export function OrdersTable({
 
         <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
           {orders.map((order) => (
-            <>
-              <TableRow key={order.id} className="group transition-all hover:bg-gray-50/50">
+            <React.Fragment key={order.id}>
+              <TableRow className="group transition-all hover:bg-gray-50/50">
                 <TableCell className="py-5">
                   <div className="flex flex-col gap-1">
                     <span className="text-sm font-black tracking-tight text-gray-900 dark:text-white/90">
@@ -314,7 +315,7 @@ export function OrdersTable({
                   </TableCell>
                 </TableRow>
               )}
-            </>
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>

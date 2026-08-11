@@ -10,7 +10,7 @@ import {
   aggregateSalesTrendByPeriod,
   aggregateSalesByPeriod,
   dashboardMetrics as initialMetrics,
-  getCommandes,
+  getAllCommandes,
   salesTrend as initialSalesTrend,
   type DashboardMetric,
   type PeriodType,
@@ -33,7 +33,8 @@ export default function DashboardPage() {
     if (showLoading) setLoading(true);
 
     try {
-      const ordersData = await getCommandes();
+      // Toutes les commandes (actives + archivées) pour le graphique et les stats historiques
+      const ordersData = await getAllCommandes();
       
       // Load stock alerts
       const { data: stockData, error: stockError } = await supabase
