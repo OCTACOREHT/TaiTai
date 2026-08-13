@@ -18,6 +18,20 @@ const AppHeader: React.FC = () => {
 
   const checkPendingOrders = async () => {
     try {
+      const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
+      if (res.ok) {
+        const payload = await res.json();
+        if (Array.isArray(payload.orders)) {
+          const pending = payload.orders.filter((o: any) => o.statut === "En attente");
+          setPendingOrdersCount(pending.length);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[header] API count failed, fallback to Supabase", e);
+    }
+
+    try {
       const { count } = await supabase
         .from("commandes")
         .select("id", { count: "exact" })
