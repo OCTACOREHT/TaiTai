@@ -9,6 +9,9 @@ const supabaseAdmin = createClient(
 const ITEMS_SELECT = "id, nom_plat, quantite, prix_unitaire, sous_total, supplements";
 const COMMANDES_SELECT = `id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(${ITEMS_SELECT})`;
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 // GET /api/admin/orders/list?archived=false|true|all
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

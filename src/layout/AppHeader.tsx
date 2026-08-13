@@ -18,27 +18,15 @@ const AppHeader: React.FC = () => {
 
   const checkPendingOrders = async () => {
     try {
-      const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
-      if (res.ok) {
-        const payload = await res.json();
-        if (Array.isArray(payload.orders)) {
-          const pending = payload.orders.filter((o: any) => o.statut === "En attente");
-          setPendingOrdersCount(pending.length);
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("[header] API count failed, fallback to Supabase", e);
-    }
-
-    try {
-      const { count } = await supabase
+      const { count, error } = await supabase
         .from("commandes")
-        .select("id", { count: "exact" })
+        .select("id", { count: "exact", head: true })
         .eq("statut", "En attente")
         .is("archived_at", null);
 
-      setPendingOrdersCount(count ?? 0);
+      if (!error && count !== null) {
+        setPendingOrdersCount(count);
+      }
     } catch (error) {
       console.error("[header] Erreur vérification commandes en attente:", error);
     }
