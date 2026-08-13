@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { CmsUser } from "@/types/cms";
 import { getAdminPassword } from "./admin-passwords";
 
@@ -56,9 +57,15 @@ export async function verifyAdminPassword(email: string, password: string): Prom
   // Vérifier si c'est l'admin principal
   if (email === "taitai@gmail.com") {
     const adminPassword = await getAdminPassword("owner-01");
-    if (adminPassword && password === adminPassword.password_hash) {
-      return true;
+    if (!adminPassword) return false;
+
+    const hash = adminPassword.password_hash;
+    // Check if hash is bcrypt ($2a$, $2b$, or $2y$)
+    if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
+      return await bcrypt.compare(password, hash);
     }
+    // Fallback for legacy plain text passwords before update
+    return password === hash;
   }
   return false;
 }

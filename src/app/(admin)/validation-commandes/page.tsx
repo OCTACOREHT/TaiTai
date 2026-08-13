@@ -65,6 +65,7 @@ export default function ValidationCommandesPage() {
       .from("commandes")
       .select("id, numero_commande, client_nom, client_tel, client_user_id, adresse_livraison, frais_livraison, total, statut, payment_method, payment_status, payment_proof_url, notes, created_at, commande_items(id, nom_plat, quantite, sous_total)")
       .eq("statut", "En attente")
+      .is("archived_at", null)
       .order("created_at", { ascending: false });
 
     if (error) {

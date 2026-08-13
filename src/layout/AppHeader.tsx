@@ -21,7 +21,8 @@ const AppHeader: React.FC = () => {
       const { count } = await supabase
         .from("commandes")
         .select("id", { count: "exact" })
-        .eq("statut", "En attente");
+        .eq("statut", "En attente")
+        .is("archived_at", null);
 
       setPendingOrdersCount(count ?? 0);
     } catch (error) {
@@ -37,7 +38,7 @@ const AppHeader: React.FC = () => {
     }
   };
 
-  // Détecter les commandes encore en attente
+  // Détecter les commandes encore en attente avec abonnement Realtime
   useEffect(() => {
     checkPendingOrders();
 
@@ -45,8 +46,20 @@ const AppHeader: React.FC = () => {
       checkPendingOrders();
     }, 5000);
 
+    const channel = supabase
+      .channel("header-pending-count")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "commandes" },
+        () => {
+          checkPendingOrders();
+        }
+      )
+      .subscribe();
+
     return () => {
       clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, []);
 
