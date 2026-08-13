@@ -17,6 +17,22 @@ const AppHeader: React.FC = () => {
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   const checkPendingOrders = async () => {
+    let pendingCount = 0;
+
+    try {
+      const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
+      if (res.ok) {
+        const payload = await res.json();
+        if (Array.isArray(payload.orders)) {
+          pendingCount = payload.orders.filter((o: any) => o.statut === "En attente").length;
+          setPendingOrdersCount(pendingCount);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("[header] API count error, trying Supabase fallback:", e);
+    }
+
     try {
       const { count, error } = await supabase
         .from("commandes")
@@ -25,11 +41,13 @@ const AppHeader: React.FC = () => {
         .is("archived_at", null);
 
       if (!error && count !== null) {
-        setPendingOrdersCount(count);
+        pendingCount = count;
       }
     } catch (error) {
-      console.error("[header] Erreur vérification commandes en attente:", error);
+      console.error("[header] Erreur Supabase count:", error);
     }
+
+    setPendingOrdersCount(pendingCount);
   };
 
   const handleToggle = () => {
