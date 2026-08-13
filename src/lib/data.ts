@@ -162,7 +162,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     const res = await fetch("/api/admin/orders/list?archived=false", { cache: "no-store" });
     if (res.ok) {
       const payload = await res.json();
-      if (Array.isArray(payload.orders) && payload.orders.length > 0) {
+      if (Array.isArray(payload.orders)) {
         return mapOrders(payload.orders);
       }
     }
@@ -170,10 +170,11 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
     console.warn("[getCommandes api failed, using Supabase fallback]", e);
   }
 
-  // Fallback: direct Supabase with explicit columns (no archived_at filter — avoids column-not-found errors)
+  // Fallback: direct Supabase with explicit columns (filtering out archived orders)
   const { data, error } = await supabase
     .from("commandes")
     .select("id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total, supplements)")
+    .is("archived_at", null)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -220,7 +221,7 @@ export async function getAllCommandes(): Promise<RestaurantOrder[]> {
     const res = await fetch("/api/admin/orders/list?archived=all", { cache: "no-store" });
     if (res.ok) {
       const payload = await res.json();
-      if (Array.isArray(payload.orders) && payload.orders.length > 0) {
+      if (Array.isArray(payload.orders)) {
         return mapOrders(payload.orders);
       }
     }
@@ -242,19 +243,21 @@ export async function getAllCommandes(): Promise<RestaurantOrder[]> {
 
 export async function getArchivedCommandes(): Promise<{ date: string; label: string; orders: RestaurantOrder[] }[]> {
   let orders: RestaurantOrder[] = [];
+  let fetchedFromApi = false;
   try {
     const res = await fetch("/api/admin/orders/list?archived=true", { cache: "no-store" });
     if (res.ok) {
       const payload = await res.json();
-      if (Array.isArray(payload.orders) && payload.orders.length > 0) {
+      if (Array.isArray(payload.orders)) {
         orders = mapOrders(payload.orders);
+        fetchedFromApi = true;
       }
     }
   } catch (e) {
     console.warn("[getArchivedCommandes fallback]", e);
   }
 
-  if (orders.length === 0) {
+  if (!fetchedFromApi) {
     const { data } = await supabase
       .from("commandes")
       .select("id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total, supplements)")
