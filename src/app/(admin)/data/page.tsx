@@ -196,11 +196,12 @@ export default function DataPage() {
 
   // Export functions
   const exportToCSV = () => {
-    const headers = ["Commande", "Client", "Montant", "Statut", "Date"];
+    const headers = ["Commande", "Client", "Montant", "Méthode de paiement", "Statut", "Date"];
     const rows = filteredOrders.map((order) => [
       order.numero,
       order.customer,
       order.total,
+      order.paymentMethod || "Non spécifié",
       order.status,
       new Date(order.date).toLocaleString("fr-FR"),
     ]);
@@ -221,11 +222,12 @@ export default function DataPage() {
   };
 
   const exportToExcelFile = () => {
-    const headers = ["Commande", "Client", "Montant", "Statut", "Date"];
+    const headers = ["Commande", "Client", "Montant", "Méthode de paiement", "Statut", "Date"];
     const rows = filteredOrders.map((order) => [
       order.numero,
       order.customer,
       order.total,
+      order.paymentMethod || "Non spécifié",
       order.status,
       new Date(order.date).toLocaleString("fr-FR"),
     ]);
@@ -249,7 +251,7 @@ export default function DataPage() {
       return;
     }
 
-    const headers = ["N° Commande", "Client", "Téléphone", "Email", "Canal", "Plats", "Montant (HTG)", "Frais livraison (HTG)", "Total (HTG)", "Statut", "Heure"];
+    const headers = ["N° Commande", "Client", "Téléphone", "Email", "Canal", "Plats", "Montant (HTG)", "Frais livraison (HTG)", "Total (HTG)", "Méthode de paiement", "Statut", "Heure"];
     const rows = dayOrders.map((o) => [
       o.numero,
       o.customer,
@@ -260,13 +262,14 @@ export default function DataPage() {
       o.total - (o.fraisLivraison ?? 0),
       o.fraisLivraison ?? 0,
       o.total,
+      o.paymentMethod || "Non spécifié",
       o.status,
       o.placedAt,
     ]);
 
     // Summary row
     const totalRevenue = dayOrders.reduce((s, o) => s + o.total, 0);
-    rows.push(["", "", "", "", "", `TOTAL — ${dayOrders.length} commande(s)`, "", "", totalRevenue, "", ""]);
+    rows.push(["", "", "", "", "", `TOTAL — ${dayOrders.length} commande(s)`, "", "", totalRevenue, "", "", ""]);
 
     exportToExcel({
       filename: `commandes_${exportDay}.xls`,
