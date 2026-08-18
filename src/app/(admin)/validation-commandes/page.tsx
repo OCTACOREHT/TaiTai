@@ -75,7 +75,7 @@ export default function ValidationCommandesPage() {
         message: "Erreur lors du chargement des commandes : " + error.message,
         details: "Veuillez rafraîchir la page.",
       });
-      setOrders([]);
+      // Do not clear existing orders if fetch fails
     } else {
       setOrders((data || []) as PendingOrder[]);
     }

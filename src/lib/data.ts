@@ -179,7 +179,7 @@ export async function getCommandes(): Promise<RestaurantOrder[]> {
 
   if (error) {
     console.error("[getCommandes Supabase error]", error.message);
-    return [];
+    throw error;
   }
   return mapOrders(data || []);
 }
@@ -236,7 +236,7 @@ export async function getAllCommandes(): Promise<RestaurantOrder[]> {
 
   if (error) {
     console.error("[getAllCommandes Supabase error]", error.message);
-    return [];
+    throw error;
   }
   return mapOrders(data || []);
 }
@@ -258,11 +258,15 @@ export async function getArchivedCommandes(): Promise<{ date: string; label: str
   }
 
   if (!fetchedFromApi) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("commandes")
       .select("id, numero_commande, client_nom, client_tel, client_user_id, table_numero, adresse_livraison, canal, total, frais_livraison, statut, payment_method, payment_proof_url, payment_status, notes, created_at, archived_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total, supplements)")
       .not("archived_at", "is", null)
       .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[getArchivedCommandes Supabase error]", error.message);
+      throw error;
+    }
     orders = mapOrders(data || []);
   }
 
