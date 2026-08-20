@@ -95,7 +95,7 @@ export default function OrderNotificationPopup() {
     try {
       const { data } = await supabase
         .from("commandes")
-        .select("id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, total, payment_method, created_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total)")
+        .select("id, numero_commande, client_nom, client_tel, adresse_livraison, total, payment_method, created_at, commande_items(id, nom_plat, quantite, prix_unitaire, sous_total)")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
