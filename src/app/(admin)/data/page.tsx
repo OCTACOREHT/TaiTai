@@ -30,6 +30,7 @@ import {
   Package,
   ShoppingCart,
   Banknote,
+  Users,
 } from "lucide-react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
@@ -421,6 +422,26 @@ export default function DataPage() {
       data: topDishes10.map((d) => d.revenue),
     },
   ];
+
+  const topClients = React.useMemo(() => {
+    const clients = new Map<string, { name: string; totalSpent: number; orderCount: number; lastOrder: Date }>();
+    filteredOrders.forEach((o) => {
+      if (o.status === "Annulee") return;
+      const name = o.customer || "Inconnu";
+      if (!clients.has(name)) {
+        clients.set(name, { name, totalSpent: 0, orderCount: 0, lastOrder: new Date(o.date) });
+      }
+      const c = clients.get(name)!;
+      c.totalSpent += Number(o.total) || 0;
+      c.orderCount += 1;
+      const oDate = new Date(o.date);
+      if (oDate > c.lastOrder) c.lastOrder = oDate;
+    });
+
+    return Array.from(clients.values())
+      .sort((a, b) => b.totalSpent - a.totalSpent)
+      .slice(0, 10);
+  }, [filteredOrders]);
 
   return (
     <>
@@ -827,6 +848,61 @@ export default function DataPage() {
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Top 10 Clients */}
+      <div className="rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden mb-8">
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <Users size={20} className="text-blue-600" />
+            Top 10 Meilleurs Clients
+          </h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Classement basé sur le montant total dépensé (selon les filtres actuels).
+          </p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100 text-blue-900">
+                <th className="px-6 py-4 font-bold">#</th>
+                <th className="px-6 py-4 font-bold">Client</th>
+                <th className="px-6 py-4 font-bold text-right">Commandes</th>
+                <th className="px-6 py-4 font-bold text-right">Montant Total (HTG)</th>
+                <th className="px-6 py-4 font-bold text-center">Dernière Commande</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {topClients.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    Aucun client trouvé pour cette période.
+                  </td>
+                </tr>
+              ) : (
+                topClients.map((client, idx) => (
+                  <tr key={client.name} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-gray-500">
+                      {idx + 1}
+                    </td>
+                    <td className="px-6 py-4 font-bold text-gray-900">
+                      {client.name}
+                    </td>
+                    <td className="px-6 py-4 text-right text-gray-600 font-medium">
+                      {client.orderCount}
+                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-emerald-600">
+                      {formatCurrency(client.totalSpent)}
+                    </td>
+                    <td className="px-6 py-4 text-center text-gray-500">
+                      {client.lastOrder.toLocaleDateString("fr-FR")}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
