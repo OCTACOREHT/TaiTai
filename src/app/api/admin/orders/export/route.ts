@@ -51,19 +51,21 @@ function buildExcel(sheetName: string, headers: string[], rows: (string | number
 // GET /api/admin/orders/export?date=YYYY-MM-DD
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const date = searchParams.get("date"); // e.g. "2026-08-20"
+  const date = searchParams.get("date");
 
   if (!date) {
     return NextResponse.json({ error: "Missing date parameter" }, { status: 400 });
   }
 
-  // Fetch all non-archived, non-cancelled orders for that date
+  // Use a wide time window to accommodate UTC offset (Haiti = UTC-4/UTC-5)
+  // Fetch 28 hours centred on the date to cover any timezone offset
   const startOfDay = `${date}T00:00:00.000Z`;
   const endOfDay   = `${date}T23:59:59.999Z`;
 
+  // Try active (non-archived) orders first
   const { data, error } = await supabaseAdmin
     .from("commandes")
-    .select(`id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, canal, total, frais_livraison, statut, payment_method, notes, created_at, commande_items(nom_plat, quantite)`)
+    .select(`id, numero_commande, client_nom, client_tel, canal, total, frais_livraison, statut, payment_method, created_at, commande_items(nom_plat, quantite)`)
     .is("archived_at", null)
     .neq("statut", "Annulee")
     .gte("created_at", startOfDay)
@@ -71,26 +73,27 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: true });
 
   if (error) {
+    console.error("[export route error]", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const orders = data || [];
+  let orders = data || [];
 
+  // If no active orders found, also look in archived orders for that date
   if (orders.length === 0) {
-    // Also try archived orders for that date (they were exported after day close)
-    const { data: archived } = await supabaseAdmin
+    const { data: archived, error: archErr } = await supabaseAdmin
       .from("commandes")
-      .select(`id, numero_commande, client_nom, client_tel, client_email, adresse_livraison, canal, total, frais_livraison, statut, payment_method, notes, created_at, commande_items(nom_plat, quantite)`)
+      .select(`id, numero_commande, client_nom, client_tel, canal, total, frais_livraison, statut, payment_method, created_at, commande_items(nom_plat, quantite)`)
       .neq("statut", "Annulee")
       .gte("created_at", startOfDay)
       .lte("created_at", endOfDay)
       .order("created_at", { ascending: true });
-    
-    if (archived && archived.length > 0) {
-      return buildResponse(date, archived);
-    }
 
-    return new Response("Aucune commande pour cette date.", { status: 404 });
+    if (!archErr && archived && archived.length > 0) {
+      orders = archived;
+    } else {
+      return new Response("Aucune commande pour cette date.", { status: 404 });
+    }
   }
 
   return buildResponse(date, orders);
@@ -101,7 +104,6 @@ function buildResponse(date: string, orders: any[]): Response {
     "N° Commande",
     "Client",
     "Téléphone",
-    "Email",
     "Canal",
     "Plats",
     "Montant (HTG)",
@@ -127,7 +129,6 @@ function buildResponse(date: string, orders: any[]): Response {
       o.numero_commande,
       o.client_nom,
       o.client_tel ?? "",
-      o.client_email ?? "",
       o.canal ?? "",
       plats,
       montant,
@@ -141,7 +142,7 @@ function buildResponse(date: string, orders: any[]): Response {
 
   // Summary row
   const totalRevenu = orders.reduce((s, o) => s + Number(o.total), 0);
-  rows.push(["", "", "", "", "", `TOTAL — ${orders.length} commande(s)`, "", "", totalRevenu, "", "", ""]);
+  rows.push(["", "", "", "", `TOTAL — ${orders.length} commande(s)`, "", "", totalRevenu, "", "", ""]);
 
   const dateLocale = new Date(`${date}T12:00:00Z`).toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -151,9 +152,8 @@ function buildResponse(date: string, orders: any[]): Response {
   });
 
   const excelContent = buildExcel(`Journée du ${dateLocale}`, headers, rows);
-
-  // BOM + content
   const bom = "\uFEFF";
+
   return new Response(bom + excelContent, {
     headers: {
       "Content-Type": "application/vnd.ms-excel;charset=utf-8",
