@@ -24,21 +24,7 @@ function buildExcel(sheetName: string, headers: string[], rows: (string | number
     .join("");
 
   return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
-  <head>
-    <meta charset="UTF-8" />
-    <!--[if gte mso 9]>
-    <xml>
-      <x:ExcelWorkbook>
-        <x:ExcelWorksheets>
-          <x:ExcelWorksheet>
-            <x:Name>${escapeHtml(sheetName)}</x:Name>
-            <x:WorksheetOptions><x:DisplayGridlines /></x:WorksheetOptions>
-          </x:ExcelWorksheet>
-        </x:ExcelWorksheets>
-      </x:ExcelWorkbook>
-    </xml>
-    <![endif]-->
-  </head>
+  <head><meta charset="UTF-8" /></head>
   <body>
     <table border="1">
       <thead><tr>${tableHead}</tr></thead>
@@ -48,24 +34,23 @@ function buildExcel(sheetName: string, headers: string[], rows: (string | number
 </html>`;
 }
 
-// GET /api/admin/orders/export?date=YYYY-MM-DD
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get("date");
 
-  if (!date) {
-    return NextResponse.json({ error: "Missing date parameter" }, { status: 400 });
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return NextResponse.json({ error: "Format de date invalide. Utilisez YYYY-MM-DD." }, { status: 400 });
   }
 
-  // Use a wide time window to accommodate UTC offset (Haiti = UTC-4/UTC-5)
-  // Fetch 28 hours centred on the date to cover any timezone offset
   const startOfDay = `${date}T00:00:00.000Z`;
   const endOfDay   = `${date}T23:59:59.999Z`;
 
-  // Try active (non-archived) orders first
-  const { data, error } = await supabaseAdmin
+  const select = `id, numero_commande, client_nom, client_tel, canal, total, frais_livraison, statut, payment_method, created_at, commande_items(nom_plat, quantite)`;
+
+  // Try active orders first
+  let { data, error } = await supabaseAdmin
     .from("commandes")
-    .select(`id, numero_commande, client_nom, client_tel, canal, total, frais_livraison, statut, payment_method, created_at, commande_items(nom_plat, quantite)`)
+    .select(select)
     .is("archived_at", null)
     .neq("statut", "Annulee")
     .gte("created_at", startOfDay)
@@ -73,33 +58,35 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("[export route error]", error.message);
+    console.error("[export] Supabase error:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   let orders = data || [];
 
-  // If no active orders found, also look in archived orders for that date
+  // Fallback: try archived orders for that date
   if (orders.length === 0) {
     const { data: archived, error: archErr } = await supabaseAdmin
       .from("commandes")
-      .select(`id, numero_commande, client_nom, client_tel, canal, total, frais_livraison, statut, payment_method, created_at, commande_items(nom_plat, quantite)`)
+      .select(select)
       .neq("statut", "Annulee")
       .gte("created_at", startOfDay)
       .lte("created_at", endOfDay)
       .order("created_at", { ascending: true });
 
-    if (!archErr && archived && archived.length > 0) {
-      orders = archived;
-    } else {
-      return new Response("Aucune commande pour cette date.", { status: 404 });
+    if (archErr) {
+      return NextResponse.json({ error: archErr.message }, { status: 500 });
     }
+    orders = archived || [];
   }
 
-  return buildResponse(date, orders);
-}
+  if (orders.length === 0) {
+    return new Response(`Aucune commande pour le ${date}.`, {
+      status: 404,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
 
-function buildResponse(date: string, orders: any[]): Response {
   const headers = [
     "N° Commande",
     "Client",
@@ -114,7 +101,7 @@ function buildResponse(date: string, orders: any[]): Response {
     "Heure",
   ];
 
-  const rows = orders.map((o) => {
+  const rows = orders.map((o: any) => {
     const plats = (o.commande_items ?? [])
       .map((i: any) => `${i.quantite}x ${i.nom_plat}`)
       .join(" | ");
@@ -140,25 +127,21 @@ function buildResponse(date: string, orders: any[]): Response {
     ];
   });
 
-  // Summary row
-  const totalRevenu = orders.reduce((s, o) => s + Number(o.total), 0);
+  const totalRevenu = orders.reduce((s: number, o: any) => s + Number(o.total), 0);
   rows.push(["", "", "", "", `TOTAL — ${orders.length} commande(s)`, "", "", totalRevenu, "", "", ""]);
 
   const dateLocale = new Date(`${date}T12:00:00Z`).toLocaleDateString("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
   const excelContent = buildExcel(`Journée du ${dateLocale}`, headers, rows);
-  const bom = "\uFEFF";
 
-  return new Response(bom + excelContent, {
+  return new Response("\uFEFF" + excelContent, {
     headers: {
       "Content-Type": "application/vnd.ms-excel;charset=utf-8",
       "Content-Disposition": `attachment; filename="commandes_${date}.xls"`,
       "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache",
     },
   });
 }
