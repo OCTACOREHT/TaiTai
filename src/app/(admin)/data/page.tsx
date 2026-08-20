@@ -241,42 +241,18 @@ export default function DataPage() {
   };
 
   const exportByDayExcel = () => {
-    const dayOrders = orders.filter((o) => {
-      const d = new Date(o.date).toISOString().split("T")[0];
-      return d === exportDay && o.status !== "Annulee";
-    });
-
-    if (dayOrders.length === 0) {
-      alert(`Aucune commande valide pour le ${new Date(exportDay + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.`);
+    if (!exportDay) {
+      alert("Veuillez choisir une date.");
       return;
     }
-
-    const headers = ["N° Commande", "Client", "Téléphone", "Email", "Canal", "Plats", "Montant (HTG)", "Frais livraison (HTG)", "Total (HTG)", "Méthode de paiement", "Statut", "Heure"];
-    const rows = dayOrders.map((o) => [
-      o.numero,
-      o.customer,
-      o.clientTel ?? "",
-      o.clientEmail ?? "",
-      o.channel ?? "",
-      o.items.map((i) => `${i.quantity}x ${i.name}`).join(" | "),
-      o.total - (o.fraisLivraison ?? 0),
-      o.fraisLivraison ?? 0,
-      o.total,
-      o.paymentMethod || "Non spécifié",
-      o.status,
-      o.placedAt,
-    ]);
-
-    // Summary row
-    const totalRevenue = dayOrders.reduce((s, o) => s + o.total, 0);
-    rows.push(["", "", "", "", "", `TOTAL — ${dayOrders.length} commande(s)`, "", "", totalRevenue, "", "", ""]);
-
-    exportToExcel({
-      filename: `commandes_${exportDay}.xls`,
-      sheetName: `Journée du ${exportDay}`,
-      headers,
-      rows,
-    });
+    // Download via the server-side API — bypasses all browser JS cache issues
+    const url = `/api/admin/orders/export?date=${exportDay}&t=${Date.now()}`;
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `commandes_${exportDay}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const exportDishSalesCSV = () => {
