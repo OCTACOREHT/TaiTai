@@ -1002,6 +1002,10 @@ export default function DataPage() {
           </table>
         </div>
       </div>
+      {/* Version Indicator */}
+      <div className="text-center text-xs text-gray-400 mt-8 mb-4">
+        Version 2.5 (Mise à jour export: active)
+      </div>
     </>
   );
 }
