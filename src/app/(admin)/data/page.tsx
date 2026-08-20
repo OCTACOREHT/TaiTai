@@ -708,13 +708,15 @@ export default function DataPage() {
                       return d === exportDay && o.status !== "Annulee";
                     }).length} commande(s) ce jour
                   </div>
-                  <button
-                    onClick={exportByDayExcel}
+                  <a
+                    href={exportDay ? `/api/admin/orders/export?date=${exportDay}&t=${Date.now()}` : "#"}
+                    download={`commandes_${exportDay}.xls`}
+                    onClick={(e) => { if (!exportDay) { e.preventDefault(); alert("Veuillez choisir une date."); } }}
                     className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white shadow transition-colors"
                   >
                     <Download size={16} />
                     Exporter en Excel
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
