@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, Bell, ShoppingCart, User, Phone, Mail, MapPin, CreditCard } from "lucide-react";
 import { supabase } from "@/lib/supabase-client";
+import { useRouter } from "next/navigation";
 
 interface OrderItem {
   id?: string;
@@ -26,6 +27,7 @@ interface OrderData {
 }
 
 export default function OrderNotificationPopup() {
+  const router = useRouter();
   const [showPopup, setShowPopup] = useState(false);
   const [order, setOrder] = useState<OrderData | null>(null);
   const lastOrderIdRef = useRef<string | null>(null);
@@ -79,6 +81,10 @@ export default function OrderNotificationPopup() {
     if (popupShownForRef.current === data.id) return;
     popupShownForRef.current = data.id;
 
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("lastNotifiedOrder", data.id);
+    }
+
     setOrder(data);
     setShowPopup(true);
     playNotificationSound();
@@ -101,9 +107,11 @@ export default function OrderNotificationPopup() {
         .maybeSingle();
 
       if (data?.id) {
+        const lastNotified = typeof window !== "undefined" ? sessionStorage.getItem("lastNotifiedOrder") : null;
+
         if (lastOrderIdRef.current !== data.id) {
           lastOrderIdRef.current = data.id;
-          if (isRecentOrder(data.created_at)) {
+          if (lastNotified !== data.id && isRecentOrder(data.created_at)) {
             showOrderPopup(data as OrderData);
           }
         }
@@ -126,7 +134,7 @@ export default function OrderNotificationPopup() {
 
   const handleViewOrder = () => {
     setShowPopup(false);
-    window.location.href = "/commandes";
+    router.push("/commandes");
   };
 
   if (!showPopup || !order) return null;
