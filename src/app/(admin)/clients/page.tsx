@@ -454,6 +454,8 @@ export default function ClientsPage() {
                 : `Classement des clients par nombre de commandes.`}
             </p>
           </div>
+        </div>
+
         {loading ? (
           <div className="flex h-64 items-center justify-center">
             <Loader2 className="h-10 w-10 animate-spin text-brand-500" />
