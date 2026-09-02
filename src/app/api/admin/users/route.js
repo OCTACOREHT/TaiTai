@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const db = require("@/server/db");
 const { requireAuth, requireSuperAdmin } = require("@/server/auth");
 

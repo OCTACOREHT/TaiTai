@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const db = require("@/server/db");
