@@ -1,8 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { exportToExcel } from "@/lib/export-excel";
