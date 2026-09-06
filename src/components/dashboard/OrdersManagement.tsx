@@ -23,7 +23,7 @@ const filters: Array<"Tous" | OrderStatus> = [
   "En attente",
   "En préparation",
   "Prêt",
-  "Livré",
+  "En route",
   "Annulee",
 ];
 
@@ -119,7 +119,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     pending: orders.filter((order) => order.status === "En attente").length,
     cooking: orders.filter((order) => order.status === "En préparation").length,
     ready: orders.filter((order) => order.status === "Prêt").length,
-    delivered: orders.filter((order) => order.status === "Livré").length,
+    delivered: orders.filter((order) => order.status === "En route" || order.status === "Livré").length,
     canceled: orders.filter((order) => order.status === "Annulee").length,
   };
 
@@ -340,7 +340,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
           </p>
         </div>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Déjà livrés</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">En route</p>
           <p className="mt-2 text-2xl font-semibold text-success-600 dark:text-success-400">
             {counts.delivered}
           </p>

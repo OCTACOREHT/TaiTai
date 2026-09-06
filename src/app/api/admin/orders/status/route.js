@@ -7,13 +7,14 @@ export const runtime = "nodejs";
 
 const fromEmail = process.env.RESEND_FROM_EMAIL || "TaiTai Restaurant <onboarding@resend.dev>";
 
-const allowedStatuses = new Set(["En attente", "En préparation", "Prêt", "Livré", "Annulee"]);
+const allowedStatuses = new Set(["En attente", "En préparation", "Prêt", "En route", "Livré", "Annulee"]);
 
 const statusMessages = {
   "En attente": "Votre commande a bien été reçue et attend confirmation.",
   "En préparation": "Votre commande est maintenant en préparation.",
   "Prêt": "Votre commande est prête.",
-  "Livré": "Votre commande a été livrée. Merci pour votre confiance.",
+  "En route": "Votre commande est en route. Merci pour votre confiance.",
+  "Livré": "Votre commande est en route. Merci pour votre confiance.",
   Annulee:
     "Votre commande a été annulée après vérification. Si vous pensez qu'il s'agit d'une erreur, contactez TaiTai.",
 };

@@ -7,6 +7,8 @@ const toneMap: Record<string, string> = {
     "border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-900/40 dark:bg-brand-900/10 dark:text-brand-300",
   Livre:
     "border-success-200 bg-success-50 text-success-700 dark:border-success-900/40 dark:bg-success-900/10 dark:text-success-300",
+  "En route":
+    "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/40 dark:bg-blue-900/10 dark:text-blue-300",
   VIP: "border-brand-200 bg-brand-50 text-brand-700 dark:border-brand-900/40 dark:bg-brand-900/10 dark:text-brand-300",
   "Top Client":
     "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/40 dark:bg-orange-900/10 dark:text-orange-300",

@@ -119,11 +119,13 @@ export default function SuiviPage() {
     { value: "En attente", label: "Ap tann", icon: Clock, desc: "Nou resevwa kòmann ou. Li ap tann konfimasyon." },
     { value: "En préparation", label: "Ap prepare", icon: ChefHat, desc: "Ekip kwizin nan ap prepare kòmann ou." },
     { value: "Prêt", label: "Pare", icon: Package, desc: "Kòmann nan pare. Nou ap anbale li oswa li pare pou sèvis." },
-    { value: "Livré", label: "Livre", icon: CheckCircle2, desc: "Kòmann nan rive. Bon apeti !" },
+    { value: "En route", label: "En route", icon: CheckCircle2, desc: "Kòmann nan sou wout. Bon apeti !" },
     { value: "Annulee", label: "Anile", icon: CheckCircle2, desc: "Kòmann nan anile apre verifikasyon." },
   ];
 
-  const currentStepIndex = steps.findIndex(s => s.value === commande?.statut);
+  const currentStepIndex = steps.findIndex(
+    (s) => s.value === commande?.statut || (s.value === "En route" && commande?.statut === "Livré"),
+  );
 
   return (
     <div className="mx-auto max-w-3xl space-y-10 py-6 sm:space-y-16 sm:py-10">

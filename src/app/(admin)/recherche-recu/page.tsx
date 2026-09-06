@@ -46,6 +46,7 @@ const statusColors: Record<string, string> = {
   "En attente": "bg-amber-50 text-amber-700 border-amber-200",
   "En préparation": "bg-orange-50 text-orange-700 border-orange-200",
   "Prêt": "bg-emerald-50 text-emerald-700 border-emerald-200",
+  "En route": "bg-blue-50 text-blue-700 border-blue-200",
   "Livré": "bg-blue-50 text-blue-700 border-blue-200",
   Annulee: "bg-red-50 text-red-700 border-red-200",
 };
@@ -54,6 +55,7 @@ const statusIcons: Record<string, ReactNode> = {
   "En attente": <Clock size={11} />,
   "En préparation": <ChefHat size={11} />,
   "Prêt": <Package size={11} />,
+  "En route": <CheckCircle2 size={11} />,
   "Livré": <CheckCircle2 size={11} />,
 };
 

@@ -10,7 +10,7 @@ ALTER TABLE public.commandes
 ALTER TABLE public.commandes DROP CONSTRAINT IF EXISTS commandes_statut_check;
 ALTER TABLE public.commandes
   ADD CONSTRAINT commandes_statut_check
-  CHECK (statut IN ('En attente','En préparation','Prêt','Livré','Annulee','En prÃ©paration','PrÃªt','LivrÃ©'));
+  CHECK (statut IN ('En attente','En préparation','Prêt','En route','Livré','Annulee','En prÃ©paration','PrÃªt','LivrÃ©'));
 
 ALTER TABLE public.commandes DROP CONSTRAINT IF EXISTS commandes_payment_method_check;
 ALTER TABLE public.commandes

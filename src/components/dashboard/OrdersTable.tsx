@@ -151,9 +151,11 @@ export function OrdersTable({
                               ? "border-orange-200 bg-orange-50 text-orange-700 focus:ring-orange-200"
                               : order.status === "Prêt"
                                 ? "border-emerald-200 bg-emerald-50 text-emerald-700 focus:ring-emerald-200"
-                                : order.status === "Annulee"
-                                  ? "border-red-200 bg-red-50 text-red-700 focus:ring-red-200"
-                                  : "border-gray-200 bg-gray-100 text-gray-600 focus:ring-gray-300",
+                                : order.status === "En route" || order.status === "Livré"
+                                  ? "border-blue-200 bg-blue-50 text-blue-700 focus:ring-blue-200"
+                                  : order.status === "Annulee"
+                                    ? "border-red-200 bg-red-50 text-red-700 focus:ring-red-200"
+                                    : "border-gray-200 bg-gray-100 text-gray-600 focus:ring-gray-300",
                         )}
                       >
                         {orderStatusOptions.map((status) => (
@@ -181,15 +183,17 @@ export function OrdersTable({
                             ? "bg-orange-50 text-orange-700"
                             : order.status === "Prêt"
                               ? "bg-emerald-50 text-emerald-700"
-                              : order.status === "Annulee"
-                                ? "bg-red-50 text-red-700"
-                                : "bg-gray-100 text-gray-600",
+                              : order.status === "En route" || order.status === "Livré"
+                                ? "bg-blue-50 text-blue-700"
+                                : order.status === "Annulee"
+                                  ? "bg-red-50 text-red-700"
+                                  : "bg-gray-100 text-gray-600",
                       )}
                     >
                       {order.status === "En attente" && <Clock size={14} />}
                       {order.status === "En préparation" && <ChefHat size={14} />}
                       {order.status === "Prêt" && <Package size={14} />}
-                      {order.status === "Livré" && <CheckCircle2 size={14} />}
+                      {(order.status === "En route" || order.status === "Livré") && <CheckCircle2 size={14} />}
                       {order.status}
                     </div>
                   )}

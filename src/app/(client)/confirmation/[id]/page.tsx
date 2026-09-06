@@ -11,7 +11,8 @@ const statusLabels: Record<string, string> = {
   "En attente": "Ap tann",
   "En préparation": "Ap prepare",
   "Prêt": "Pare",
-  "Livré": "Livre",
+  "En route": "En route",
+  "Livré": "En route",
   Annulee: "Anile",
 };
 

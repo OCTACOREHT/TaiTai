@@ -89,7 +89,7 @@ CREATE TABLE public.commandes (
   adresse_livraison TEXT,
   notes TEXT,
   statut TEXT DEFAULT 'En attente' 
-    CHECK (statut IN ('En attente','En préparation','Prêt','Livré','Annulee')),
+    CHECK (statut IN ('En attente','En préparation','Prêt','En route','Livré','Annulee')),
   client_user_id UUID,
   payment_method TEXT DEFAULT 'Sur place' CHECK (payment_method IN ('Sur place','MonCash','Zelle')),
   payment_proof_url TEXT,

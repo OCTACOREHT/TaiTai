@@ -557,7 +557,7 @@ export default function DataPage() {
                   <option value="En attente">En attente</option>
                   <option value="En préparation">En préparation</option>
                   <option value="Prêt">Prêt</option>
-                  <option value="Livré">Livré</option>
+                  <option value="En route">En route</option>
                   <option value="Annulee">Annulée</option>
                 </select>
               </div>
@@ -1019,7 +1019,7 @@ export default function DataPage() {
                     <td className="px-6 py-4 text-center text-sm">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                          order.status === "Livré"
+                          order.status === "En route" || order.status === "Livré"
                             ? "bg-green-100 text-green-700"
                             : order.status === "Prêt"
                             ? "bg-blue-100 text-blue-700"

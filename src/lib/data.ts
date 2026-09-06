@@ -1,7 +1,7 @@
 import { supabase } from "./supabase-client";
 
 export type DashboardMetricKind = "currency" | "number";
-export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "Livré" | "Annulee";
+export type OrderStatus = "En attente" | "En préparation" | "Prêt" | "En route" | "Livré" | "Annulee";
 export type OrderChannel = "Livraison";
 export type StockStatus = "Normal" | "Faible" | "Critique";
 
@@ -106,7 +106,7 @@ export interface Supplier {
   reliability?: number;
 }
 
-export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "Livré", "Annulee"];
+export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "En route", "Annulee"];
 export const orderChannelOptions: OrderChannel[] = ["Livraison"];
 export const stockStatusOptions: StockStatus[] = ["Normal", "Faible", "Critique"];
 export const customerSegmentOptions: CustomerSegment[] = ["Nouveau", "RÃ©gulier", "VIP", "Inactif"];
