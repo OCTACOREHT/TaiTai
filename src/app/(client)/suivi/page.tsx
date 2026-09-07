@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase-client";
 import { Commande } from "@/types/restaurant";
 import { useAuth } from "@/context/AuthContext";
-import { Search, Package, CheckCircle2, Clock, ChefHat, MapPin, Loader2, Navigation, History, ArrowRight } from "lucide-react";
+import { Search, Package, CheckCircle2, Clock, ChefHat, MapPin, Loader2, Navigation, History, ArrowRight, Truck } from "lucide-react";
 
 type OrderSummary = {
   id: string;
@@ -115,17 +115,17 @@ export default function SuiviPage() {
     };
   }, [commande?.id]);
 
-  const steps = [
-    { value: "En attente", label: "Ap tann", icon: Clock, desc: "Nou resevwa kòmann ou. Li ap tann konfimasyon." },
-    { value: "En préparation", label: "Ap prepare", icon: ChefHat, desc: "Ekip kwizin nan ap prepare kòmann ou." },
-    { value: "Prêt", label: "Pare", icon: Package, desc: "Kòmann nan pare. Nou ap anbale li oswa li pare pou sèvis." },
-    { value: "En route", label: "En route", icon: CheckCircle2, desc: "Kòmann nan sou wout. Bon apeti !" },
-    { value: "Annulee", label: "Anile", icon: CheckCircle2, desc: "Kòmann nan anile apre verifikasyon." },
-  ];
+  const steps = commande?.statut === "Annulee"
+    ? [{ value: "Annulee", label: "Anile", icon: CheckCircle2, desc: "Kòmann nan anile apre verifikasyon." }]
+    : [
+        { value: "En attente", label: "Ap tann", icon: Clock, desc: "Nou resevwa kòmann ou. Li ap tann konfimasyon." },
+        { value: "En préparation", label: "Ap prepare", icon: ChefHat, desc: "Ekip kwizin nan ap prepare kòmann ou." },
+        { value: "Prêt", label: "Pare", icon: Package, desc: "Kòmann nan pare. Nou ap anbale li oswa li pare pou sèvis." },
+        { value: "En route", label: "En route", icon: Truck, desc: "Kòmann nan sou wout li." },
+        { value: "Livré", label: "Livre", icon: CheckCircle2, desc: "Kòmann nan rive. Bon apeti !" },
+      ];
 
-  const currentStepIndex = steps.findIndex(
-    (s) => s.value === commande?.statut || (s.value === "En route" && commande?.statut === "Livré"),
-  );
+  const currentStepIndex = steps.findIndex((s) => s.value === commande?.statut);
 
   return (
     <div className="mx-auto max-w-3xl space-y-10 py-6 sm:space-y-16 sm:py-10">

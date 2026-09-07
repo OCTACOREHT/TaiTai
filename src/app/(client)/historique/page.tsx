@@ -31,7 +31,7 @@ const statusLabels: Record<string, string> = {
   "En préparation": "Ap prepare",
   "Prêt": "Pare",
   "En route": "En route",
-  "Livré": "En route",
+  "Livré": "Livre",
   Annulee: "Anile",
 };
 
@@ -46,7 +46,7 @@ const statusStyles: Record<string, string> = {
   "En préparation": "bg-blue-50 text-blue-700 ring-blue-100",
   "Prêt": "bg-emerald-50 text-emerald-700 ring-emerald-100",
   "En route": "bg-blue-50 text-blue-700 ring-blue-100",
-  "Livré": "bg-blue-50 text-blue-700 ring-blue-100",
+  "Livré": "bg-emerald-50 text-emerald-700 ring-emerald-100",
   Annulee: "bg-red-50 text-red-700 ring-red-100",
 };
 

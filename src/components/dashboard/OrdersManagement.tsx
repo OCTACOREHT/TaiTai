@@ -24,6 +24,7 @@ const filters: Array<"Tous" | OrderStatus> = [
   "En préparation",
   "Prêt",
   "En route",
+  "Livré",
   "Annulee",
 ];
 
@@ -119,7 +120,8 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
     pending: orders.filter((order) => order.status === "En attente").length,
     cooking: orders.filter((order) => order.status === "En préparation").length,
     ready: orders.filter((order) => order.status === "Prêt").length,
-    delivered: orders.filter((order) => order.status === "En route" || order.status === "Livré").length,
+    enRoute: orders.filter((order) => order.status === "En route").length,
+    delivered: orders.filter((order) => order.status === "Livré").length,
     canceled: orders.filter((order) => order.status === "Annulee").length,
   };
 
@@ -320,7 +322,7 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
         details={errorModal.details}
       />
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
           <p className="text-sm text-gray-500 dark:text-gray-400">En attente</p>
           <p className="mt-2 text-2xl font-semibold text-warning-600 dark:text-warning-400">
@@ -339,9 +341,15 @@ export function OrdersManagement({ initialOrders }: { initialOrders: RestaurantO
             {counts.ready}
           </p>
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-xs dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-sm text-gray-500 dark:text-gray-400">En route</p>
-          <p className="mt-2 text-2xl font-semibold text-success-600 dark:text-success-400">
+        <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-5 shadow-theme-xs dark:border-blue-900/20 dark:bg-blue-900/10">
+          <p className="text-sm text-blue-600 dark:text-blue-400">En route</p>
+          <p className="mt-2 text-2xl font-semibold text-blue-700 dark:text-blue-300">
+            {counts.enRoute}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5 shadow-theme-xs dark:border-emerald-900/20 dark:bg-emerald-900/10">
+          <p className="text-sm text-emerald-600 dark:text-emerald-400">Livrés</p>
+          <p className="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">
             {counts.delivered}
           </p>
         </div>

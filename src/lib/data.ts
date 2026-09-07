@@ -106,7 +106,7 @@ export interface Supplier {
   reliability?: number;
 }
 
-export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "En route", "Annulee"];
+export const orderStatusOptions: OrderStatus[] = ["En attente", "En préparation", "Prêt", "En route", "Livré", "Annulee"];
 export const orderChannelOptions: OrderChannel[] = ["Livraison"];
 export const stockStatusOptions: StockStatus[] = ["Normal", "Faible", "Critique"];
 export const customerSegmentOptions: CustomerSegment[] = ["Nouveau", "RÃ©gulier", "VIP", "Inactif"];

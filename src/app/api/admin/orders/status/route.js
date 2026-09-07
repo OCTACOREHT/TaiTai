@@ -14,7 +14,7 @@ const statusMessages = {
   "En préparation": "Votre commande est maintenant en préparation.",
   "Prêt": "Votre commande est prête.",
   "En route": "Votre commande est en route. Merci pour votre confiance.",
-  "Livré": "Votre commande est en route. Merci pour votre confiance.",
+  "Livré": "Votre commande a été livrée. Merci pour votre confiance.",
   Annulee:
     "Votre commande a été annulée après vérification. Si vous pensez qu'il s'agit d'une erreur, contactez TaiTai.",
 };

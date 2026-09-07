@@ -12,7 +12,7 @@ const statusLabels: Record<string, string> = {
   "En préparation": "Ap prepare",
   "Prêt": "Pare",
   "En route": "En route",
-  "Livré": "En route",
+  "Livré": "Livre",
   Annulee: "Anile",
 };
 
