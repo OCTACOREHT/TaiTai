@@ -7,6 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useDeliveryZones } from "@/hooks/useDeliveryZones";
 import {
+  AlertTriangle,
   ArrowRight,
   CheckCircle2,
   ChevronDown,
@@ -112,6 +113,57 @@ export default function PanierPage() {
     payment_method: "Sur place" as PaymentMethod,
   });
   const [zonesLivraison, setZonesLivraison] = useState<typeof ZONES_LIVRAISON_DEFAULT>([]);
+  const [commandesOuvertes, setCommandesOuvertes] = useState<boolean>(true);
+  const [messageFermeture, setMessageFermeture] = useState<string>(
+    "Kòmann sou sit la fèmen pou kounye a. Nou ap retounen talè !"
+  );
+
+  useEffect(() => {
+    async function loadRestaurantSettings() {
+      try {
+        const { data, error } = await supabase
+          .from("restaurant_settings")
+          .select("commandes_ouvertes, message_fermeture")
+          .eq("id", "general")
+          .single();
+
+        if (!error && data) {
+          if (typeof data.commandes_ouvertes === "boolean") {
+            setCommandesOuvertes(data.commandes_ouvertes);
+          }
+          if (data.message_fermeture) {
+            setMessageFermeture(data.message_fermeture);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load restaurant settings:", err);
+      }
+    }
+
+    loadRestaurantSettings();
+
+    const channel = supabase
+      .channel("panier_restaurant_settings")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "restaurant_settings" },
+        (payload: any) => {
+          if (payload.new) {
+            if (typeof payload.new.commandes_ouvertes === "boolean") {
+              setCommandesOuvertes(payload.new.commandes_ouvertes);
+            }
+            if (payload.new.message_fermeture) {
+              setMessageFermeture(payload.new.message_fermeture);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -229,6 +281,15 @@ export default function PanierPage() {
     e.preventDefault();
     if (cart.length === 0) return;
 
+    if (!commandesOuvertes) {
+      setAlertConfig({
+        isOpen: true,
+        message: messageFermeture || "Kòmann sou sit la fèmen pou kounye a. Restoran an pa aksepte nouvo kòmann nan moman sa a.",
+        type: "error",
+      });
+      return;
+    }
+
     if (!livraisonDisponible) {
       setAlertConfig({
         isOpen: true,
@@ -271,6 +332,16 @@ export default function PanierPage() {
     const numero_commande = "TT-" + Date.now().toString().slice(-5);
 
     try {
+      const { data: liveSettings } = await supabase
+        .from("restaurant_settings")
+        .select("commandes_ouvertes, message_fermeture")
+        .eq("id", "general")
+        .single();
+
+      if (liveSettings && liveSettings.commandes_ouvertes === false) {
+        throw new Error(liveSettings.message_fermeture || "Kòmann sou sit la fèmen pou kounye a.");
+      }
+
       const invalidCartItems = cart.filter((item) => !uuidPattern.test(item.id));
       if (invalidCartItems.length > 0) {
         invalidCartItems.forEach((item) => removeItem(item.id));
@@ -580,7 +651,24 @@ export default function PanierPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl border border-gray-100 bg-white p-4 shadow-xl sm:space-y-8 sm:p-6 lg:p-10">
-          {!deliveryHasStarted && (
+          {!commandesOuvertes && (
+            <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-5 text-center shadow-sm">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 mb-2">
+                <AlertTriangle size={26} />
+              </div>
+              <h3 className="text-base font-black text-red-900 sm:text-lg">
+                Kòmann yo fèmen tanporèman
+              </h3>
+              <p className="mt-1 text-sm font-semibold text-red-700">
+                {messageFermeture}
+              </p>
+              <p className="mt-1 text-xs text-red-600">
+                Nou pa ka resevwa nouvo kòmann sou sit la kounye a. Tanpri eseye pita !
+              </p>
+            </div>
+          )}
+
+          {commandesOuvertes && !deliveryHasStarted && (
             <div className="rounded-3xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm font-black leading-6 text-amber-700">
               Livrezon yo kòmanse apati 12h midi. Ou ka prepare kòmann ou kounye a,
               men livrezon an ap disponib sèlman apre midi.
@@ -771,11 +859,13 @@ export default function PanierPage() {
 
           <button
             type="submit"
-            disabled={loading || !livraisonDisponible}
+            disabled={loading || !livraisonDisponible || !commandesOuvertes}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 px-4 py-4 text-sm font-black text-white shadow-xl shadow-brand-500/20 transition-all hover:bg-[#101828] hover:shadow-none active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:gap-3 sm:py-5 sm:text-base lg:py-6 lg:text-xl"
           >
             {loading ? (
               "Konfimasyon ap fet..."
+            ) : !commandesOuvertes ? (
+              "Kòmann yo fèmen tanporèman"
             ) : (
               <>
                 Konfime komann nan ({total} HTG)

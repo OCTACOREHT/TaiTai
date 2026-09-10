@@ -42,6 +42,7 @@ function MenuContent() {
   const [showSupplementModal, setShowSupplementModal] = useState(false);
   const [selectedItemForSupplements, setSelectedItemForSupplements] = useState<MenuItem | null>(null);
   const [selectedSupplements, setSelectedSupplements] = useState<Supplement[]>([]);
+  const [commandesOuvertes, setCommandesOuvertes] = useState<boolean>(true);
 
   const categories = ["Tous", "Grillades", "Signature", "Burgers", "Pâtes", "Déjeuner", "Boissons"];
   const daysOfWeek = ["Tous", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
@@ -58,7 +59,7 @@ function MenuContent() {
   useEffect(() => {
     async function fetchMenu() {
       setLoading(true);
-      const [{ data, error }, promoResult, supplementsResult] = await Promise.all([
+      const [{ data, error }, promoResult, supplementsResult, settingsResult] = await Promise.all([
         supabase
           .from("menu_items")
           .select("*")
@@ -73,10 +74,19 @@ function MenuContent() {
           .from("supplements")
           .select("*")
           .eq("disponible", true),
+        supabase
+          .from("restaurant_settings")
+          .select("commandes_ouvertes")
+          .eq("id", "general")
+          .single(),
       ]);
       
       if (!error && data) {
         setItems(data);
+      }
+
+      if (!settingsResult.error && settingsResult.data && typeof settingsResult.data.commandes_ouvertes === "boolean") {
+        setCommandesOuvertes(settingsResult.data.commandes_ouvertes);
       }
 
       if (!promoResult.error && promoResult.data) {
@@ -95,6 +105,23 @@ function MenuContent() {
       setLoading(false);
     }
     fetchMenu();
+
+    const channel = supabase
+      .channel("menu_restaurant_settings")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "restaurant_settings" },
+        (payload: any) => {
+          if (payload.new && typeof payload.new.commandes_ouvertes === "boolean") {
+            setCommandesOuvertes(payload.new.commandes_ouvertes);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const filteredItems = items.filter(item => {
@@ -152,6 +179,12 @@ function MenuContent() {
 
   return (
     <div className="space-y-8 md:space-y-12">
+      {!commandesOuvertes && (
+        <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 text-center text-sm font-bold text-red-700 shadow-sm">
+          ⚠️ Kòmann sou sit la fèmen pou kounye a. Ou ka konsilte meni an, men kòmann yo ap relouvri talè !
+        </div>
+      )}
+
       <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-black tracking-tight text-[#101828] sm:text-4xl md:text-5xl">Meni nou</h1>

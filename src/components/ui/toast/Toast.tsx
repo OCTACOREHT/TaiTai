@@ -4,12 +4,13 @@ import { CheckCircle2, X } from "lucide-react";
 import { useEffect } from "react";
 
 interface ToastProps {
+  title?: string;
   message: string;
   onClose: () => void;
   duration?: number;
 }
 
-export function Toast({ message, onClose, duration = 4000 }: ToastProps) {
+export function Toast({ title, message, onClose, duration = 4000 }: ToastProps) {
   useEffect(() => {
     const t = setTimeout(onClose, duration);
     return () => clearTimeout(t);
@@ -21,7 +22,7 @@ export function Toast({ message, onClose, duration = 4000 }: ToastProps) {
         <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
       </div>
       <div className="flex-1">
-        <p className="text-sm font-bold text-gray-900 dark:text-white">Reçu envoyé</p>
+        <p className="text-sm font-bold text-gray-900 dark:text-white">{title || "Notification"}</p>
         <p className="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">{message}</p>
       </div>
       <button

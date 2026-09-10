@@ -156,6 +156,14 @@ CREATE TABLE public.fournisseurs (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Table restaurant_settings
+CREATE TABLE public.restaurant_settings (
+  id TEXT PRIMARY KEY DEFAULT 'general',
+  commandes_ouvertes BOOLEAN NOT NULL DEFAULT true,
+  message_fermeture TEXT DEFAULT 'Kòmann sou sit la fèmen pou kounye a. Nou ap retounen talè !',
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- [5] SECURITY (RLS Policies)
 ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commandes ENABLE ROW LEVEL SECURITY;
@@ -164,6 +172,7 @@ ALTER TABLE public.promotions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.supplements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.avis_clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fournisseurs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.restaurant_settings ENABLE ROW LEVEL SECURITY;
 
 -- Menu : lecture publique
 CREATE POLICY "menu_public_read" ON public.menu_items
@@ -222,6 +231,14 @@ CREATE POLICY "fournisseurs_admin_update" ON public.fournisseurs
   FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "fournisseurs_admin_delete" ON public.fournisseurs
   FOR DELETE USING (true);
+
+-- Restaurant Settings : lecture publique, gestion admin
+CREATE POLICY "settings_public_read" ON public.restaurant_settings
+  FOR SELECT USING (true);
+CREATE POLICY "settings_admin_insert" ON public.restaurant_settings
+  FOR INSERT WITH CHECK (true);
+CREATE POLICY "settings_admin_update" ON public.restaurant_settings
+  FOR UPDATE USING (true) WITH CHECK (true);
 
 -- [6] REALTIME
 -- Note: If publication doesn't exist, this might need manual setup in Supabase, 
