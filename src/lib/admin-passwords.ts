@@ -22,6 +22,21 @@ export async function getAdminPassword(id: string): Promise<AdminPassword | null
   return data as AdminPassword;
 }
 
+export async function getAdminPasswordByEmail(email: string): Promise<AdminPassword | null> {
+  const normalized = email.trim().toLowerCase();
+  const { data, error } = await supabase
+    .from("admin_passwords")
+    .select("*")
+    .ilike("email", normalized)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return data as AdminPassword;
+}
+
 export async function updateAdminPassword(id: string, newPassword: string): Promise<boolean> {
   try {
     // Hash password with bcrypt before updating in Supabase

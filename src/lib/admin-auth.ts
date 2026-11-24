@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { CmsUser } from "@/types/cms";
-import { getAdminPassword } from "./admin-passwords";
+import { getAdminPassword, getAdminPasswordByEmail, type AdminPassword } from "./admin-passwords";
 
 const ADMIN_TOKEN_KEY = "taitai-admin-token";
 const ADMIN_SESSION_KEY = "taitai-admin-session";
@@ -54,20 +54,14 @@ export function clearAdminToken() {
 }
 
 export async function verifyAdminPassword(email: string, password: string): Promise<boolean> {
-  // Vérifier si c'est l'admin principal
-  if (email === "taitai@gmail.com") {
-    const adminPassword = await getAdminPassword("owner-01");
-    if (!adminPassword) return false;
+  const adminPassword = await getAdminPasswordByEmail(email);
+  if (!adminPassword) return false;
 
-    const hash = adminPassword.password_hash;
-    // Check if hash is bcrypt ($2a$, $2b$, or $2y$)
-    if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
-      return await bcrypt.compare(password, hash);
-    }
-    // Fallback for legacy plain text passwords before update
-    return password === hash;
+  const hash = adminPassword.password_hash;
+  if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
+    return await bcrypt.compare(password, hash);
   }
-  return false;
+  return password === hash;
 }
 
 export async function getAdminSession(): Promise<StoredAdminSession | null> {

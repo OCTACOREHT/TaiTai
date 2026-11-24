@@ -2,6 +2,7 @@
 
 import { canAccessAdminPath, getDefaultAdminPath } from "@/lib/admin-access";
 import { setAdminSession, verifyAdminPassword } from "@/lib/admin-auth";
+import { getAdminPasswordByEmail } from "@/lib/admin-passwords";
 import { getStoredTeamUsers } from "@/lib/admin-team";
 import { supabase } from "@/lib/supabase-client";
 import type { CmsUser, UserRole } from "@/types/cms";
@@ -31,14 +32,23 @@ export default function SignInForm() {
 
     const normalizedEmail = email.trim().toLowerCase();
     
-    // Vérifier si c'est l'admin principal
-    if (normalizedEmail === "taitai@gmail.com") {
+    // 1. Vérifier si c'est un compte super admin / proprietaire (table admin_passwords)
+    try {
       const isValid = await verifyAdminPassword(normalizedEmail, password);
       
       if (isValid) {
+        const adminPass = await getAdminPasswordByEmail(normalizedEmail);
+        
+        // Nom d'affichage
+        let displayName = "TaïTaï Admin";
+        if (normalizedEmail !== "taitai@gmail.com") {
+          const prefix = normalizedEmail.split("@")[0];
+          displayName = prefix.split(".").map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+        }
+
         const ownerUser = {
-          id: "owner-01",
-          name: "TaïTaï Admin",
+          id: adminPass?.id || "owner-01",
+          name: displayName,
           email: normalizedEmail,
           password: password,
           role: "super_admin" as const,
@@ -57,6 +67,8 @@ export default function SignInForm() {
         window.location.href = destination;
         return;
       }
+    } catch (passErr) {
+      console.error("Erreur vérification admin_passwords:", passErr);
     }
     
     // Vérifier les membres de l'équipe dans Supabase

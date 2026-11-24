@@ -117,6 +117,19 @@ export async function createTeamUserInSupabase(input: {
     lastLoginAt: data.last_login_at,
   };
 
+  // Si c'est un compte admin, le synchroniser également dans admin_passwords
+  if (input.role === "admin") {
+    supabase
+      .from("admin_passwords")
+      .upsert({
+        id: data.id,
+        email: normalizedEmail,
+        password_hash: hashedPassword,
+        updated_at: new Date().toISOString(),
+      })
+      .then(() => {});
+  }
+
   // Mettre à jour le cache local
   const currentLocal = getStoredTeamUsers();
   saveStoredTeamUsers([newUser, ...currentLocal.filter((u) => u.id !== newUser.id)]);
@@ -128,6 +141,9 @@ export async function createTeamUserInSupabase(input: {
  * Supprime un membre d'équipe de Supabase
  */
 export async function deleteTeamUserInSupabase(userId: string): Promise<boolean> {
+  // Supprimer de admin_passwords si présent
+  await supabase.from("admin_passwords").delete().eq("id", userId);
+
   const { error } = await supabase
     .from("admin_users")
     .delete()
@@ -148,6 +164,12 @@ export async function deleteTeamUserInSupabase(userId: string): Promise<boolean>
 export async function updateTeamUserPasswordInSupabase(userId: string, newPassword: string): Promise<boolean> {
   const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
 
+  // Mettre à jour dans admin_passwords si présent
+  await supabase.from("admin_passwords").update({
+    password_hash: hashedPassword,
+    updated_at: new Date().toISOString(),
+  }).eq("id", userId);
+
   const { error } = await supabase
     .from("admin_users")
     .update({
@@ -164,17 +186,50 @@ export async function updateTeamUserPasswordInSupabase(userId: string, newPasswo
 }
 
 /**
- * Synchronise les utilisateurs existants de localStorage vers Supabase s'ils n'y sont pas encore
+ * Synchronise les utilisateurs existants de localStorage et admin_passwords vers Supabase s'ils n'y sont pas encore
  */
 export async function syncLocalTeamUsersToSupabase(): Promise<void> {
   if (typeof window === "undefined") return;
-  const localUsers = getStoredTeamUsers();
-  if (localUsers.length === 0) return;
 
   try {
     const { data: existingDbUsers } = await supabase.from("admin_users").select("email");
     const existingEmails = new Set((existingDbUsers || []).map((u: any) => u.email.toLowerCase()));
 
+    // 1. Synchroniser les comptes de admin_passwords (ex: owner-02) dans admin_users
+    const { data: allAdminPasswords } = await supabase.from("admin_passwords").select("*");
+    if (allAdminPasswords) {
+      for (const passUser of allAdminPasswords) {
+        if (
+          passUser.email &&
+          passUser.email.toLowerCase() !== "taitai@gmail.com" &&
+          !existingEmails.has(passUser.email.toLowerCase())
+        ) {
+          let hash = passUser.password_hash;
+          if (!hash.startsWith("$2a$") && !hash.startsWith("$2b$") && !hash.startsWith("$2y$")) {
+            hash = await bcrypt.hash(hash, 10);
+            await supabase.from("admin_passwords").update({ password_hash: hash }).eq("id", passUser.id);
+          }
+
+          const prefix = passUser.email.split("@")[0];
+          const name = prefix.split(".").map((p: string) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+
+          await supabase.from("admin_users").insert({
+            name,
+            email: passUser.email.toLowerCase(),
+            password_hash: hash,
+            role: "admin",
+            title: "Administrateur",
+            avatar: "/images/user/owner.jpg",
+            bio: "",
+            active: true,
+          });
+          existingEmails.add(passUser.email.toLowerCase());
+        }
+      }
+    }
+
+    // 2. Synchroniser les utilisateurs en local storage
+    const localUsers = getStoredTeamUsers();
     for (const localUser of localUsers) {
       if (
         localUser.email &&
@@ -193,10 +248,11 @@ export async function syncLocalTeamUsersToSupabase(): Promise<void> {
           bio: localUser.bio || "",
           active: localUser.active ?? true,
         });
+        existingEmails.add(localUser.email.toLowerCase());
       }
     }
   } catch (err) {
-    console.warn("Échec de la synchronisation locale vers Supabase:", err);
+    console.warn("Échec de la synchronisation vers Supabase:", err);
   }
 }
 
