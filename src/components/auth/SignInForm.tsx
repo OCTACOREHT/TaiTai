@@ -3,6 +3,9 @@
 import { canAccessAdminPath, getDefaultAdminPath } from "@/lib/admin-access";
 import { setAdminSession, verifyAdminPassword } from "@/lib/admin-auth";
 import { getStoredTeamUsers } from "@/lib/admin-team";
+import { supabase } from "@/lib/supabase-client";
+import type { CmsUser, UserRole } from "@/types/cms";
+import bcrypt from "bcryptjs";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
@@ -56,7 +59,59 @@ export default function SignInForm() {
       }
     }
     
-    // Vérifier les membres de l'équipe
+    // Vérifier les membres de l'équipe dans Supabase
+    try {
+      const { data: dbUser, error: dbError } = await supabase
+        .from("admin_users")
+        .select("*")
+        .eq("email", normalizedEmail)
+        .eq("active", true)
+        .maybeSingle();
+
+      if (dbUser && dbUser.password_hash) {
+        let passwordValid = false;
+        const hash = dbUser.password_hash;
+        if (hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$")) {
+          passwordValid = await bcrypt.compare(password, hash);
+        } else {
+          passwordValid = password === hash;
+        }
+
+        if (passwordValid) {
+          const teamUser: CmsUser = {
+            id: dbUser.id,
+            name: dbUser.name,
+            email: dbUser.email,
+            password: "",
+            role: dbUser.role as UserRole,
+            title: dbUser.title || (dbUser.role === "admin" ? "Administrateur" : "Caissier"),
+            avatar: dbUser.avatar || "/images/user/owner.jpg",
+            bio: dbUser.bio || "",
+            active: dbUser.active,
+            lastLoginAt: new Date().toISOString(),
+          };
+
+          // Mettre à jour last_login_at en arrière-plan
+          supabase
+            .from("admin_users")
+            .update({ last_login_at: new Date().toISOString() })
+            .eq("id", dbUser.id)
+            .then(() => {});
+
+          const destination = canAccessAdminPath(nextPath, teamUser.role)
+            ? nextPath
+            : getDefaultAdminPath(teamUser.role);
+
+          setAdminSession({ token: "taitai-session-active", user: teamUser }, remember);
+          window.location.href = destination;
+          return;
+        }
+      }
+    } catch (dbErr) {
+      console.error("Erreur vérification Supabase équipe:", dbErr);
+    }
+
+    // Vérifier les membres de l'équipe en local storage (fallback pour compatibilité)
     const teamUser = getStoredTeamUsers().find(
       (user) => user.active && user.email.toLowerCase() === normalizedEmail && user.password === password,
     );

@@ -39,7 +39,7 @@ DROP TYPE IF EXISTS flagday_stage CASCADE;
 DROP TYPE IF EXISTS flagday_status CASCADE;
 
 -- [3] AUTH / ADMIN
-CREATE TYPE cms_user_role AS ENUM ('admin', 'editor', 'author', 'super_admin');
+CREATE TYPE cms_user_role AS ENUM ('admin', 'editor', 'author', 'super_admin', 'caissier', 'moderator');
 
 CREATE TABLE public.admin_users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

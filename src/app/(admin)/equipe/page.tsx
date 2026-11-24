@@ -3,10 +3,19 @@
 
 import PageBreadCrumb from "@/components/common/PageBreadCrumb";
 import { SelectInput, TextInput } from "@/components/common/CmsShared";
-import { createTeamUser, getStoredTeamUsers, roleLabels, saveStoredTeamUsers, type StoredTeamUser } from "@/lib/admin-team";
+import {
+  fetchTeamUsersFromSupabase,
+  createTeamUserInSupabase,
+  deleteTeamUserInSupabase,
+  updateTeamUserPasswordInSupabase,
+  syncLocalTeamUsersToSupabase,
+  roleLabels,
+  type StoredTeamUser,
+} from "@/lib/admin-team";
 import { getAdminSession } from "@/lib/admin-auth";
 import { updateAdminPassword } from "@/lib/admin-passwords";
-import { CheckCircle2, KeyRound, ShieldCheck, Trash2, UserPlus, UsersRound, X, Edit3 } from "lucide-react";
+import { supabase } from "@/lib/supabase-client";
+import { CheckCircle2, KeyRound, ShieldCheck, Trash2, UserPlus, UsersRound, X, Edit3, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { ErrorModal } from "@/components/ui/ErrorModal";
 import { SuccessModal } from "@/components/ui/SuccessModal";
@@ -20,6 +29,10 @@ const emptyDraft = {
 
 export default function EquipePage() {
   const [users, setUsers] = useState<StoredTeamUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [draft, setDraft] = useState(emptyDraft);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StoredTeamUser | null>(null);
@@ -38,11 +51,54 @@ export default function EquipePage() {
   });
 
   useEffect(() => {
-    const loadSession = async () => {
-      const session = await getAdminSession();
-      setCurrentUserId(session?.user?.id || null);
+    let isMounted = true;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const session = await getAdminSession();
+        if (isMounted) {
+          setCurrentUserId(session?.user?.id || null);
+        }
+
+        // Synchroniser les anciens comptes en localStorage vers Supabase s'il y en a
+        await syncLocalTeamUsersToSupabase();
+
+        // Récupérer la liste à jour depuis Supabase
+        const dbUsers = await fetchTeamUsersFromSupabase();
+        if (isMounted) {
+          setUsers(dbUsers);
+        }
+      } catch (error) {
+        console.error("Erreur chargement équipe Supabase:", error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     };
-    loadSession();
+
+    loadData();
+
+    // Écoute en temps réel Supabase
+    const channel = supabase
+      .channel("admin_users_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_users" },
+        async () => {
+          const fresh = await fetchTeamUsersFromSupabase();
+          if (isMounted) {
+            setUsers(fresh);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const metrics = useMemo(
@@ -54,12 +110,7 @@ export default function EquipePage() {
     [users],
   );
 
-  const persistUsers = (nextUsers: StoredTeamUser[]) => {
-    setUsers(nextUsers);
-    saveStoredTeamUsers(nextUsers);
-  };
-
-  const handleCreateUser = (event: FormEvent<HTMLFormElement>) => {
+  const handleCreateUser = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const name = draft.name.trim();
@@ -83,85 +134,141 @@ export default function EquipePage() {
       setErrorModal({
         isOpen: true,
         title: "Email déjà utilisé",
-        message: "Cet email est déjà utilisé par un compte admin.",
+        message: "Cet email est déjà utilisé par un compte existant.",
         details: "Veuillez utiliser une adresse email différente.",
       });
       return;
     }
 
-    const nextUser = createTeamUser({ name, email, password, role: draft.role });
-    persistUsers([nextUser, ...users]);
-    setDraft(emptyDraft);
+    try {
+      setSubmitting(true);
+      const newUser = await createTeamUserInSupabase({
+        name,
+        email,
+        password,
+        role: draft.role,
+      });
+
+      setUsers((prev) => [newUser, ...prev.filter((u) => u.id !== newUser.id)]);
+      setDraft(emptyDraft);
+
+      setSuccessModal({
+        isOpen: true,
+        title: "Membre ajouté avec succès",
+        message: `Le compte de ${name} (${roleLabels[draft.role]}) a bien été enregistré sur Supabase.`,
+        details: "La personne peut dès maintenant se connecter depuis n'importe quel ordinateur ou téléphone.",
+      });
+    } catch (err: any) {
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur d'enregistrement",
+        message: err?.message || "Impossible d'enregistrer l'utilisateur sur Supabase.",
+        details: "Veuillez vérifier votre connexion et réessayer.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteTarget) return;
-    persistUsers(users.filter((item) => item.id !== deleteTarget.id));
-    setDeleteTarget(null);
+
+    try {
+      setDeleting(true);
+      await deleteTeamUserInSupabase(deleteTarget.id);
+      setUsers((prev) => prev.filter((item) => item.id !== deleteTarget.id));
+      const deletedName = deleteTarget.name;
+      setDeleteTarget(null);
+
+      setSuccessModal({
+        isOpen: true,
+        title: "Compte supprimé",
+        message: `Le compte de ${deletedName} a été supprimé de Supabase avec succès.`,
+        details: "L'accès au tableau de bord pour ce compte a été révoqué.",
+      });
+    } catch (err: any) {
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de suppression",
+        message: err?.message || "Impossible de supprimer ce compte de Supabase.",
+        details: "Veuillez réessayer.",
+      });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const confirmResetPassword = async () => {
     if (!resetTarget || !newPassword.trim()) return;
-    
-    // Handle owner password change
-    if (resetTarget.id === "owner-01") {
-      const session = await getAdminSession();
-      
-      // Sauvegarder dans la base de données
-      const saved = await updateAdminPassword("owner-01", newPassword.trim());
-      
-      if (!saved) {
-        setErrorModal({
+
+    try {
+      setResetting(true);
+
+      // Handle owner password change
+      if (resetTarget.id === "owner-01") {
+        const session = await getAdminSession();
+        const saved = await updateAdminPassword("owner-01", newPassword.trim());
+
+        if (!saved) {
+          setErrorModal({
+            isOpen: true,
+            title: "Erreur",
+            message: "Impossible de sauvegarder le mot de passe dans la base de données.",
+            details: "Veuillez réessayer ou contacter le support.",
+          });
+          return;
+        }
+
+        if (session && session.user.id === "owner-01") {
+          const updatedSession = {
+            ...session,
+            user: {
+              ...session.user,
+              password: newPassword.trim(),
+            },
+          };
+          const remember = typeof window !== "undefined" && !!window.localStorage.getItem("taitai-admin-session-persistent");
+          if (remember) {
+            window.localStorage.setItem("taitai-admin-session-persistent", JSON.stringify(updatedSession));
+          } else {
+            window.sessionStorage.setItem("taitai-admin-session", JSON.stringify(updatedSession));
+          }
+        }
+
+        setResetTarget(null);
+        setNewPassword("");
+        setShowPassword(false);
+        setSuccessModal({
           isOpen: true,
-          title: "Erreur",
-          message: "Impossible de sauvegarder le mot de passe dans la base de données.",
-          details: "Veuillez réessayer ou contacter le support.",
+          title: "Mot de passe mis à jour",
+          message: "Le mot de passe de l'administrateur principal a été modifié avec succès sur Supabase.",
+          details: "Utilisez le nouveau mot de passe pour vous connecter.",
         });
         return;
       }
-      
-      // Mettre à jour la session locale
-      if (session && session.user.id === "owner-01") {
-        const updatedSession = {
-          ...session,
-          user: {
-            ...session.user,
-            password: newPassword.trim(),
-          },
-        };
-        const remember = typeof window !== "undefined" && !!window.localStorage.getItem("taitai-admin-session-persistent");
-        if (remember) {
-          window.localStorage.setItem("taitai-admin-session-persistent", JSON.stringify(updatedSession));
-        } else {
-          window.sessionStorage.setItem("taitai-admin-session", JSON.stringify(updatedSession));
-        }
-      }
+
+      // Handle team member password change in Supabase
+      await updateTeamUserPasswordInSupabase(resetTarget.id, newPassword.trim());
+
       setResetTarget(null);
       setNewPassword("");
       setShowPassword(false);
       setSuccessModal({
         isOpen: true,
         title: "Mot de passe mis à jour",
-        message: "Le mot de passe de l'administrateur principal a été modifié avec succès.",
-        details: "Utilisez le nouveau mot de passe pour vous connecter.",
+        message: `Le mot de passe de ${resetTarget.name} a été mis à jour avec succès sur Supabase.`,
+        details: "La personne pourra se connecter immédiatement avec ce nouveau mot de passe.",
       });
-      return;
+    } catch (err: any) {
+      setErrorModal({
+        isOpen: true,
+        title: "Erreur de modification",
+        message: err?.message || "Impossible de mettre à jour le mot de passe sur Supabase.",
+        details: "Veuillez réessayer.",
+      });
+    } finally {
+      setResetting(false);
     }
-    
-    // Handle team member password change
-    const updated = users.map((u) =>
-      u.id === resetTarget.id ? { ...u, password: newPassword.trim() } : u
-    );
-    persistUsers(updated);
-    setResetTarget(null);
-    setNewPassword("");
-    setShowPassword(false);
-    setSuccessModal({
-      isOpen: true,
-      title: "Mot de passe mis à jour",
-      message: "Le mot de passe a été modifié avec succès.",
-      details: "La personne pourra se connecter immédiatement avec ce mot de passe.",
-    });
   };
 
   return (
@@ -237,10 +344,20 @@ export default function EquipePage() {
           </SelectInput>
           <button
             type="submit"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600"
+            disabled={submitting}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <UserPlus className="h-4 w-4" />
-            Ajouter
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Enregistrement...
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-4 w-4" />
+                Ajouter
+              </>
+            )}
           </button>
         </form>
       </section>
@@ -300,15 +417,26 @@ export default function EquipePage() {
                   setShowPassword(false);
                 }}
               />
-              {users.map((user) => (
-                <TeamRow
-                  key={user.id}
-                  user={user}
-                  currentUserId={currentUserId}
-                  onDelete={() => setDeleteTarget(user)}
-                  onResetPassword={() => { setResetTarget(user); setNewPassword(""); setShowPassword(false); }}
-                />
-              ))}
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-sm text-gray-500">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-brand-500" />
+                      <span>Chargement des comptes depuis Supabase...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <TeamRow
+                    key={user.id}
+                    user={user}
+                    currentUserId={currentUserId}
+                    onDelete={() => setDeleteTarget(user)}
+                    onResetPassword={() => { setResetTarget(user); setNewPassword(""); setShowPassword(false); }}
+                  />
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -343,9 +471,17 @@ export default function EquipePage() {
               </button>
               <button
                 onClick={confirmDelete}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                disabled={deleting}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Supprimer
+                {deleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Suppression...
+                  </>
+                ) : (
+                  "Supprimer"
+                )}
               </button>
             </div>
           </div>
@@ -398,10 +534,17 @@ export default function EquipePage() {
               </button>
               <button
                 onClick={confirmResetPassword}
-                disabled={!newPassword.trim()}
-                className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled={!newPassword.trim() || resetting}
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Enregistrer
+                {resetting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  "Enregistrer"
+                )}
               </button>
             </div>
           </div>
